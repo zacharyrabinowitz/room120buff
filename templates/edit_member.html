@@ -2,68 +2,83 @@
 {% block content %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<div class="form-container">
-  <div class="form-card">
-    <h2 class="form-header">Edit Member</h2>
-    <form method="POST" class="form-grid">
+<div class="container mt-4" style="max-width: 600px;">
+  <h2>Edit Member</h2>
 
-      <div class="form-group">
-        <label for="first_name">First Name</label>
-        <input type="text" name="first_name" value="{{ member.first_name }}" required>
-      </div>
+  <form method="POST" class="mt-4">
 
-      <div class="form-group">
-        <label for="last_name">Last Name</label>
-        <input type="text" name="last_name" value="{{ member.last_name }}" required>
-      </div>
+    <!-- First Name -->
+    <div class="mb-3">
+      <label class="form-label">First Name:</label>
+      <input type="text" class="form-control" name="first_name" value="{{ member.first_name }}" required>
+    </div>
 
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" name="username" value="{{ member.username }}" required>
-      </div>
+    <!-- Last Name -->
+    <div class="mb-3">
+      <label class="form-label">Last Name:</label>
+      <input type="text" class="form-control" name="last_name" value="{{ member.last_name }}" required>
+    </div>
 
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" name="email" value="{{ member.email }}">
-      </div>
+    <!-- Username -->
+    <div class="mb-3">
+      <label class="form-label">Username:</label>
+      <input type="text" class="form-control" name="username" value="{{ member.username }}" required>
+    </div>
 
-      <div class="form-group">
-        <label for="member_number">Member Number</label>
-        <input type="text" name="member_number" value="{{ member.member_number }}">
-      </div>
+    <!-- Email -->
+    <div class="mb-3">
+      <label class="form-label">Email:</label>
+      <input type="email" class="form-control" name="email" value="{{ member.email }}">
+    </div>
 
-      <div class="form-group">
-        <label for="membership_type">Membership Type</label>
-        <select name="membership_type" required>
-          <option value="corporate" {% if member.membership_type == 'corporate' %}selected{% endif %}>Corporate</option>
-          <option value="single" {% if member.membership_type == 'single' %}selected{% endif %}>Single</option>
-        </select>
-      </div>
+    <!-- Member Number -->
+    <div class="mb-3">
+      <label class="form-label">Member Number:</label>
+      <input type="text" class="form-control" name="member_number" value="{{ member.member_number }}">
+    </div>
 
-      <div class="form-group">
-        <label for="password">New Password <small>(Leave blank to keep current password)</small></label>
-        <div style="position: relative;">
-          <input type="password" name="password" id="password" placeholder="Enter new password if changing">
-          <span onclick="togglePassword()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
-            👁️
-          </span>
-        </div>
-      </div>
+    <!-- Membership Type -->
+    <div class="mb-3">
+      <label class="form-label">Membership Type:</label>
+      <select name="membership_type" class="form-select" required>
+        <option value="single" {% if member.membership_type == 'single' %}selected{% endif %}>Single</option>
+        <option value="corporate" {% if member.membership_type == 'corporate' %}selected{% endif %}>Corporate</option>
+      </select>
+    </div>
 
-      <div class="form-buttons">
-        <button type="submit" class="btn btn-success">Save Changes</button>
-        <a href="{{ url_for('view_member', user_id=member.id) }}" class="btn btn-secondary">Back to Profile</a>
-      </div>
+    <!-- New Password -->
+    <div class="mb-3 position-relative">
+      <label class="form-label">
+        New Password <small>(Leave blank to keep current password)</small>
+      </label>
+      <input type="password" class="form-control" id="editPassword" name="password" placeholder="Enter new password if changing">
+      <span class="position-absolute top-50 end-0 translate-middle-y me-3" style="cursor: pointer;"
+            onclick="togglePassword('editPassword', 'editPasswordEye')">
+        <i id="editPasswordEye" class="fas fa-eye"></i>
+      </span>
+    </div>
 
-    </form>
-  </div>
+    <!-- Buttons -->
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a href="{{ url_for('view_member', user_id=member.id) }}" class="btn btn-secondary ms-2">Back to Profile</a>
+
+  </form>
 </div>
 
 <script>
-function togglePassword() {
-  const passwordInput = document.getElementById('password');
-  const isHidden = passwordInput.type === 'password';
-  passwordInput.type = isHidden ? 'text' : 'password';
+function togglePassword(inputId, iconId) {
+  const passwordInput = document.getElementById(inputId);
+  const eyeIcon = document.getElementById(iconId);
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    eyeIcon.classList.remove('fa-eye');
+    eyeIcon.classList.add('fa-eye-slash');
+  } else {
+    passwordInput.type = 'password';
+    eyeIcon.classList.remove('fa-eye-slash');
+    eyeIcon.classList.add('fa-eye');
+  }
 }
 </script>
+
 {% endblock %}
