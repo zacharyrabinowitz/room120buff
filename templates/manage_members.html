@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <h2>Manage Members</h2>
+
+      <!-- Sync Members from Toast Button -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <form method="POST" action="{{ url_for('sync_toast_data') }}">
+          <button type="submit" class="btn btn-warning">Sync Members from Toast</button>
+        </form>
+      </div>
+
+      <!-- Other Actions -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <form method="POST" action="{{ url_for('import_members') }}" enctype="multipart/form-data" class="d-flex align-items-center">
+          <input type="file" class="form-control me-2" name="csv_file" accept=".csv" required>
+          <button type="submit" class="btn btn-primary">Import</button>
+        </form>
+        <a href="{{ url_for('add_member_page') }}" class="btn btn-success">Add New Member</a>
+        <a href="{{ url_for('export_members') }}" class="btn btn-info me-2">Export Members</a>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <form method="GET" action="{{ url_for('manage_members') }}" class="d-flex align-items-center me-3">
+          <input type="text" class="form-control me-2" name="search" placeholder="Search members..." value="{{ search_term }}">
+          <button type="submit" class="btn btn-secondary">Search</button>
+        </form>
+      </div>
+
+      <!-- Members Table -->
+      <form method="POST" action="{{ url_for('bulk_delete_members') }}">
+        <button type="submit" id="bulkDeleteBtn" class="btn btn-danger mb-2" style="display: none;">Delete Selected Members</button>
+
+        <table class="table table-hover table-striped">
+          <thead class="table-light">
+            <tr>
+              <th><input type="checkbox" id="selectAll"></th>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Membership Type</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for member in members %}
+              <tr>
+                <td><input type="checkbox" name="selected_members" value="{{ member.id }}" class="member-checkbox"></td>
+                <td>{{ member.first_name }} {{ member.last_name }}</td>
+                <td>{{ member.username }}</td>
+                <td>{{ member.email }}</td>
+                <td>{{ member.phone }}</td>
+                <td>{{ member.membership_type|capitalize }}</td>
+                <td>
+                  {% if member.active %}
+                    <span class="badge bg-success">Active</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{{ url_for('view_member', user_id=member.id) }}" class="btn btn-primary btn-sm">View</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('selectAll').addEventListener('change', function() {
+  const checkboxes = document.querySelectorAll('.member-checkbox');
+  checkboxes.forEach(cb => cb.checked = this.checked);
+  updateBulkDeleteButton();
+});
+
+document.querySelectorAll('.member-checkbox').forEach(cb => {
+  cb.addEventListener('change', updateBulkDeleteButton);
+});
+
+function updateBulkDeleteButton() {
+  const checkboxes = document.querySelectorAll('.member-checkbox');
+  const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+  const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+  bulkDeleteBtn.style.display = anyChecked ? 'inline-block' : 'none';
+}
+</script>
+{% endblock %}

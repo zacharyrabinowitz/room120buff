@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Membership Applications</h2>
+
+  <a href="{{ url_for('apply_step_1') }}" class="btn btn-primary mb-4">Application</a>
+
+  <!-- Pending Applications -->
+  <h4>Pending Applications</h4>
+  {% set pending = applications | selectattr("status", "equalto", "pending") | list %}
+  {% if pending %}
+    <div class="list-group mb-4">
+      {% for app in pending %}
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <a href="{{ url_for('view_application', app_id=app.id) }}" class="text-decoration-none">
+                <strong>{{ app.first_name }} {{ app.last_name }}</strong> ({{ app.membership_type }})<br>
+                <small class="text-muted">{{ app.submitted_at.strftime('%Y-%m-%d %I:%M %p') }}</small>
+              </a>
+            </div>
+            <div>
+              <form method="POST" action="{{ url_for('approve_application', app_id=app.id) }}" class="d-inline">
+                <button class="btn btn-success btn-sm">Approve</button>
+              </form>
+              <form method="POST" action="{{ url_for('deny_application', app_id=app.id) }}" class="d-inline ms-2">
+                <button class="btn btn-danger btn-sm">Deny</button>
+              </form>
+              <form method="POST" action="{{ url_for('delete_application', app_id=app.id) }}" class="d-inline ms-2" onsubmit="return confirm('Delete this application?');">
+                <button class="btn btn-outline-secondary btn-sm">Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No pending applications.</p>
+  {% endif %}
+
+  <!-- Approved Applications -->
+  <h4 class="mt-5">Approved Applications</h4>
+  {% set approved = applications | selectattr("status", "equalto", "approved") | list %}
+  {% if approved %}
+    <div class="list-group mb-4">
+      {% for app in approved %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{{ url_for('view_application', app_id=app.id) }}" class="text-decoration-none">
+            <strong>{{ app.first_name }} {{ app.last_name }}</strong> ({{ app.membership_type }})<br>
+            <small class="text-muted">{{ app.submitted_at.strftime('%Y-%m-%d %I:%M %p') }}</small>
+          </a>
+          <form method="POST" action="{{ url_for('delete_application', app_id=app.id) }}" class="d-inline ms-2" onsubmit="return confirm('Delete this application?');">
+            <button class="btn btn-outline-secondary btn-sm">Delete</button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No approved applications.</p>
+  {% endif %}
+
+  <!-- Denied Applications -->
+  <h4 class="mt-5">Denied Applications</h4>
+  {% set denied = applications | selectattr("status", "equalto", "denied") | list %}
+  {% if denied %}
+    <div class="list-group mb-4">
+      {% for app in denied %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{{ url_for('view_application', app_id=app.id) }}" class="text-decoration-none">
+            <strong>{{ app.first_name }} {{ app.last_name }}</strong> ({{ app.membership_type }})<br>
+            <small class="text-muted">{{ app.submitted_at.strftime('%Y-%m-%d %I:%M %p') }}</small>
+          </a>
+          <form method="POST" action="{{ url_for('delete_application', app_id=app.id) }}" class="d-inline ms-2" onsubmit="return confirm('Delete this application?');">
+            <button class="btn btn-outline-secondary btn-sm">Delete</button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No denied applications.</p>
+  {% endif %}
+</div>
+{% endblock %}

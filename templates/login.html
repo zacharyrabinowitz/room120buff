@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Room 120 - Login</title>
+  <style>
+    body {
+      background-color: lch(0% 0 0);
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-container {
+      background-color: #000;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      width: 300px;
+    }
+
+    .logo {
+      width: 80px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 40px 12px 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    .toggle-password {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 18px;
+      color: #aaa;
+    }
+
+    .btn {
+      background-color: #fff;
+      color: #000;
+      padding: 12px;
+      width: 75%;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #555;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-container">
+  <img src="{{ url_for('static', filename='logo.png') }}" alt="Room 120 Logo" class="logo">
+  <h2>Room 120 Login</h2>
+  <form method="POST">
+    <div class="input-wrapper">
+      <input type="text" name="username" placeholder="Username" required>
+    </div>
+
+    <div class="input-wrapper">
+      <input type="password" name="password" id="password" placeholder="Password" required>
+      <span class="toggle-password" onclick="togglePassword()">👁️</span>
+    </div>
+
+    <button type="submit" class="btn">Login</button>
+  </form>
+</div>
+
+<script>
+  function togglePassword() {
+    const passwordInput = document.getElementById("password");
+    const type = passwordInput.type === "password" ? "text" : "password";
+    passwordInput.type = type;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container mt-4">
+  <h2>Manage Admins</h2>
+<a href="{{ url_for('register_admin') }}" class="btn btn-info btn-sm">Add New Admin</a>
+
+  <table class="table table-hover table-striped mt-4">
+    <thead class="table-dark">
+      <tr>
+        <th>Name</th>
+        <th>Username</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for admin in admins %}
+        <tr>
+          <td>{{ admin.first_name }} {{ admin.last_name }}</td>
+          <td>{{ admin.username }}</td>
+          <td>
+            {% if admin.active %}
+              <span class="badge bg-success">Active</span>
+            {% else %}
+              <span class="badge bg-secondary">Inactive</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('edit_admin', user_id=admin.id) }}" class="btn btn-info btn-sm">Edit</a>
+            <form action="{{ url_for('toggle_admin', user_id=admin.id) }}" method="POST" style="display:inline-block;">
+              <button type="submit" class="btn btn-warning btn-sm">Change Access</button>
+            </form>
+            <form action="{{ url_for('delete_admin', user_id=admin.id) }}" method="POST" style="display:inline-block;">
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

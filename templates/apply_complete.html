@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5 mb-5">
+  <div class="card shadow text-center">
+    <div class="card-header bg-success text-white">
+      <h4 class="mb-0">Application Submitted</h4>
+    </div>
+    <div class="card-body">
+      <p class="lead mb-4">Thank you for applying to Room 120.</p>
+      <p>Your application has been received and is currently under review by our team.</p>
+      <p>You will be contacted shortly regarding the status of your membership.</p>
+      <hr>
+      <p class="text-muted">In the meantime, if you have any questions, feel free to contact us at <strong>info@room120buff.com</strong>.</p>
+      <a href="{{ url_for('home') }}" class="btn btn-outline-primary mt-3">Return to Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

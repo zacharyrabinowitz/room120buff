@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container mt-4">
+  <h2>Member Profile: {{ member.first_name }} {{ member.last_name }}</h2>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs" id="memberTab" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#info">Information</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#balance">Balance</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#orders">Order History</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#reservations">Reservations</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#invoices">Invoices</button></li>
+    {% if is_admin %}
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#notes">Notes</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#admin">Admin Actions</button></li>
+    {% endif %}
+  </ul>
+
+  <div class="tab-content pt-3">
+    <!-- Information Tab -->
+    <div class="tab-pane fade show active" id="info">
+      <p><strong>Username:</strong> {{ member.username }}</p>
+      <p><strong>Email:</strong> {{ member.email }}</p>
+      <p><strong>Member Number:</strong> {{ member.member_number }}</p>
+      <p><strong>Membership Type:</strong> {{ member.membership_type|capitalize }}</p>
+      {% if is_admin %}
+      {% if is_admin and user.stripe_customer_id %}
+{% endif %}
+
+      <a href="{{ url_for('edit_member', user_id=member.id) }}" class="btn btn-info">Edit Info</a>
+      {% endif %}
+    </div>
+
+<!-- Balance Tab -->
+<div class="tab-pane fade" id="balance" role="tabpanel">
+  {% set amount_spent = user.amount_spent or 0 %}
+  {% set amount_owed = user.amount_owed or 0 %}
+  {% set tax_paid = user.tax_paid or 0 %}
+  {% set tax_owed = user.tax_owed or 0 %}
+  {% set gratuity_paid = user.gratuity_paid or 0 %}
+  {% set gratuity_owed = user.gratuity_owed or 0 %}
+  {% set minimum_requirement = 5000 if user.membership_type == 'corporate' else 3000 %}
+  {% set remaining = minimum_requirement - amount_spent - (user.minimum_adjustment or 0) %}
+  {% set has_balance = amount_owed > 0 or tax_owed > 0 or gratuity_owed > 0 %}
+
+  <div class="row g-3">
+
+    <div class="col-md-6">
+      <div class="card shadow-sm border-info">
+        <div class="card-header bg-info text-white">
+          <strong>Membership Status</strong>
+        </div>
+        <div class="card-body">
+          <p><strong>Minimum Spend Requirement:</strong> ${{ minimum_requirement }}</p>
+          <p><strong>Total Spent (Paid Orders):</strong> ${{ "%.2f"|format(amount_spent) }}</p>
+          {% if remaining <= 0 %}
+            <p class="text-success fw-bold">✔ Minimum Requirement Met</p>
+          {% else %}
+            <p class="text-warning fw-bold">Remaining to Meet Minimum: ${{ "%.2f"|format(remaining) }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm border-danger">
+        <div class="card-header bg-danger text-white">
+          <strong>Outstanding Balances</strong>
+        </div>
+        <div class="card-body">
+          <p><strong>Amount Owed:</strong> ${{ "%.2f"|format(amount_owed) }}</p>
+          <p><strong>Tax Owed:</strong> ${{ "%.2f"|format(tax_owed) }}</p>
+          <p><strong>Gratuity Owed:</strong> ${{ "%.2f"|format(gratuity_owed) }}</p>
+          {% if not has_balance %}
+            <div class="alert alert-success mt-3 mb-0 text-center">No outstanding balances</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm border-success">
+        <div class="card-header bg-success text-white">
+          <strong>Paid Totals</strong>
+        </div>
+        <div class="card-body">
+          <p><strong>Tax Paid:</strong> ${{ "%.2f"|format(tax_paid) }}</p>
+          <p><strong>Gratuity Paid:</strong> ${{ "%.2f"|format(gratuity_paid) }}</p>
+        </div>
+      </div>
+    </div>
+
+    {% if is_admin %}
+    <div class="col-12">
+      <div class="card mt-4">
+        <div class="card-header bg-secondary text-white">
+          <strong>Edit Balance</strong>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('update_balance', user_id=user.id) }}" class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Amount Spent</label>
+              <input type="number" step="0.01" name="amount_spent" value="{{ amount_spent }}" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Amount Owed</label>
+              <input type="number" step="0.01" name="amount_owed" value="{{ amount_owed }}" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tax Owed</label>
+              <input type="number" step="0.01" name="tax_owed" value="{{ tax_owed }}" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tax Paid</label>
+              <input type="number" step="0.01" name="tax_paid" value="{{ tax_paid }}" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Gratuity Owed</label>
+              <input type="number" step="0.01" name="gratuity_owed" value="{{ gratuity_owed }}" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Gratuity Paid</label>
+              <input type="number" step="0.01" name="gratuity_paid" value="{{ gratuity_paid }}" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label for="minimum_adjustment">Minimum Adjustment ($)</label>
+              <input type="number" step="0.01" name="minimum_adjustment" value="{{ user.minimum_adjustment or 0 }}" required>
+            </div>
+
+            
+            <div class="col-12 text-end">
+              <button type="submit" class="btn btn-primary mt-2">Update Balance</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+
+
+    <!-- Orders Tab -->
+    <div class="tab-pane fade" id="orders">
+      {% if is_admin %}
+      <a href="{{ url_for('add_order', user_id=member.id) }}" class="btn btn-primary mb-3">Add New Order</a>
+      {% endif %}
+      <h5>Order History</h5>
+      <ul class="list-group">
+        {% for order in orders %}
+        <li class="list-group-item">
+          <strong>Date:</strong> {{ order.date.strftime('%Y-%m-%d') }} {{ order.time.strftime('%I:%M %p') if order.time }}<br>
+          <strong>Subtotal:</strong> ${{ "%.2f"|format(order.subtotal) }}<br>
+          <strong>Tax:</strong> ${{ "%.2f"|format(order.tax) }}<br>
+          <strong>Gratuity:</strong> ${{ "%.2f"|format(order.gratuity) }}<br>
+          <strong>Total:</strong> ${{ "%.2f"|format(order.total) }}<br>
+          {% if order.notes %}<strong>Notes:</strong> {{ order.notes }}<br>{% endif %}
+          {% if order.paid_by_credit %}
+          <span class="badge bg-success">Paid by Credit Card</span>
+          {% else %}
+          <span class="badge bg-warning text-dark">Added to Balance</span>
+          {% endif %}
+          {% if is_admin %}
+          <div class="mt-2">
+            <a href="{{ url_for('edit_order', order_id=order.id) }}" class="btn btn-sm btn-warning">Edit</a>
+            <form action="{{ url_for('delete_order', order_id=order.id) }}" method="post" class="d-inline">
+              <button class="btn btn-sm btn-danger">Delete</button>
+            </form>
+            <a href="{{ url_for('toggle_order_paid', order_id=order.id) }}" class="btn btn-sm btn-outline-secondary">
+              {% if order.paid_by_credit %}Unmark as Paid{% else %}Mark as Paid{% endif %}
+            </a>
+            <form action="{{ url_for('generate_invoice', order_id=order.id) }}" method="post" class="d-inline">
+              <button class="btn btn-sm btn-primary">Generate Invoice</button>
+            </form>
+          </div>
+          {% endif %}
+        </li>
+        {% else %}
+        <li class="list-group-item">No orders found.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+<!-- Reservations Tab -->
+<div class="tab-pane fade" id="reservations">
+  <a href="{{ url_for('reservations') }}" class="btn btn-primary mb-2">Make a Reservation</a>
+  <ul class="list-group">
+    {% for r in reservations %}
+    <li class="list-group-item">
+      <td>{{ r.date.strftime('%B %d, %Y') }} at {{ r.time.strftime('%I:%M %p') }}</td> for {{ r.guests }} guests<br>
+      Notes: {{ r.notes or 'None' }}
+      <div class="mt-2">
+        <a href="{{ url_for('edit_reservation', reservation_id=r.id) }}" class="btn btn-sm btn-warning">Edit</a>
+        <form action="{{ url_for('delete_reservation', reservation_id=r.id) }}" method="post" class="d-inline">
+          <button class="btn btn-sm btn-danger">Delete</button>
+        </form>
+      </div>
+      {% if is_admin %}
+      <div class="mt-2">
+        <a href="{{ url_for('edit_reservation', reservation_id=r.id) }}" class="btn btn-sm btn-warning">Edit</a>
+        <form action="{{ url_for('delete_reservation', reservation_id=r.id) }}" method="post" class="d-inline">
+          <button class="btn btn-sm btn-danger">Delete</button>
+        </form>
+      </div>
+      {% endif %}
+    </li>
+    {% else %}
+    <li class="list-group-item">No reservations found.</li>
+    {% endfor %}
+  </ul>
+</div>
+
+
+    <!-- Invoices Tab -->
+    <div class="tab-pane fade" id="invoices">
+      {% if is_admin %}
+      <form method="POST" action="{{ url_for('upload_invoice', user_id=member.id) }}" enctype="multipart/form-data" class="mb-3">
+        <input type="file" name="invoice" class="form-control" accept=".pdf" required>
+        <button type="submit" class="btn btn-primary mt-2">Upload Invoice</button>
+        <a href="{{ url_for('create_invoice') }}" class="btn btn-primary mt-2">Create Invoice</a>
+      </form>
+      {% endif %}
+      <ul class="list-group">
+        {% for invoice in member.invoices %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {{ invoice.original_filename }} ({{ invoice.upload_date.strftime('%Y-%m-%d') }})
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('download_invoice', invoice_id=invoice.id) }}" class="btn btn-sm btn-secondary">Download</a>
+            {% if is_admin %}
+            <form action="{{ url_for('delete_invoice', invoice_id=invoice.id) }}" method="post">
+              <button class="btn btn-sm btn-danger">Delete</button>
+            </form>
+            {% endif %}
+          </div>
+        </li>
+        {% else %}
+        <li class="list-group-item">No invoices available.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    {% if is_admin %}
+    <!-- Notes Tab -->
+    <div class="tab-pane fade" id="notes">
+      <form action="{{ url_for('add_note', user_id=member.id) }}" method="post">
+        <textarea name="note" class="form-control mb-2" placeholder="Add a note..." required></textarea>
+        <button class="btn btn-success">Add Note</button>
+      </form>
+      <ul class="list-group mt-3">
+        {% for note in member.notes_received %}
+        <li class="list-group-item">
+          <p>{{ note.content }}</p>
+          <small class="text-muted">By {{ note.author.first_name }} {{ note.author.last_name }} on {{ note.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+          <div class="mt-2">
+            <a href="{{ url_for('edit_note', note_id=note.id) }}" class="btn btn-sm btn-warning">Edit</a>
+            <form action="{{ url_for('delete_note', note_id=note.id) }}" method="post" class="d-inline">
+              <button class="btn btn-sm btn-danger">Delete</button>
+            </form>
+          </div>
+        </li>
+        {% else %}
+        <li class="list-group-item">No notes available.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Admin Actions Tab -->
+    <div class="tab-pane fade" id="admin">
+      <form action="{{ url_for('toggle_member', user_id=member.id) }}" method="post" class="mb-2">
+        <button class="btn btn-warning">{{ 'Reactivate' if not member.active else 'Deactivate' }}</button>
+      </form>
+      <form action="{{ url_for('delete_member', user_id=member.id) }}" method="post">
+        <button class="btn btn-danger">Delete Member</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

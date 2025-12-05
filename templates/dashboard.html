@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2 class="mb-4">Room 120 Analytics</h2>
+
+  <!-- Quick Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-2">
+      <div class="card p-3 text-center">
+        <h4>{{ total_members }}</h4>
+        <p>Total Members</p>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card p-3 text-center">
+        <h4>{{ active_members }}</h4>
+        <p>Active</p>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card p-3 text-center">
+        <h4>{{ inactive_members }}</h4>
+        <p>Inactive</p>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card p-3 text-center">
+        <h4>{{ corporate_count }}</h4>
+        <p>Corporate</p>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card p-3 text-center">
+        <h4>{{ single_count }}</h4>
+        <p>Single</p>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="card p-3 text-center">
+        <h4>{{ total_reservations }}</h4>
+        <p>Reservations</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Financial Summary -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card p-3 text-center">
+        <h4>${{ total_outstanding }}</h4>
+        <p>Total Outstanding</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card p-3 text-center">
+        <h4>${{ total_spent }}</h4>
+        <p>Total Spent</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card p-3 mb-4">
+    <h5>Member Filters</h5>
+    <form method="GET" class="row g-3">
+      <div class="col-md-3">
+        <label>Status</label>
+        <select name="status" class="form-select">
+          <option value="">All</option>
+          <option value="active" {% if filter_status == 'active' %}selected{% endif %}>Active</option>
+          <option value="inactive" {% if filter_status == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label>Membership Type</label>
+        <select name="type" class="form-select">
+          <option value="">All</option>
+          <option value="corporate" {% if filter_type == 'corporate' %}selected{% endif %}>Corporate</option>
+          <option value="single" {% if filter_type == 'single' %}selected{% endif %}>Single</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-primary">Apply Filters</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Member Balances Chart with View Options -->
+  <div class="card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Member Balances Overview</h5>
+      <select id="chartType" class="form-select w-auto">
+        <option value="bar" selected>Bar</option>
+        <option value="pie">Pie</option>
+        <option value="doughnut">Doughnut</option>
+      </select>
+    </div>
+
+    {% if member_labels %}
+      <div style="width: 100%; height: 400px;">
+        <canvas id="balanceChart" style="width: 100%; height: 100%;"></canvas>
+      </div>
+    {% else %}
+      <p>No members to display chart.</p>
+    {% endif %}
+  </div>
+
+  <!-- Recent Reservations -->
+  <div class="card p-3 mb-4">
+    <h5>Recent Reservations</h5>
+    {% if recent_reservations %}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Member</th>
+            <th>Guests</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in recent_reservations %}
+          <tr>
+            <td>{{ r.date }}</td>
+            <td>{{ r.time }}</td>
+            <td>{{ r.user.first_name }} {{ r.user.last_name }}</td>
+            <td>{{ r.guests }}</td>
+            <td>{{ r.notes or 'N/A' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No recent reservations found.</p>
+    {% endif %}
+  </div>
+
+
+
+<!-- Chart.js with Chart Type Switching -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartLabels = {{ member_labels | tojson }};
+const chartData = {{ member_balances | tojson }};
+let chartType = 'bar';
+let balanceChart;
+
+const ctx = document.getElementById('balanceChart').getContext('2d');
+
+function renderChart(type) {
+  if (balanceChart) {
+    balanceChart.destroy();
+  }
+  balanceChart = new Chart(ctx, {
+    type: type,
+    data: {
+      labels: chartLabels,
+      datasets: [{
+        label: type === 'bar' ? 'Balance ($)' : '',
+        data: chartData,
+        borderWidth: 1,
+        backgroundColor: [
+          'rgba(75, 192, 192, 0.5)',
+          'rgba(255, 99, 132, 0.5)',
+          'rgba(255, 206, 86, 0.5)',
+          'rgba(54, 162, 235, 0.5)',
+          'rgba(153, 102, 255, 0.5)',
+          'rgba(255, 159, 64, 0.5)'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: type === 'bar' ? {
+        y: { beginAtZero: true }
+      } : {}
+    }
+  });
+}
+
+renderChart(chartType);
+
+document.getElementById('chartType').addEventListener('change', function() {
+  chartType = this.value;
+  renderChart(chartType);
+});
+</script>
+
+{% endblock %}

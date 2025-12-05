@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Room 120 Membership Application</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12pt; padding: 20px; }
+    h1 { text-align: center; font-size: 18pt; margin-bottom: 20px; }
+    p { margin: 5px 0; }
+    .label { font-weight: bold; }
+    hr { margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <h1>Room 120 Membership Application</h1>
+
+  <p><span class="label">Application ID:</span> {{ application.id }}</p>
+  <p><span class="label">Submitted:</span> {{ application.submitted_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
+  <p><span class="label">Status:</span> {{ application.status|capitalize }}</p>
+
+  <hr>
+
+  <p><span class="label">Membership Type:</span> {{ application.membership_type|capitalize }}</p>
+  {% if application.membership_type == 'corporate' %}
+    <p><span class="label">Company Name:</span> {{ application.company_name }}</p>
+  {% endif %}
+
+  <p><span class="label">Name:</span> {{ application.first_name }} {{ application.last_name }}</p>
+  {% if application.dob %}
+    <p><span class="label">Date of Birth:</span> {{ application.dob }}</p>
+  {% endif %}
+  <p><span class="label">Email:</span> {{ application.email }}</p>
+  <p><span class="label">Phone:</span> {{ application.phone }}</p>
+  <p><span class="label">Promo Email Opt-In:</span> {{ 'Yes' if application.promo_opt_in else 'No' }}</p>
+</body>
+</html>

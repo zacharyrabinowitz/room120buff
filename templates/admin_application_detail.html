@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Application #{{ application.id }}</h2>
+
+  <p><strong>Status:</strong> {{ application.status|capitalize }}</p>
+  <p><strong>Submitted:</strong> {{ application.submitted_at.strftime('%Y-%m-%d %I:%M %p') }}</p>
+  <hr>
+  <p><strong>Membership Type:</strong> {{ application.membership_type|capitalize }}</p>
+  {% if application.membership_type == 'corporate' %}
+    <p><strong>Company Name:</strong> {{ application.company_name }}</p>
+  {% endif %}
+  <p><strong>First Name:</strong> {{ application.first_name }}</p>
+  <p><strong>Last Name:</strong> {{ application.last_name }}</p>
+  <p><strong>Email:</strong> {{ application.email }}</p>
+  <p><strong>Phone:</strong> {{ application.phone }}</p>
+  <p><strong>Promo Opt-In:</strong> {{ 'Yes' if application.promo_opt_in else 'No' }}</p>
+  <hr>
+
+  {% if application.status == 'pending' %}
+    <form action="{{ url_for('approve_application', app_id=application.id) }}" method="post" class="d-inline">
+      <button type="submit" class="btn btn-success">Approve</button>
+    </form>
+    <form action="{{ url_for('deny_application', app_id=application.id) }}" method="post" class="d-inline ms-2">
+      <button type="submit" class="btn btn-danger">Deny</button>
+    </form>
+  {% endif %}
+
+  <a href="{{ url_for('download_application_pdf', app_id=application.id) }}" class="btn btn-secondary ms-2">Download PDF</a>
+{% endblock %}

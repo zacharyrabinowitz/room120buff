@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-5">
+  <h2 class="mb-4">Members Table</h2>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <input type="text" id="search-bar" class="form-control w-50" placeholder="Search members...">
+    <button type="button" id="save-all-btn" class="btn btn-primary">Save All Changes</button>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover w-100" id="members-table">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Member Number</th>
+          <th>Membership Type</th>
+          <th>Active</th>
+          <th>Amount Spent</th>
+          <th>Amount Owed</th>
+          <th>Tax Owed</th>
+          <th>Gratuity Owed</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in members %}
+        <tr>
+          <td>{{ member.id }}</td>
+          <td contenteditable="true" data-field="username" data-id="{{ member.id }}">{{ member.username }}</td>
+          <td contenteditable="true" data-field="first_name" data-id="{{ member.id }}">{{ member.first_name }}</td>
+          <td contenteditable="true" data-field="last_name" data-id="{{ member.id }}">{{ member.last_name }}</td>
+          <td contenteditable="true" data-field="email" data-id="{{ member.id }}">{{ member.email }}</td>
+          <td contenteditable="true" data-field="phone" data-id="{{ member.id }}">{{ member.phone }}</td>
+          <td contenteditable="true" data-field="member_number" data-id="{{ member.id }}">{{ member.member_number }}</td>
+          <td contenteditable="true" data-field="membership_type" data-id="{{ member.id }}">{{ member.membership_type }}</td>
+          <td>
+            <select class="form-select" data-field="active" data-id="{{ member.id }}">
+              <option value="True" {% if member.active %}selected{% endif %}>Yes</option>
+              <option value="False" {% if not member.active %}selected{% endif %}>No</option>
+            </select>
+          </td>
+          <td contenteditable="true" data-field="amount_spent" data-id="{{ member.id }}">{{ "%.2f"|format(member.amount_spent or 0) }}</td>
+          <td contenteditable="true" data-field="amount_owed" data-id="{{ member.id }}">{{ "%.2f"|format(member.amount_owed or 0) }}</td>
+          <td contenteditable="true" data-field="tax_owed" data-id="{{ member.id }}">{{ "%.2f"|format(member.tax_owed or 0) }}</td>
+          <td contenteditable="true" data-field="gratuity_owed" data-id="{{ member.id }}">{{ "%.2f"|format(member.gratuity_owed or 0) }}</td>
+          <td>
+            <button type="button" class="btn btn-sm btn-success save-btn" data-id="{{ member.id }}">Save</button>
+
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="d-flex justify-content-end mt-3">
+    <button type="button" id="save-all-btn-bottom" class="btn btn-primary">Save All Changes</button>
+  </div>
+  <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3">Back to Home</a>
+</div>
+
+<script>
+function collectRowData(row) {
+  const data = {};
+  row.querySelectorAll('[data-field]').forEach(cell => {
+    if (cell.tagName === 'TD') {
+      data[cell.dataset.field] = cell.textContent.trim();
+    } else if (cell.tagName === 'SELECT') {
+      data[cell.dataset.field] = cell.value;
+    }
+  });
+  return data;
+}
+
+function saveRow(memberId, data) {
+  return fetch(`/update_member/${memberId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  }).then(response => response.json());
+}
+
+document.querySelectorAll('.save-btn').forEach(button => {
+  button.addEventListener('click', function () {
+    const memberId = this.dataset.id;
+    const row = document.querySelectorAll(`[data-id="${memberId}"]`);
+    const data = collectRowData(row[0].closest('tr'));
+
+    saveRow(memberId, data)
+      .then(result => {
+        if (result.success) {
+        } else {
+          alert('Failed to save changes.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving changes.');
+      });
+  });
+});
+
+document.querySelectorAll('#save-all-btn, #save-all-btn-bottom').forEach(button => {
+  button.addEventListener('click', function () {
+    const rows = document.querySelectorAll('tbody tr');
+    const promises = [];
+
+    rows.forEach(row => {
+      const memberId = row.querySelector('[data-id]').dataset.id;
+      const data = collectRowData(row);
+      promises.push(saveRow(memberId, data));
+    });
+
+    Promise.all(promises)
+      .then(results => {
+        if (results.every(result => result.success)) {
+        } else {
+          alert('Some changes failed to save.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving changes.');
+      });
+  });
+});
+
+document.getElementById('search-bar').addEventListener('input', function () {
+  const searchTerm = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#members-table tbody tr');
+
+  rows.forEach(row => {
+    const rowText = row.textContent.toLowerCase();
+    row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+  });
+});
+
+function confirmDelete() {
+  return confirm('Are you sure you want to delete this member? This action cannot be undone.');
+}
+</script>
+
+<style>
+.delete-button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.delete-button:hover {
+  background-color: #e60000;
+}
+</style>
+{% endblock %}

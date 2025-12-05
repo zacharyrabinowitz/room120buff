@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="card">
+  <h2>My Invoices</h2>
+
+  {% if invoices %}
+    <table>
+      <tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr>
+      {% for invoice in invoices %}
+      <tr>
+        <td>{{ invoice.date }}</td>
+        <td>{{ invoice.description }}</td>
+        <td>${{ invoice.amount }}</td>
+        <td>{{ invoice.status }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>No invoices available.</p>
+  {% endif %}
+</div>
+{% endblock %}

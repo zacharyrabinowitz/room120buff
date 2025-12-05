@@ -1,0 +1,594 @@
+/* =======================================
+   ROOM 120 MEMBER PORTAL THEME
+   Matches style_public.css colors & feel
+   Built to sit on top of Bootstrap
+   ======================================= */
+
+/* Same variables as style_public.css */
+:root {
+    --bg: #56565b;
+    --bg-elevated: #56565b;
+    --bg-soft: #56565b;
+    --border-subtle: #27273a;
+    --accent: #f5b45c;
+    --accent-soft: rgba(245, 180, 92, 0.14);
+    --accent-strong: #ffcf7a;
+    --text: #f7f3ea;
+    --muted: #454545;
+    --danger: #ff5c73;
+  
+    --radius-lg: 18px;
+    --radius-pill: 999px;
+    --shadow-soft: 0 18px 60px rgba(0, 0, 0, 0.7);
+  
+    --nav-h: 72px;
+  }
+  
+  /* Base */
+  
+  html,
+  body {
+    height: 100%;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    margin: 0;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(circle at top, #777678 0, #a5a5a8 55%, #a7a7a7 100%);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  
+  /* Override basic Bootstrap text colors */
+  
+  body,
+  .text-body,
+  .text-dark {
+    color: var(--text) !important;
+  }
+  
+  .text-muted,
+  .small,
+  .form-text {
+    color: var(--muted) !important;
+  }
+  
+  /* Headings */
+  
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: "Playfair Display", serif;
+    letter-spacing: 0.04em;
+  }
+  
+  h1 {
+    font-weight: 700;
+  }
+  
+  /* LINKS */
+  
+  a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  
+  a:hover {
+    color: var(--accent-strong);
+    text-decoration: underline;
+  }
+  
+  /* LAYOUT HELPERS */
+  
+  .main-content,
+  .container-main,
+  .container-fluid {
+    color: var(--text);
+  }
+  
+  /* NAVBAR (Bootstrap .navbar) */
+  
+
+  
+  .navbar-brand {
+    font-family: "Playfair Display", serif;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    color: var(--text) !important;
+  }
+  
+  .navbar-nav .nav-link {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #fff !important;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+  
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link:focus {
+    color: #fff !important;
+    background-color: var(--accent-soft);
+    border-color: var(--accent-soft);
+  }
+  
+  .navbar-nav .nav-link.active {
+    color: #fff !important;
+    background-color: var(--accent-soft);
+    border-color: var(--accent-soft);
+  }
+  
+  /* BUTTONS – override Bootstrap .btn variants using public-site look */
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 18px;
+    border-radius: 4px;
+    border-width: 1px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease,
+                transform 0.16s ease, box-shadow 0.16s ease;
+  }
+  
+  /* Primary – same as .btn-accent from style_public */
+  
+  .btn-primary,
+  .btn-outline-primary {
+    background: linear-gradient(135deg, var(--accent-soft), var(--accent-soft));
+    color: #1a150d;
+  }
+  
+  .btn-primary:hover,
+  .btn-outline-primary:hover {
+    transform: translateY(-1px);
+    color: #1a150d;
+  }
+  
+  /* Secondary / neutral buttons */
+  
+  .btn-secondary,
+  .btn-outline-secondary,
+  .btn-light,
+  .btn-outline-light {
+    background: transparent;
+    color: var(--accent-strong);
+    border-color: rgba(245, 180, 92, 0.6);
+  }
+  
+  .btn-secondary:hover,
+  .btn-outline-secondary:hover,
+  .btn-light:hover,
+  .btn-outline-light:hover {
+    background: rgba(245, 180, 92, 0.08);
+  }
+  
+  /* Danger buttons – use public danger color */
+  
+  .btn-danger,
+  .btn-outline-danger {
+    background: linear-gradient(135deg, var(--danger), #ff7f8f);
+    border-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(255, 92, 115, 0.6);
+  }
+  
+  .btn-danger:hover,
+  .btn-outline-danger:hover {
+    background: linear-gradient(135deg, #ff6b82, #ff8f9d);
+  }
+  
+  /* Make .btn-block / .w-100 nice */
+  
+  .btn-block,
+  .btn.full,
+  .btn.w-100 {
+    width: 100%;
+  }
+  
+  /* CARDS – override .card to match marketing site */
+  
+  .card {
+    background:
+      radial-gradient(circle at top left, rgba(245, 180, 92, 0.16), transparent 50%),
+      radial-gradient(circle at bottom right, rgba(67, 50, 140, 0.32), transparent 58%),
+      #0a0a12;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: var(--shadow-soft);
+    color: var(--text);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .card-header,
+  .card-footer {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  .card-title {
+    font-family: "Playfair Display", serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  
+  /* TABLES – for history, lists, etc. */
+  
+  .table {
+    color: var(--text);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+  
+  .table thead {
+    background: rgba(10, 10, 20, 0.98);
+  }
+  
+  .table thead th {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+  }
+  
+  .table tbody tr {
+    background: rgba(9, 9, 16, 0.95);
+  }
+  
+  .table tbody tr:nth-child(even) {
+    background: rgba(13, 13, 22, 0.95);
+  }
+  
+  .table tbody tr:hover {
+    background: rgba(18, 18, 30, 0.95);
+  }
+  
+  /* FORMS – map Bootstrap inputs to public form style */
+  
+  .form-label,
+  label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+  }
+  
+  .form-control,
+  .form-select,
+  textarea.form-control {
+    background: rgba(234, 234, 237, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    padding: 9px 10px;
+    font-size: 0.95rem;
+    box-shadow: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  }
+  
+  .form-control:focus,
+  .form-select:focus,
+  textarea.form-control:focus {
+    background: rgba(234, 234, 237, 0.9);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(245, 180, 92, 0.6);
+    outline: none;
+  }
+  
+  .form-control::placeholder {
+    color: rgba(200, 190, 220, 0.4);
+  }
+  
+  /* TEXTAREA shape */
+  
+  /* Use same idea as public: rounded but not pill */
+  textarea.form-control {
+    border-radius: 12px;
+    min-height: 120px;
+  }
+  
+  /* NAV TABS – profile tabs, etc. */
+  
+  .nav-tabs {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  .nav-tabs .nav-link {
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    background: transparent;
+    border-radius: 0;
+    padding: 0.6rem 1rem;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+  
+  .nav-tabs .nav-link:hover {
+    color: var(--accent-strong);
+    border-bottom-color: rgba(245, 180, 92, 0.65);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  .nav-tabs .nav-link.active {
+    color: var(--accent-strong);
+    border-bottom-color: var(--accent);
+    background: rgba(255, 255, 255, 0.04);
+  }
+  
+  /* TAB CONTENT */
+  
+  .tab-content {
+    padding-top: 1.4rem;
+  }
+  
+  /* BADGES / STATUS */
+  
+  .badge {
+    border-radius: var(--radius-pill);
+    padding: 0.25rem 0.7rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+  
+  .badge.bg-success {
+    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+  }
+  
+  .badge.bg-danger {
+    background: linear-gradient(135deg, var(--danger), #ff7f8f) !important;
+  }
+  
+  .badge.bg-warning {
+    background: linear-gradient(135deg, #facc15, #f59e0b) !important;
+    color: #211306 !important;
+  }
+  
+  /* ALERTS */
+  
+  .alert {
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(5, 5, 12, 0.96);
+    color: var(--text);
+  }
+  
+  .alert-success {
+    border-color: rgba(34, 197, 94, 0.5);
+  }
+  
+  .alert-danger {
+    border-color: rgba(255, 92, 115, 0.7);
+  }
+  
+  /* HR */
+  
+  hr {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  /* OPTIONAL: give .card-like "sections" a public-style section feel */
+  
+  .section-like {
+    padding: 24px 0;
+  }
+  
+  /* RESPONSIVE TWEAKS */
+  
+  @media (max-width: 767.98px) {
+    .navbar-nav .nav-link {
+      padding: 0.35rem 0.6rem;
+    }
+  
+    .card {
+      margin-bottom: 1rem;
+    }
+  }
+
+  .map-area,
+.layout-area {
+    width: 100%;
+    height: 600px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    position: relative;
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.table-box {
+    position: absolute;
+    background: rgba(245, 180, 92, 0.18);
+    border: 1px solid rgba(245, 180, 92, 0.4);
+    border-radius: 12px;
+    padding: 4px;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table-box:hover {
+    background: rgba(245, 180, 92, 0.3);
+}
+
+.reservation-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 320px;
+    height: 100%;
+    background: rgba(17,17,22,0.96);
+    padding: 20px;
+    border-left: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(6px);
+}
+
+.reservation-panel.hidden {
+    display: none;
+}
+
+.page-title {
+    font-family: "Playfair Display", serif;
+    margin-bottom: 20px;
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 10, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-box {
+  background: #0f0f16;
+  padding: 24px;
+  border-radius: 14px;
+  width: 320px;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+}
+
+.modal-box h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-family: "Playfair Display", serif;
+}
+
+.modal-box label {
+  margin-top: 10px;
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+}
+
+.modal-box input {
+  width: 100%;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+.layout-container {
+  display: flex;
+  gap: 20px;
+}
+
+.toolbox {
+  width: 240px;
+  background: #1b1b1d;
+  padding: 20px;
+  border-radius: 12px;
+  height: calc(100vh - 150px);
+}
+
+.toolbox h2 {
+  margin-top: 0;
+}
+
+.tool-btn {
+  width: 100%;
+  background: #2d2d2f;
+  color: white;
+  border: none;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.canvas {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 12px;
+  position: relative;
+  min-height: 700px;
+}
+
+.item {
+  position: absolute;
+  background: #ffffff;
+  border: 2px solid #999;
+  cursor: move;
+}
+
+.item:hover {
+  box-shadow: 0 0 12px rgba(255,255,255,0.2);
+}
+
+.item::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: nwse-resize;
+}
+.canvas-area {
+  position: relative;
+  width: 100%;
+  height: 700px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 2px solid #333;
+  overflow: hidden;
+}
+
+/* Default table style */
+.table-item {
+  position: absolute;
+  background: #ffffff;
+  border: 2px solid #aaa;
+  cursor: grab;
+}
+
+/* round tables */
+.table-circle {
+  border-radius: 50%;
+}
+
+/* resize handle */
+.table-item::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  background: #ffffff55;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+}

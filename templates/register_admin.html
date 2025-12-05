@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container mt-4">
+  <h2>Register New Admin</h2>
+
+  <form method="POST" class="mt-4" style="max-width: 500px;">
+    
+    <div class="mb-3">
+      <label class="form-label">First Name:</label>
+      <input type="text" class="form-control" name="first_name" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Last Name:</label>
+      <input type="text" class="form-control" name="last_name" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Username:</label>
+      <input type="text" class="form-control" name="username" required>
+    </div>
+
+    <div class="mb-3 position-relative">
+      <label class="form-label">Password:</label>
+      <input type="password" class="form-control" id="adminPassword" name="password" required>
+      <span class="position-absolute top-50 end-0 translate-middle-y me-3" style="cursor: pointer;" onclick="togglePassword('adminPassword', 'adminEye')">
+        <i id="adminEye" class="fas fa-eye"></i>
+      </span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Register</button>
+    <a href="{{ url_for('manage_admins') }}" class="btn btn-secondary ms-2">Cancel</a>
+  </form>
+</div>
+
+<script>
+function togglePassword(inputId, iconId) {
+  const passwordInput = document.getElementById(inputId);
+  const eyeIcon = document.getElementById(iconId);
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    eyeIcon.classList.remove('fa-eye');
+    eyeIcon.classList.add('fa-eye-slash');
+  } else {
+    passwordInput.type = 'password';
+    eyeIcon.classList.remove('fa-eye-slash');
+    eyeIcon.classList.add('fa-eye');
+  }
+}
+</script>
+{% endblock %}

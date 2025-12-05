@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container mt-5">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Edit Admin</h5>
+      <a href="{{ url_for('manage_admins') }}" class="btn btn-light btn-sm">← Back</a>
+    </div>
+    <div class="card-body">
+      <form method="POST">
+        <div class="mb-3">
+          <label for="first_name" class="form-label">First Name</label>
+          <input type="text" class="form-control" id="first_name" name="first_name" value="{{ admin.first_name }}" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="last_name" class="form-label">Last Name</label>
+          <input type="text" class="form-control" id="last_name" name="last_name" value="{{ admin.last_name }}" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">New Password</label>
+          <input type="password" class="form-control" id="password" name="password" placeholder="Enter new password" required>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save Change</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

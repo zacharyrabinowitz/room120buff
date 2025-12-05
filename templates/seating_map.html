@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ---- Centered Layout ---- */
+.map-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 25px;
+    color: #f7f3ea;
+}
+
+.map-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.map-header h1 {
+    font-family: "Playfair Display", serif;
+    font-size: 2rem;
+    margin-bottom: 12px;
+}
+
+#event-select {
+    max-width: 320px;
+    margin: 0 auto;
+    margin-top: 8px;
+}
+
+/* Canvas */
+#canvas {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 2px solid rgba(255,255,255,0.08);
+    height: 75vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ---- Tables & Walls ---- */
+.table-item, .wall-item {
+    position: absolute;
+    background: #777678;
+    border: 2px solid #ffcf7a;
+    color: #000000;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    padding: 4px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.wall-curved { border-radius: 40px !important; }
+
+.table-label {
+    pointer-events: none;
+}
+
+/* ---- Popup ---- */
+#reservation-popup {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 420px;
+    transform: translate(-50%, -50%);
+    background: #0a0a12;
+    padding: 25px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    display: none;
+    z-index: 9999;
+}
+
+.popup-title {
+    font-family: "Playfair Display", serif;
+    font-size: 1.4rem;
+    color: #ffcf7a;
+    margin-bottom: 10px;
+}
+
+.popup-row {
+    margin-top: 8px;
+}
+
+.popup-row label {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 3px;
+    color: #f7f3ea;
+}
+
+.popup-row input,
+.popup-row select,
+.popup-row textarea {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: #151520;
+    color: #f7f3ea;
+    padding: 7px 9px;
+    font-size: 0.9rem;
+}
+
+.popup-row textarea {
+    min-height: 70px;
+}
+
+.popup-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.popup-btn {
+    width: 100%;
+    padding: 9px;
+    background: #ffcf7a;
+    border: none;
+    color: #050508;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.popup-btn.secondary {
+    background: #777678;
+    color: #050508;
+}
+
+.popup-btn.danger {
+    background: #ff0000;
+    color: #ffffff;
+}
+</style>
+
+
+<div class="map-wrapper">
+
+    <div class="map-header">
+        <h1>Seating Map</h1>
+
+        <!-- EVENT SELECT -->
+        <form method="GET" action="{{ url_for('seating_map') }}">
+            <select name="event_id" id="event-select" class="form-select" onchange="this.form.submit()">
+                <option value="">Select Event</option>
+
+                {% for event in events %}
+                    <option value="{{ event.id }}"
+                        {% if selected_event and selected_event.id == event.id %}selected{% endif %}>
+                        {{ event.name }} — {{ event.event_date }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+
+        {% if selected_event %}
+            <p style="margin-top:8px;font-size:0.9rem;color:#a7a0b3;">
+                Managing reservations for: <strong>{{ selected_event.name }}</strong>
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- CANVAS WITH TABLES FROM DATABASE -->
+    <div id="canvas">
+        {% for item in items %}
+            {% set res = reservation_map.get(item.id) if reservation_map else None %}
+
+            {# ---- LABEL PRIORITY:
+               1) Member name (if member_id is set)
+               2) Guest name (if no member, but guest set)
+               3) Original table label
+            #}
+            {% set label_text = item.label %}
+            {% if res %}
+                {% if res.member_id %}
+                    {# Find the member in the members list by member_id #}
+                    {% for m in members %}
+                        {% if m.id == res.member_id %}
+                            {% set label_text = m.first_name ~ ' ' ~ m.last_name %}
+                        {% endif %}
+                    {% endfor %}
+                {% elif res.guest_name %}
+                    {% set label_text = res.guest_name %}
+                {% endif %}
+            {% endif %}
+
+            <div class="table-item
+                        {% if item.kind.startswith('wall') %}wall-item{% endif %}
+                        {% if item.kind == 'wall-curve' %}wall-curved{% endif %}"
+                 data-id="{{ item.id }}"
+                 data-kind="{{ item.kind }}"
+                 data-member-id="{{ res.member_id if res else '' }}"
+                 data-guest-name="{{ res.guest_name if res else '' }}"
+                 data-num-guests="{{ res.num_guests if res else '' }}"
+                 data-timeslots="{{ res.timeslots if res else '' }}"
+                 data-notes="{{ res.notes if res else '' }}"
+                 data-original-label="{{ item.label }}"
+                 style="
+                     left: {{ item.x }}px;
+                     top: {{ item.y }}px;
+                     width: {{ item.width }}px;
+                     height: {{ item.height }}px;
+                     border-radius: {% if item.kind == 'circle' %}50%{% else %}6px{% endif %};
+                 ">
+                <span class="table-label">{{ label_text }}</span>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+
+<!-- RESERVATION POPUP -->
+<div id="reservation-popup">
+    <div class="popup-title">Assign Reservation</div>
+
+    <form id="reservation-form" onsubmit="return false;">
+
+        <input type="hidden" id="popup-table-id">
+
+        <div class="popup-row">
+            <label for="member-select">Member</label>
+            <select id="member-select">
+                <option value="">Select Member</option>
+                {% for m in members %}
+                    <option value="{{ m.id }}">
+                        {{ m.first_name }} {{ m.last_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="popup-row">
+            <label for="guest-name">Guest Name (optional)</label>
+            <input type="text" id="guest-name">
+        </div>
+
+        <div class="popup-row">
+            <label for="num-guests">Number of Guests</label>
+            <input type="number" id="num-guests" min="1">
+        </div>
+
+        <div class="popup-row">
+            <label for="timeslots">Timeslots</label>
+            <input type="text" id="timeslots" placeholder="7:00 PM, 9:00 PM">
+        </div>
+
+        <div class="popup-row">
+            <label for="notes">Notes</label>
+            <textarea id="notes"></textarea>
+        </div>
+
+        <div class="popup-actions">
+            <button type="button" class="popup-btn" onclick="saveSingleTable()">Save Table</button>
+            <button type="button" class="popup-btn secondary" onclick="closePopup()">Close</button>
+            <button type="button" class="popup-btn danger" onclick="resetSingleTable()">Reset All Event Seating Assignments</button>
+        </div>
+
+    </form>
+</div>
+
+
+<script>
+let selectedEventId = "{{ selected_event.id if selected_event else '' }}";
+
+function openPopupForElement(el) {
+    const tableId = el.dataset.id;
+
+    // Fill hidden field
+    document.getElementById("popup-table-id").value = tableId;
+
+    // Prefill from data attributes (per-table data)
+    const memberId   = el.dataset.memberId || "";
+    const guestName  = el.dataset.guestName || "";
+    const numGuests  = el.dataset.numGuests || "";
+    const timeslots  = el.dataset.timeslots || "";
+    const notes      = el.dataset.notes || "";
+
+    // Set form fields
+    document.getElementById("member-select").value = memberId;
+    document.getElementById("guest-name").value    = guestName;
+    document.getElementById("num-guests").value    = numGuests;
+    document.getElementById("timeslots").value     = timeslots;
+    document.getElementById("notes").value         = notes;
+
+    document.getElementById("reservation-popup").style.display = "block";
+}
+
+function closePopup() {
+    document.getElementById("reservation-popup").style.display = "none";
+}
+
+function resetSingleTable() {
+    if (!selectedEventId) {
+        alert("Select an event first.");
+        return;
+    }
+
+    const tableId = document.getElementById("popup-table-id").value;
+
+    if (!tableId) {
+        alert("Select a table and select 'Reset All Event Seating Assignments'");
+        return;
+    }
+
+    if (!confirm("Reset All Event Seating Assignments? This cannot be undone.")) {
+        return;
+    }
+
+    const payload = {
+        seating_item_id: tableId,
+        event_id: selectedEventId,
+        reset: true
+    };
+
+    fetch("{{ url_for('save_single_reservation') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status !== "ok") {
+            alert(data.message || "Error resetting table.");
+            return;
+        }
+
+        // Reset UI back to original label
+        const el = document.querySelector('.table-item[data-id="' + tableId + '"]');
+        if (el) {
+            const label = el.dataset.originalLabel || "Table " + tableId;
+
+            // wipe data attributes
+            el.dataset.memberId = "";
+            el.dataset.guestName = "";
+            el.dataset.numGuests = "";
+            el.dataset.timeslots = "";
+            el.dataset.notes = "";
+
+            // update label display
+            const labelSpan = el.querySelector(".table-label");
+            if (labelSpan) labelSpan.textContent = label;
+        }
+
+        closePopup();
+        alert("All seating assignments for the selected event have been reset.");
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Error resetting seating assignments.");
+    });
+}
+
+// Attach click to each table (per-table, not global)
+document.querySelectorAll(".table-item").forEach(el => {
+    el.addEventListener("click", () => {
+        if (!selectedEventId) {
+            alert("Select an event first.");
+            return;
+        }
+        openPopupForElement(el);
+    });
+});
+
+
+/* ===========================================================
+   SAVE SINGLE TABLE RESERVATION (per table, per event)
+=========================================================== */
+function saveSingleTable() {
+    if (!selectedEventId) {
+        alert("Select an event first.");
+        return;
+    }
+
+    const tableId   = document.getElementById("popup-table-id").value;
+    const memberId  = document.getElementById("member-select").value;
+    const guestName = document.getElementById("guest-name").value;
+    const numGuests = document.getElementById("num-guests").value;
+    const timeslots = document.getElementById("timeslots").value;
+    const notes     = document.getElementById("notes").value;
+
+    const payload = {
+        seating_item_id: tableId,
+        event_id: selectedEventId,
+        member_id: memberId,
+        guest_name: guestName,
+        num_guests: numGuests,
+        timeslots: timeslots,
+        notes: notes
+    };
+
+    fetch("{{ url_for('save_single_reservation') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status !== "ok") {
+            alert(data.message || "Error saving.");
+            return;
+        }
+
+        // Update ONLY that table's label and data attributes
+        const el = document.querySelector('.table-item[data-id="' + tableId + '"]');
+        if (el) {
+            // update data-* so next click shows correct info
+            el.dataset.memberId   = memberId;
+            el.dataset.guestName  = guestName;
+            el.dataset.numGuests  = numGuests;
+            el.dataset.timeslots  = timeslots;
+            el.dataset.notes      = notes;
+
+            // Show label from server, or fallback
+            const label = data.display_label || guestName || el.dataset.originalLabel || "Table " + tableId;
+            const labelSpan = el.querySelector(".table-label");
+            if (labelSpan) {
+                labelSpan.textContent = label;
+            } else {
+                el.textContent = label;
+            }
+        }
+
+        closePopup();
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Error saving reservation");
+    });
+}
+</script>
+
+<!-- html2canvas for browser screenshot -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<button id="download-pdf-btn" class="popup-btn" 
+        style="position:fixed; bottom:25px; right:25px; z-index:9999;">
+    Download Seating PDF
+</button>
+<script>
+document.getElementById("download-pdf-btn").addEventListener("click", function () {
+
+    const canvasArea = document.getElementById("canvas");
+
+    html2canvas(canvasArea).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+
+        fetch("{{ url_for('download_seating_pdf') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: imgData })
+        })
+        .then(res => res.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "seating_map.pdf";
+            a.click();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(err => console.error(err));
+
+    });
+});
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container mt-4">
+  <div class="text-center mb-4">
+    <h2>Welcome, {{ current_user.first_name }} {{ current_user.last_name }}</h2>
+    
+    {% if current_user.role == 'admin' %}
+      <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
+        <p class="text-muted mb-0">Access Level: Admin</p>
+        <a href="{{ url_for('toggle_view') }}" class="btn btn-outline-info btn-sm">
+          {% if view_as_member %}
+            Return to Admin View
+          {% else %}
+            View as Member
+          {% endif %}
+        </a>
+      </div>
+    {% elif current_user.role == 'member' %}
+      <p class="text-muted">Manage your Room 120 membership all from one place!</p>
+    {% endif %}
+  </div>
+
+  {% if current_user.role == 'admin' and not view_as_member %}
+  <div class="row g-4 justify-content-center">
+    <!-- Admin-specific cards -->
+    <div class="col-md-3">
+      <a href="{{ url_for('manage_admins') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>Manage Admins</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('manage_members') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>Manage Members</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('admin_reservations') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>All Reservations</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('events') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>Events</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('members_table') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>Members Table View</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('seating_map') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>Seating Map</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('dashboard') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>Analytics</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('admin_applications') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>View Applications</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('create_invoice') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>Create Invoice</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('seating_layout') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>Seating Table Editor</h5>
+        </div>
+      </a>
+    </div>
+  </div>
+  {% elif current_user.role == 'member' or (current_user.role == 'admin' and view_as_member) %}
+  <div class="row g-4 justify-content-center">
+    <!-- Member-specific cards -->
+    <div class="col-md-3">
+      <a href="{{ url_for('view_member', user_id=session['user_id']) }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>My Profile</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('reservations') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>Make Reservation</h5>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{{ url_for('events') }}" class="text-decoration-none">
+        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
+          <h5>View Events</h5>
+        </div>
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

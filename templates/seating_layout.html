@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ==== Layout + Colors ==== */
+.layout-wrapper {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+    padding: 20px;
+    background: #050508;
+    min-height: 85vh;
+    color: #f7f3ea;
+}
+
+.toolbox {
+    background: #0a0a12;
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.toolbox h2 {
+    font-family: "Playfair Display", serif;
+    color: #ffcf7a;
+    margin-bottom: 15px;
+}
+
+.tool-btn, .toggle-btn, .delete-btn {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #151520;
+    color: #f7f3ea;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.tool-btn:hover,
+.toggle-btn:hover,
+.delete-btn:hover {
+    background: #1f1f2b;
+}
+
+.toggle-btn.active {
+    background: #ffcf7a !important;
+    color: #050508;
+    font-weight: 700;
+}
+
+.delete-btn.active {
+    background: #ff5e5e !important;
+    color: white;
+    font-weight: 700;
+}
+
+#canvas {
+    background: #101018;
+    border-radius: 14px;
+    border: 2px solid rgba(255,255,255,0.08);
+    height: 75vh;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s;
+}
+
+#canvas.delete-mode {
+    border-color: #ff5e5e;
+}
+
+/* ==== Elements ==== */
+.table-item, .wall-item {
+    position: absolute;
+    background: #777678;
+    border: 2px solid #ffcf7a;
+    color: #050508;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: move;
+    user-select: none;
+    border-radius: 6px;
+}
+
+/* Curved wall pill shape */
+.wall-curved {
+    border-radius: 40px !important;
+}
+
+/* Resize handle */
+.resize-handle {
+    width: 14px;
+    height: 14px;
+    background: #ffcf7a;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -7px;
+    right: -7px;
+    cursor: se-resize;
+    z-index: 5;
+}
+
+/* Label input */
+.table-item input,
+.wall-item input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fff4d6;
+    color: #000;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 6px;
+}
+</style>
+
+
+<div class="layout-wrapper">
+
+    <!-- TOOLBOX -->
+    <div class="toolbox">
+        <h2>Layout Editor</h2>
+
+        <button class="tool-btn" data-type="square">Add Square Table</button>
+        <button class="tool-btn" data-type="circle">Add Round Table</button>
+        <button class="tool-btn" data-type="rect">Add Rectangle Table</button>
+
+        <hr>
+
+        <button class="tool-btn" data-type="wall-straight">Add Straight Wall</button>
+        <button class="tool-btn" data-type="wall-curve">Add Curved Wall</button>
+
+        <hr>
+
+        <button id="toggle-grid" class="toggle-btn">Grid Snapping: OFF</button>
+        <button id="delete-mode-btn" class="delete-btn">Delete Mode: OFF</button>
+
+        <hr>
+
+        <button id="save-layout" class="tool-btn" style="background:#ffcf7a;color:#050508;font-weight:700;">
+            Save Layout
+        </button>
+    </div>
+
+
+    <!-- CANVAS -->
+    <div id="canvas">
+        {% for item in items %}
+        <div class="table-item"
+             data-id="{{ item.id }}"
+             data-kind="{{ item.kind }}"
+             data-label="{{ item.label }}"
+             style="
+                 left: {{ item.x }}px;
+                 top: {{ item.y }}px;
+                 width: {{ item.width }}px;
+                 height: {{ item.height }}px;
+                 border-radius: {{ '50%' if item.kind == 'circle' else '6px' }};
+             ">
+            {{ item.label }}
+            <div class="resize-handle"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+
+
+<script>
+/* ======================================================
+   GRID SNAPPING
+====================================================== */
+let snapToGrid = false;
+let gridSize = 20;
+
+document.getElementById("toggle-grid").addEventListener("click", function () {
+    snapToGrid = !snapToGrid;
+    this.textContent = snapToGrid ? "Grid Snapping: ON" : "Grid Snapping: OFF";
+    this.classList.toggle("active");
+});
+
+/* ======================================================
+   DELETE MODE
+====================================================== */
+let deleteMode = false;
+const deleteBtn = document.getElementById("delete-mode-btn");
+const canvas = document.getElementById("canvas");
+
+deleteBtn.addEventListener("click", () => {
+    deleteMode = !deleteMode;
+    deleteBtn.textContent = deleteMode ? "Delete Mode: ON" : "Delete Mode: OFF";
+    deleteBtn.classList.toggle("active");
+    canvas.classList.toggle("delete-mode");
+});
+
+/* ======================================================
+   ADD ELEMENT
+====================================================== */
+document.querySelectorAll(".tool-btn[data-type]").forEach(btn => {
+    btn.addEventListener("click", () => {
+        let type = btn.dataset.type;
+        let el = document.createElement("div");
+        let isWall = type.includes("wall");
+
+        el.className = isWall ? "wall-item" : "table-item";
+        el.dataset.kind = type;
+
+        el.style.left = "40px";
+        el.style.top = "40px";
+
+        if (type === "square") { el.style.width = "90px"; el.style.height = "90px"; }
+        if (type === "circle") { el.style.width = "90px"; el.style.height = "90px"; el.style.borderRadius = "50%"; }
+        if (type === "rect")   { el.style.width = "140px"; el.style.height = "70px"; }
+
+        if (type === "wall-straight") {
+            el.style.width = "200px";
+            el.style.height = "30px";
+            el.textContent = "Wall";
+        }
+
+        if (type === "wall-curve") {
+            el.style.width = "200px";
+            el.style.height = "50px";
+            el.classList.add("wall-curved");
+            el.textContent = "Curved Wall";
+        }
+
+        let handle = document.createElement("div");
+        handle.className = "resize-handle";
+        el.appendChild(handle);
+
+        canvas.appendChild(el);
+
+        enableDrag(el);
+        enableResize(el, handle);
+        enableLabelEdit(el);
+        enableDelete(el);
+    });
+});
+
+/* ======================================================
+   DRAGGING
+====================================================== */
+function enableDrag(el) {
+    let drag = false, startX, startY, origX, origY;
+
+    el.addEventListener("mousedown", e => {
+        if (e.target.classList.contains("resize-handle")) return;
+        if (deleteMode) return;
+
+        drag = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        origX = parseInt(el.style.left);
+        origY = parseInt(el.style.top);
+    });
+
+    window.addEventListener("mousemove", e => {
+        if (!drag) return;
+
+        let newX = origX + (e.clientX - startX);
+        let newY = origY + (e.clientY - startY); /* FIXED BUG HERE */
+
+        if (snapToGrid) {
+            newX = Math.round(newX / gridSize) * gridSize;
+            newY = Math.round(newY / gridSize) * gridSize;
+        }
+
+        el.style.left = newX + "px";
+        el.style.top = newY + "px";
+    });
+
+    window.addEventListener("mouseup", () => drag = false);
+}
+
+/* ======================================================
+   RESIZE
+====================================================== */
+function enableResize(el, handle) {
+    let resizing = false, startX, startY, startW, startH;
+
+    handle.addEventListener("mousedown", e => {
+        resizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startW = el.offsetWidth;
+        startH = el.offsetHeight;
+        e.stopPropagation();
+    });
+
+    window.addEventListener("mousemove", e => {
+        if (!resizing) return;
+
+        let newW = startW + (e.clientX - startX);
+        let newH = startH + (e.clientY - startY);
+
+        if (snapToGrid) {
+            newW = Math.round(newW / gridSize) * gridSize;
+            newH = Math.round(newH / gridSize) * gridSize;
+        }
+
+        if (newW > 40) el.style.width = newW + "px";
+        if (newH > 40) el.style.height = newH + "px";
+    });
+
+    window.addEventListener("mouseup", () => resizing = false);
+}
+
+/* ======================================================
+   LABEL EDIT
+====================================================== */
+function enableLabelEdit(el) {
+    el.addEventListener("dblclick", () => {
+        if (deleteMode) return;
+
+        let existing = el.textContent.trim();
+        let handle = el.querySelector(".resize-handle");
+        handle.style.display = "none";
+
+        let input = document.createElement("input");
+        input.value = existing;
+
+        el.innerHTML = "";
+        el.appendChild(input);
+
+        input.focus();
+
+        input.addEventListener("blur", () => {
+            el.innerHTML = input.value;
+            el.appendChild(handle);
+            handle.style.display = "block";
+        });
+    });
+}
+
+/* ======================================================
+   DELETE ELEMENT
+====================================================== */
+function enableDelete(el) {
+    el.addEventListener("click", () => {
+        if (!deleteMode) return;
+        el.remove();
+    });
+}
+
+/* ======================================================
+   SAVE LAYOUT
+====================================================== */
+document.getElementById("save-layout").addEventListener("click", () => {
+
+    const items = Array.from(document.querySelectorAll(".table-item, .wall-item"))
+        .map(el => ({
+            id: el.dataset.id || null,
+            kind: el.dataset.kind,
+            label: el.innerText.trim(),
+            x: parseInt(el.style.left),
+            y: parseInt(el.style.top),
+            width: el.offsetWidth,
+            height: el.offsetHeight
+        }));
+
+    fetch("/save_layout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(items)
+    })
+    .then(r => r.json())
+    .then(res => {
+        alert("Layout saved successfully!");
+        location.reload();
+    })
+    .catch(err => console.error(err));
+});
+
+/* Enable drag/resize/delete for preloaded items */
+document.querySelectorAll(".table-item, .wall-item").forEach(el => {
+    enableDrag(el);
+    enableResize(el, el.querySelector(".resize-handle"));
+    enableLabelEdit(el);
+    enableDelete(el);
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Room 120 — Private Speakeasy</title>
+
+  <meta name="description" content="Room 120 is a private speakeasy hidden inside The Draft Room in Buffalo, NY. Members-only cocktails, reserved seating, and curated events." />
+  <meta property="og:title" content="Room 120 — Private Speakeasy" />
+  <meta property="og:description" content="A members-only speakeasy tucked inside The Draft Room. Reservations, memberships, and private events in the heart of Buffalo." />
+  <meta property="og:image" content="{{ url_for('static', filename='assets/room120_hero.jpg') }}" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="{{ url_for('static', filename='assets/room120_logo.png') }}" type="image/png">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+
+  <!-- Fonts + main stylesheet -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- PUBLIC SITE CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style_public.css') }}" />
+
+  <!-- JS -->
+  <script defer src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+  <!-- LocalBusiness JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BarOrPub",
+    "name": "Room 120",
+    "description": "A private speakeasy inside The Draft Room, offering members-only cocktails, reservations, and curated events.",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "79 Perry St",
+      "addressLocality": "Buffalo",
+      "addressRegion": "NY",
+      "postalCode": "14203",
+      "addressCountry": "US"
+    },
+    "priceRange": "$$"
+  }
+  </script>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="#hero" class="brand">
+        <img src="{{ url_for('static', filename='assets/room120_logo.png') }}" alt="Room 120 logo" class="brand-logo">
+        <span class="brand-text">Room 120</span>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+
+        <ul class="nav-list">
+          <li><a href="#about">About</a></li>
+          <li><a href="#membership">Membership</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#visit">Visit</a></li>
+          <a href="{{ url_for('login') }}" class="btn">Member Login</a>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section id="hero" class="hero parallax">
+    <div class="hero-bg" style="background-image:url('{{ url_for('static', filename='assets/room120_hero.jpg') }}');"></div>
+    <div class="hero-overlay"></div>
+
+    <div class="container hero-inner">
+      <div class="hero-content">
+        <h1>Buffalo’s Best Kept Secret.</h1>
+        <p class="hero-sub">
+          A private speakeasy hidden inside The Draft Room — crafted cocktails, low light,
+          and members who actually care about the vibe.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#membership" class="btn btn-accent">Request Membership</a>
+        </div>
+
+        <p class="hero-tagline">Members-only. Select guests by invitation.</p>
+      </div>
+    </div>
+  </section>
+
+  <main>
+
+    <!-- ABOUT -->
+    <section id="about" class="section">
+      <div class="container grid-2">
+
+        <div>
+          <h2 class="section-title">What is Room 120?</h2>
+          <p class="lead">
+            Room 120 is a tucked-away speakeasy built for people who hate crowds but love a good night.
+            Hidden behind The Draft Room, it’s your spot for proper drinks, real conversation, and a guaranteed seat.
+          </p>
+
+          <ul class="ticks">
+            <li>Members-only lounge with hosted entry</li>
+            <li>Signature cocktails and rotating rare pours</li>
+            <li>Priority access for game nights & arena events</li>
+            <li>Private bookings for groups and celebrations</li>
+          </ul>
+
+          <div class="btn-row">
+            <a href="#membership" class="btn btn-accent">Explore Membership</a>
+          </div>
+        </div>
+
+        <div class="card inset">
+          <h3 class="card-title">Inside The Draft Room</h3>
+          <dl class="facts">
+            <dt>Location</dt><dd>79 Perry St, Buffalo, NY 14203</dd>
+            <dt>Entrance</dt><dd>Through The Draft Room — ask your host for Room 120</dd>
+            <dt>Dress Code</dt><dd>Smart casual recommended</dd>
+            <dt>Access</dt><dd>Members, their guests, and approved reservations</dd>
+          </dl>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- EXPERIENCE BAND -->
+    <section class="section band parallax">
+      <div class="hero-bg" style="background-image:url('{{ url_for('static', filename='assets/room120_bar.jpg') }}');"></div>
+      <div class="band-overlay"></div>
+
+      <div class="container band-inner">
+        <h2 class="section-title">The Room 120 Experience</h2>
+        <p class="muted">
+          Dim lighting. Proper glassware.
+          Your seat, your server, your night — locked in before you even walk in.
+        </p>
+
+        <div class="band-grid">
+          <div class="band-card">
+            <h3>Signature Cocktails</h3>
+            <p>House drinks you won’t find on the main bar menu, designed specifically for Room 120.</p>
+          </div>
+
+          <div class="band-card">
+            <h3>Member-First Seating</h3>
+            <p>Game nights and shows across the street? You’re seated, not standing at the bar fighting for space.</p>
+          </div>
+
+          <div class="band-card">
+            <h3>Curated Events</h3>
+            <p>Small-format tastings, member nights, and private experiences that stay off social media.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEMBERSHIP -->
+    <section id="membership" class="section alt">
+      <div class="container">
+
+        <div class="section-header">
+          <h2 class="section-title">Membership</h2>
+          <p class="muted">Limited memberships for people who actually plan to show up.</p>
+        </div>
+
+        <div class="grid-2 cards-row">
+          <article class="card membership-card featured">
+            <span class="pill pill-soft pill-highlight">Most Popular</span>
+            <h3>Corporate</h3>
+            <p class="price-line">Set up access for your team or clients.</p>
+            <ul class="ticks small">
+              <li>Everything included in the Single Membership</li>
+              <li>Shared access for multiple named members</li>
+              <li>Priority booking for team events</li>
+              <li>Custom billing & invoicing available</li>
+            </ul>
+          </article>
+
+          <article class="card membership-card featured">
+            <h3>Single</h3>
+            <p class="price-line">
+              For people who treat this like their living room with better lighting.
+            </p>
+            <ul class="ticks small">
+              <li>Access Wednesday–Saturday</li>
+              <li>Priority reservations for you + 5 guests</li>
+              <li>Preferred access on game & concert nights</li>
+              <li>Invites to member-only events & tastings</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="membership-cta">
+          <p>Memberships are limited. Tell us about yourself and how you’d use the room.</p>
+          <a href="#membership-form" class="btn btn-accent">Request Membership Info</a>
+        </div>
+
+        <form id="membership-form" class="form card inset mt-lg">
+          <h3>Membership Inquiry</h3>
+
+          <div class="form-row">
+            <label for="m-name">Name</label>
+            <input id="m-name" name="name" required>
+          </div>
+
+          <div class="form-row dual">
+            <div>
+              <label for="m-email">Email</label>
+              <input id="m-email" name="email" type="email" required>
+            </div>
+
+            <div>
+              <label for="m-phone">Phone</label>
+              <input id="m-phone" name="phone" type="tel" placeholder="">
+            </div>
+          </div>
+
+          <div class="form-row dual">
+            <div>
+              <label for="m-type">Membership Type</label>
+              <select id="m-type" name="type">
+                <option value="Full Member">Corporate</option>
+                <option value="Corporate / Group">Single</option>
+                <option value="Not sure yet">Not sure yet</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="m-hear">How did you hear about us?</label>
+              <input id="m-hear" name="hear" placeholder="Friend, event, social, etc.">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="m-message">How would you use Room 120?</label>
+            <textarea id="m-message" name="message" rows="3" placeholder="Game nights, client meetings, after-work spot, celebrations..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-accent full">Submit Membership Inquiry</button>
+          <p class="form-note">We’ll review and follow up with next steps.</p>
+        </form>
+
+      </div>
+    </section>
+
+    <!-- EVENTS -->
+    <section id="events" class="section alt">
+      <div class="container">
+
+        <div class="section-header">
+          <h2 class="section-title">Events & Member Nights</h2>
+          <p class="muted">A small room means curated nights. Here’s the kind of thing we run.</p>
+        </div>
+
+        <div class="grid-2 cards-row">
+          <article class="card event-card">
+            <h3>Game Night Access</h3>
+            <p>Pre- and post-game hangs across from KeyBank Center. Skip the chaos, keep the energy.</p>
+            <p class="event-meta">Seasonal • Reservation recommended</p>
+          </article>
+
+          <article class="card event-card">
+            <h3>Private Buyouts</h3>
+            <p>Take over the room for your crew, clients, or team. Custom menus and staffing available.</p>
+            <p class="event-meta">By inquiry only</p>
+          </article>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="gallery" class="section">
+      <div class="container">
+
+        <h2 class="section-title">Inside Room 120</h2>
+        <p class="muted">A quick look — the rest you’ll have to see in person.</p>
+
+        <div class="gallery">
+          <a href="{{ url_for('static', filename='assets/room120_bar.jpg') }}" class="gallery-item">
+            <img src="{{ url_for('static', filename='assets/room120_bar.jpg') }}" alt="Room 120 bar and backbar">
+          </a>
+
+          <a href="{{ url_for('static', filename='assets/room120_detail.jpg') }}" class="gallery-item">
+            <img src="{{ url_for('static', filename='assets/room120_detail.jpg') }}" alt="Cocktail and candle detail">
+          </a>
+        </div>
+
+      </div>
+
+      <div class="gallery-overlay" id="gallery-overlay">
+        <button class="close-btn" id="gallery-close" aria-label="Close gallery">×</button>
+        <img id="gallery-image" src="" alt="Gallery image">
+      </div>
+
+    </section>
+
+    <!-- VISIT -->
+    <section id="visit" class="section alt">
+      <div class="container grid-2">
+
+        <div>
+          <h2 class="section-title">Visit</h2>
+          <p class="lead">Inside The Draft Room, across from KeyBank Center.</p>
+
+          <dl class="facts">
+            <dt>Address</dt><dd>79 Perry St, Buffalo, NY 14203</dd>
+            <dt>Entrance</dt><dd>Check in with The Draft Room host and ask for Room 120</dd>
+            <dt>Email</dt><dd><a href="mailto:info@room120buffalo.com" data-email>info@room120buff.com</a></dd>
+            <dt>Hours</dt><dd>Evenings • Wednesday–Saturday • Vary by event and game schedule</dd>
+          </dl>
+        </div>
+
+        <div class="map-embed card inset">
+          <iframe
+            title="Map to Room 120"
+            width="100%"
+            height="350"
+            style="border:0"
+            loading="lazy"
+            allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=79+Perry+St,+Buffalo,+NY+14203&output=embed">
+          </iframe>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> Room 120 • Select Pour Ventures, LLC.</p>
+
+      <nav aria-label="Footer">
+        <a href="#about">About</a>
+        <a href="#membership">Membership</a>
+        <a href="#reservations">Reservations</a>
+        <a href="#events">Events</a>
+        <a href="#visit">Visit</a>
+      </nav>
+    </div>
+  </footer>
+
+</body>
+</html>

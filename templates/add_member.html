@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container mt-4">
+  <h2>Add New Member</h2>
+
+  <form method="POST" action="{{ url_for('add_member_page') }}" class="mt-4" style="max-width: 500px;">
+    
+    <div class="mb-3">
+      <label class="form-label">Username:</label>
+      <input type="text" class="form-control" name="username" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">First Name:</label>
+      <input type="text" class="form-control" name="first_name" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Last Name:</label>
+      <input type="text" class="form-control" name="last_name" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Email:</label>
+      <input type="email" class="form-control" name="email">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Member Number:</label>
+      <input type="text" class="form-control" name="member_number">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Membership Type:</label>
+      <select name="membership_type" class="form-select" required>
+        <option value="single" selected>Single</option>
+        <option value="corporate">Corporate</option>
+      </select>
+    </div>
+
+    <div class="mb-3 position-relative">
+      <label class="form-label">Password:</label>
+      <input type="password" class="form-control" id="memberPassword" name="password" required>
+      <span class="position-absolute top-50 end-0 translate-middle-y me-3" style="cursor: pointer;" onclick="togglePassword('memberPassword', 'memberEye')">
+        <i id="memberEye" class="fas fa-eye"></i>
+      </span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Add Member</button>
+    <a href="{{ url_for('manage_members') }}" class="btn btn-secondary ms-2">Cancel</a>
+  </form>
+</div>
+
+<script>
+function togglePassword(inputId, iconId) {
+  const passwordInput = document.getElementById(inputId);
+  const eyeIcon = document.getElementById(iconId);
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    eyeIcon.classList.remove('fa-eye');
+    eyeIcon.classList.add('fa-eye-slash');
+  } else {
+    passwordInput.type = 'password';
+    eyeIcon.classList.remove('fa-eye-slash');
+    eyeIcon.classList.add('fa-eye');
+  }
+}
+</script>
+{% endblock %}

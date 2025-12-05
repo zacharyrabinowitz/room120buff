@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Edit Order</h2>
+  <form method="POST" action="{{ url_for('edit_order', order_id=order.id) }}">
+    <div class="mb-3">
+      <label for="date" class="form-label">Date</label>
+      <input type="date" class="form-control" name="date" value="{{ order.date.strftime('%Y-%m-%d') }}" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="time" class="form-label">Time</label>
+      <input type="time" class="form-control" name="time" value="{{ order.time.strftime('%H:%M') if order.time else '' }}">
+    </div>
+
+    <div id="items-section">
+      <label class="form-label">Line Items</label>
+      {% for item in order.items %}
+      <div class="row mb-2 item-row">
+        <div class="col-md-6">
+          <input type="text" class="form-control" name="item_name" placeholder="Item name" value="{{ item.item_name }}" required>
+        </div>
+        <div class="col-md-4">
+          <input type="number" step="0.01" class="form-control item-price" name="item_price" placeholder="Price" value="{{ '%.2f'|format(item.price) }}" required>
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn btn-danger btn-sm remove-item w-100">Remove</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <button type="button" class="btn btn-info btn-sm mb-3" id="add-item">Add Item</button>
+
+    <div class="mb-3">
+      <label for="notes" class="form-label">Notes</label>
+      <textarea name="notes" class="form-control">{{ order.notes }}</textarea>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Subtotal</label>
+      <input type="text" class="form-control" name="subtotal" id="subtotal" value="{{ '%.2f'|format(order.subtotal) }}" readonly>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Tax (8.75%)</label>
+      <input type="text" class="form-control" name="tax" id="tax" value="{{ '%.2f'|format(order.tax) }}" readonly>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Gratuity (20%)</label>
+      <input type="text" class="form-control" name="gratuity" id="gratuity" value="{{ '%.2f'|format(order.gratuity) }}" readonly>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Total</label>
+      <input type="text" class="form-control" name="total" id="total" value="{{ '%.2f'|format(order.total) }}" readonly>
+    </div>
+
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" name="paid_by_credit" value="1" id="paid_by_credit"
+        {% if order.paid_by_credit %}checked{% endif %}>
+      <label class="form-check-label" for="paid_by_credit">
+        Paid by Credit Card
+      </label>
+    </div>
+
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="no_tax" name="no_tax" {% if order.tax == 0 %}checked{% endif %}>
+      <label class="form-check-label" for="no_tax">No Tax</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="no_gratuity" name="no_gratuity" {% if order.gratuity == 0 %}checked{% endif %}>
+      <label class="form-check-label" for="no_gratuity">No Gratuity</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Update Order</button>
+    <a href="{{ url_for('view_member', user_id=order.user_id) }}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<script>
+  function calculateTotals() {
+    let subtotal = 0;
+    document.querySelectorAll('.item-price').forEach(input => {
+      let val = parseFloat(input.value);
+      if (!isNaN(val)) subtotal += val;
+    });
+
+    const noTax = document.getElementById('no_tax').checked;
+    const noGratuity = document.getElementById('no_gratuity').checked;
+
+    const taxRate = 0.0875;
+    const gratuityRate = 0.20;
+
+    const tax = noTax ? 0 : subtotal * taxRate;
+    const gratuity = noGratuity ? 0 : subtotal * gratuityRate;
+    const total = subtotal + tax + gratuity;
+
+    document.getElementById('subtotal').value = subtotal.toFixed(2);
+    document.getElementById('tax').value = tax.toFixed(2);
+    document.getElementById('gratuity').value = gratuity.toFixed(2);
+    document.getElementById('total').value = total.toFixed(2);
+  }
+
+  document.addEventListener('input', function (e) {
+    if (e.target.classList.contains('item-price')) {
+      calculateTotals();
+    }
+  });
+
+  document.getElementById('add-item').addEventListener('click', function () {
+    const newItem = document.createElement('div');
+    newItem.className = 'row mb-2 item-row';
+    newItem.innerHTML = `
+      <div class="col-md-6">
+        <input type="text" class="form-control" name="item_name" placeholder="Item name" required>
+      </div>
+      <div class="col-md-4">
+        <input type="number" step="0.01" class="form-control item-price" name="item_price" placeholder="Price" required>
+      </div>
+      <div class="col-md-2">
+        <button type="button" class="btn btn-danger btn-sm remove-item w-100">Remove</button>
+      </div>
+    `;
+    document.getElementById('items-section').appendChild(newItem);
+    calculateTotals();
+  });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('remove-item')) {
+      e.target.closest('.item-row').remove();
+      calculateTotals();
+    }
+  });
+
+  document.getElementById('no_tax').addEventListener('change', calculateTotals);
+  document.getElementById('no_gratuity').addEventListener('change', calculateTotals);
+
+  window.onload = calculateTotals;
+</script>
+{% endblock %}

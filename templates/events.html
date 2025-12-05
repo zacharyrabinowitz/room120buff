@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Events</h2>
+    {% if session.get('role') == 'admin' %}
+    <a href="{{ url_for('admin_events') }}" class="btn btn-secondary">Manage Events</a>
+  </div>
+  {% endif %}
+
+  {% if events %}
+    {% for event in events %}
+      <div class="card mb-3 p-3 shadow-sm">
+        <h5 class="mb-1">{{ event.name }}</h5>
+        <p class="mb-1"><strong>Date:</strong> {{ event.date.strftime('%B %d, %Y') }}</p>
+        <p class="mb-1"><strong>Time:</strong> {{ event.time.strftime('%I:%M %p') }}</p>
+        <p class="mb-2">{{ event.description }}</p>
+
+        <a href="{{ url_for('reservations', date=event.date.strftime('%Y-%m-%d'), time=event.time.strftime('%H:%M'), note='RSVP for ' + event.name) }}" class="btn btn-success btn-sm">RSVP</a>
+
+        {% if session.get('role') == 'admin' %}
+          <div class="mt-3 d-flex gap-2">
+            <a href="{{ url_for('edit_event', event_id=event.id) }}" class="btn btn-warning btn-sm">Edit</a>
+            <form action="{{ url_for('delete_event', event_id=event.id) }}" method="POST">
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No events found.</p>
+  {% endif %}
+</div>
+{% endblock %}

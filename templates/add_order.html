@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Add New Order</h2>
+  <form method="POST" action="{{ url_for('add_order', user_id=user.id) }}">
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="date" class="form-label">Date</label>
+        <input type="date" id="date" name="date" class="form-control" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="time" class="form-label">Time</label>
+        <input type="time" id="time" name="time" class="form-control">
+      </div>
+    </div>
+
+    <div id="line-items" class="mb-3">
+      <label class="form-label">Line Items</label>
+      <div class="line-item d-flex gap-2 mb-2">
+        <input type="text" name="item_name[]" class="form-control" placeholder="Item Name" required>
+        <input type="number" name="item_price[]" step="0.01" class="form-control" placeholder="Price" required>
+        <button type="button" class="btn btn-danger btn-sm remove-item">×</button>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-secondary btn-sm mb-3" id="add-item">Add Item</button>
+
+    <div class="mb-3">
+      <label for="notes" class="form-label">Notes (optional)</label>
+      <textarea id="notes" name="notes" class="form-control" rows="2"></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label for="paid_by_credit" class="form-label">Paid by Credit Card?</label>
+      <select id="paid_by_credit" name="paid_by_credit" class="form-select">
+        <option value="no" selected>No</option>
+        <option value="yes">Yes</option>
+      </select>
+    </div>
+
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="no_tax" name="no_tax">
+      <label class="form-check-label" for="no_tax">No Tax</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="no_gratuity" name="no_gratuity">
+      <label class="form-check-label" for="no_gratuity">No Gratuity</label>
+    </div>
+
+    <div class="border p-3 rounded bg-light">
+      <p><strong>Subtotal:</strong> $<span id="subtotal-display">0.00</span></p>
+      <p><strong>Tax (8.75%):</strong> $<span id="tax-display">0.00</span></p>
+      <p><strong>Gratuity (20%):</strong> $<span id="gratuity-display">0.00</span></p>
+      <p><strong>Total:</strong> $<span id="total-display">0.00</span></p>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Save Order</button>
+    <a href="{{ url_for('view_member', user_id=user.id) }}" class="btn btn-secondary mt-3">Cancel</a>
+  </form>
+</div>
+
+<script>
+document.getElementById('add-item').addEventListener('click', function () {
+  const container = document.getElementById('line-items');
+  const newItem = document.createElement('div');
+  newItem.classList.add('line-item', 'd-flex', 'gap-2', 'mb-2');
+  newItem.innerHTML = `
+    <input type="text" name="item_name[]" class="form-control" placeholder="Item Name" required>
+    <input type="number" name="item_price[]" step="0.01" class="form-control" placeholder="Price" required>
+    <button type="button" class="btn btn-danger btn-sm remove-item">×</button>
+  `;
+  container.appendChild(newItem);
+});
+
+document.addEventListener('click', function (e) {
+  if (e.target.classList.contains('remove-item')) {
+    e.target.parentElement.remove();
+    updateTotals();
+  }
+});
+
+document.addEventListener('input', function () {
+  updateTotals();
+});
+
+document.getElementById('no_tax').addEventListener('change', updateTotals);
+document.getElementById('no_gratuity').addEventListener('change', updateTotals);
+
+function updateTotals() {
+  let subtotal = 0.0;
+  const prices = document.querySelectorAll('input[name="item_price[]"]');
+  prices.forEach(input => {
+    subtotal += parseFloat(input.value) || 0;
+  });
+
+  const noTax = document.getElementById('no_tax').checked;
+  const noGratuity = document.getElementById('no_gratuity').checked;
+
+  const tax = noTax ? 0 : subtotal * 0.0875;
+  const gratuity = noGratuity ? 0 : subtotal * 0.20;
+  const total = subtotal + tax + gratuity;
+
+  document.getElementById('subtotal-display').textContent = subtotal.toFixed(2);
+  document.getElementById('tax-display').textContent = tax.toFixed(2);
+  document.getElementById('gratuity-display').textContent = gratuity.toFixed(2);
+  document.getElementById('total-display').textContent = total.toFixed(2);
+}
+</script>
+{% endblock %}
