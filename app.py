@@ -1178,6 +1178,9 @@ def manage_members():
             (User.first_name.ilike(f'%{search_term}%')) |
             (User.last_name.ilike(f'%{search_term}%')) |
             (User.username.ilike(f'%{search_term}%'))
+            (User.phone.ilike(f'%{search_term}%'))
+            (User.email.ilike(f'%{search_term}%'))
+            (User.member_number.ilike(f'%{search_term}%'))
         ).all()
     else:
         members = User.query.filter_by(role='member').all()
@@ -1392,6 +1395,7 @@ def register_member():
     first_name = request.form.get('first_name')
     last_name = request.form.get('last_name')
     email = request.form.get('email')
+    phone = request.form.get('phone')
     member_number = request.form.get('member_number')
 
     if User.query.filter_by(username=username).first():
@@ -1403,6 +1407,7 @@ def register_member():
             first_name=first_name,
             last_name=last_name,
             email=email,
+            phone=phone,
             member_number=member_number,
             active=True
         )
@@ -1433,6 +1438,7 @@ def import_members():
             first_name = row.get('first_name', '').strip()
             last_name = row.get('last_name', '').strip()
             email = row.get('email', '').strip()
+            phone = row.get('phone', '').strip()
             username = row.get('username', '').strip()
 
             if not first_name or not last_name:
@@ -1468,6 +1474,7 @@ def import_members():
                     first_name=first_name,
                     last_name=last_name,
                     email=email,
+                    phone=phone,
                     member_number=None,
                     role='member',
                     active=True,
@@ -1499,7 +1506,7 @@ def export_members():
 
     csv_data = "username,first_name,last_name,email,member_number,active\n"
     for m in members:
-        csv_data += f"{m.username},{m.first_name},{m.last_name},{m.email or ''},{m.member_number or ''},{'Active' if m.active else 'Inactive'}\n"
+        csv_data += f"{m.username},{m.first_name},{m.last_name},{m.email or ''},{m.phone},{m.member_number or ''},{'Active' if m.active else 'Inactive'}\n"
 
     return Response(
         csv_data,
@@ -1518,6 +1525,7 @@ def add_member_page():
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
         email = request.form.get('email')
+        phone = request.form.get('phone')
         member_number = request.form.get('member_number')
         membership_type = request.form.get('membership_type', 'single')  # Default to 'single'
 
@@ -1530,6 +1538,7 @@ def add_member_page():
                 first_name=first_name,
                 last_name=last_name,
                 email=email,
+                phone=phone,
                 member_number=member_number,
                 membership_type=membership_type,
                 active=True
@@ -1656,6 +1665,7 @@ def load_member_info(member_id):
         'first_name': member.first_name,
         'last_name': member.last_name,
         'email': member.email,
+        'phone': member.phone,
         'member_number': member.member_number,
         'membership_type': member.membership_type
     })
@@ -2003,6 +2013,7 @@ def edit_member(user_id):
         user.last_name = request.form['last_name']
         user.username = request.form['username']
         user.email = request.form['email']
+        user.phone = request.form['phone']
         user.member_number = request.form['member_number']
         user.membership_type = request.form['membership_type']
 
@@ -2472,6 +2483,8 @@ def sync_toast_data():
 # Run it
 # ----------------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.config['DEBUG'] = True
 
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)

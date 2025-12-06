@@ -36,7 +36,12 @@
           <td contenteditable="true" data-field="email" data-id="{{ member.id }}">{{ member.email }}</td>
           <td contenteditable="true" data-field="phone" data-id="{{ member.id }}">{{ member.phone }}</td>
           <td contenteditable="true" data-field="member_number" data-id="{{ member.id }}">{{ member.member_number }}</td>
-          <td contenteditable="true" data-field="membership_type" data-id="{{ member.id }}">{{ member.membership_type }}</td>
+          <td>
+            <select class="form-select" data-field="membership_type" data-id="{{ member.id }}">
+              <option value="single" {% if member.membership_type == 'single' %}selected{% endif %}>Single</option>
+              <option value="corporate" {% if member.membership_type == 'corporate' %}selected{% endif %}>Corporate</option>
+            </select>
+          </td>
           <td>
             <select class="form-select" data-field="active" data-id="{{ member.id }}">
               <option value="True" {% if member.active %}selected{% endif %}>Yes</option>
