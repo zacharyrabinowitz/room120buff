@@ -80,11 +80,11 @@
         <h1>Buffalo’s Best Kept Secret.</h1>
         <p class="hero-sub">
           A private speakeasy hidden inside The Draft Room — crafted cocktails, low light,
-          and members who actually care about the vibe.
+          and reserved seating for members and their guests.
         </p>
 
         <div class="hero-actions">
-          <a href="#membership" class="btn btn-accent">Request Membership</a>
+          <a href="#membership" class="btn btn-accent">Request Membership Info</a>
         </div>
 
         <p class="hero-tagline">Members-only. Select guests by invitation.</p>
@@ -101,7 +101,7 @@
         <div>
           <h2 class="section-title">What is Room 120?</h2>
           <p class="lead">
-            Room 120 is a tucked-away speakeasy built for people who hate crowds but love a good night.
+            Room 120 is a tucked-away speakeasy built for those who want a proper drink and a quiet spot.
             Hidden behind The Draft Room, it’s your spot for proper drinks, real conversation, and a guaranteed seat.
           </p>
 
@@ -167,7 +167,7 @@
 
         <div class="section-header">
           <h2 class="section-title">Membership</h2>
-          <p class="muted">Limited memberships for people who actually plan to show up.</p>
+          <p class="muted">Memberships are limited.</p>
         </div>
 
         <div class="grid-2 cards-row">
@@ -186,7 +186,7 @@
           <article class="card membership-card featured">
             <h3>Single</h3>
             <p class="price-line">
-              For people who treat this like their living room with better lighting.
+                Individual membership for regular access to Room 120.
             </p>
             <ul class="ticks small">
               <li>Access Wednesday–Saturday</li>
@@ -350,6 +350,16 @@
       </nav>
     </div>
   </footer>
-
+  <script>
+    const toggleBtn = document.querySelector(".nav-toggle");
+    const menu = document.querySelector(".nav-menu");
+    
+    toggleBtn.addEventListener("click", () => {
+      const expanded = toggleBtn.getAttribute("aria-expanded") === "true";
+      toggleBtn.setAttribute("aria-expanded", !expanded);
+      menu.classList.toggle("show");
+    });
+    </script>
+    
 </body>
 </html>
