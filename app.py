@@ -1178,9 +1178,6 @@ def manage_members():
             (User.first_name.ilike(f'%{search_term}%')) |
             (User.last_name.ilike(f'%{search_term}%')) |
             (User.username.ilike(f'%{search_term}%'))
-            (User.phone.ilike(f'%{search_term}%'))
-            (User.email.ilike(f'%{search_term}%'))
-            (User.member_number.ilike(f'%{search_term}%'))
         ).all()
     else:
         members = User.query.filter_by(role='member').all()
@@ -1439,6 +1436,7 @@ def import_members():
             last_name = row.get('last_name', '').strip()
             email = row.get('email', '').strip()
             phone = row.get('phone', '').strip()
+            member_number = row.get('member_number', '').strip()
             username = row.get('username', '').strip()
 
             if not first_name or not last_name:
@@ -1475,7 +1473,7 @@ def import_members():
                     last_name=last_name,
                     email=email,
                     phone=phone,
-                    member_number=None,
+                    member_number=member_number,
                     role='member',
                     active=True,
                     membership_type=membership_type,

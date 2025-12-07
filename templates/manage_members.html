@@ -7,13 +7,6 @@
     <div class="col-md-12">
       <h2>Manage Members</h2>
 
-      <!-- Sync Members from Toast Button -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <form method="POST" action="{{ url_for('sync_toast_data') }}">
-          <button type="submit" class="btn btn-warning">Sync Members from Toast</button>
-        </form>
-      </div>
-
       <!-- Other Actions -->
       <div class="d-flex justify-content-between align-items-center mb-3">
         <form method="POST" action="{{ url_for('import_members') }}" enctype="multipart/form-data" class="d-flex align-items-center">
