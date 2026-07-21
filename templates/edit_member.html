@@ -1,8 +1,7 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block content %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<div class="container mt-4" style="max-width: 600px;">
+<div class="container-fluid px-4 mt-4">
   <h2>Edit Member</h2>
 
   <form method="POST" class="mt-4">
@@ -47,8 +46,11 @@
     <div class="mb-3">
       <label class="form-label">Membership Type:</label>
       <select name="membership_type" class="form-select" required>
-        <option value="single" {% if member.membership_type == 'single' %}selected{% endif %}>Single</option>
-        <option value="corporate" {% if member.membership_type == 'corporate' %}selected{% endif %}>Corporate</option>
+        {% for t in member_types %}
+          <option value="{{ t.name }}" {% if member.membership_type == t.name %}selected{% endif %}>
+            {{ t.display_name }}{% if t.min_spend %} — ${{ "{:,.0f}".format(t.min_spend) }} min spend{% endif %}
+          </option>
+        {% endfor %}
       </select>
     </div>
 

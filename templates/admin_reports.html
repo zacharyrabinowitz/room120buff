@@ -1,0 +1,466 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1">Reports</h2>
+      <p class="text-muted mb-0">Build, save, and run reports from any data source</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('admin_analytics') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-chart-line me-1"></i> Analytics Dashboard
+      </a>
+      <button class="btn btn-primary" onclick="openBuilder()">
+        <i class="fas fa-plus me-1"></i> Build New Report
+      </button>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- Saved Reports Grid -->
+  {% if reports %}
+  <div class="row g-3 mb-4" id="reports-grid">
+    {% for rpt in reports %}
+    {% set cfg = rpt.config | fromjson if rpt.config else {} %}
+    <div class="col-md-4 col-lg-3">
+      <div class="card h-100 report-card">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex align-items-start justify-content-between mb-2">
+            <h6 class="mb-0 fw-bold">{{ rpt.name }}</h6>
+            <span class="badge bg-secondary ms-2 text-nowrap source-badge-{{ cfg.get('source','') }}">
+              {{ cfg.get('source','') | capitalize }}
+            </span>
+          </div>
+          {% if rpt.description %}
+            <p class="text-muted small mb-2">{{ rpt.description }}</p>
+          {% endif %}
+          <p class="text-muted small mb-0 mt-auto">
+            {% if rpt.last_run_at %}
+              Last run {{ rpt.last_run_at.strftime('%b %d, %Y') }}
+            {% else %}
+              Never run
+            {% endif %}
+          </p>
+        </div>
+        <div class="card-footer d-flex gap-2 p-2">
+          <a href="{{ url_for('run_report', report_id=rpt.id) }}" class="btn btn-primary btn-sm flex-grow-1">
+            <i class="fas fa-play me-1"></i> Run
+          </a>
+          <button class="btn btn-outline-secondary btn-sm edit-report-btn"
+                  data-id="{{ rpt.id }}"
+                  title="Edit">
+            <i class="fas fa-pen"></i>
+          </button>
+          <form method="POST" action="{{ url_for('delete_report', report_id=rpt.id) }}" style="display:inline"
+                onsubmit="return confirm('Delete report &quot;{{ rpt.name | e }}&quot;?')">
+            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card p-5 text-center text-muted mb-4" id="empty-state">
+    <i class="fas fa-chart-bar fa-3x mb-3 opacity-25"></i>
+    <h5>No saved reports yet</h5>
+    <p class="mb-0">Click <strong>Build New Report</strong> to create your first one.</p>
+  </div>
+  {% endif %}
+
+  <!-- ── Builder Panel ──────────────────────────────────────────────── -->
+  <div id="builder-panel" class="card mb-5" style="display:none">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span id="builder-title"><i class="fas fa-sliders me-2"></i>Report Builder</span>
+      <button type="button" class="btn-close" onclick="closeBuilder()"></button>
+    </div>
+    <div class="card-body">
+
+      <!-- Name + Description -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-5">
+          <label class="form-label fw-semibold">Report Name <span class="text-danger">*</span></label>
+          <input type="text" id="b-name" class="form-control" placeholder="e.g. Unpaid Members Over $500">
+        </div>
+        <div class="col-md-7">
+          <label class="form-label fw-semibold">Description <span class="text-muted fw-normal">(optional)</span></label>
+          <input type="text" id="b-desc" class="form-control" placeholder="What this report shows">
+        </div>
+      </div>
+
+      <!-- Data Source -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Data Source</label>
+        <div class="d-flex flex-wrap gap-2" id="source-pills">
+          <button type="button" class="btn btn-outline-primary source-btn active" data-source="members">Members</button>
+          <button type="button" class="btn btn-outline-primary source-btn" data-source="orders">Orders</button>
+          <button type="button" class="btn btn-outline-primary source-btn" data-source="invoices">Invoices</button>
+          <button type="button" class="btn btn-outline-primary source-btn" data-source="reservations">Reservations</button>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Left: Columns -->
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Columns to Include</label>
+          <div class="d-flex gap-2 mb-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectAllCols(true)">All</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectAllCols(false)">None</button>
+          </div>
+          <div id="col-grid" class="d-flex flex-column gap-1 border rounded p-3" style="max-height:280px;overflow-y:auto">
+            <!-- populated by JS -->
+          </div>
+        </div>
+
+        <!-- Middle: Filters -->
+        <div class="col-md-5">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label fw-semibold mb-0">Filters</label>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addFilterRow()">
+              <i class="fas fa-plus me-1"></i> Add Filter
+            </button>
+          </div>
+          <div id="filter-rows" class="d-flex flex-column gap-2">
+            <!-- populated dynamically -->
+          </div>
+          <p id="no-filters-msg" class="text-muted small mt-2 mb-0">No filters — all records will be returned.</p>
+
+          <!-- Date Range (only for date-able sources) -->
+          <div id="date-range-section" class="mt-3" style="display:none">
+            <label class="form-label fw-semibold">Date Range</label>
+            <div class="row g-2">
+              <div class="col">
+                <input type="date" id="b-date-from" class="form-control form-control-sm" placeholder="From">
+              </div>
+              <div class="col">
+                <input type="date" id="b-date-to" class="form-control form-control-sm" placeholder="To">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Sort -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Sort By</label>
+          <select id="b-sort-by" class="form-select mb-2">
+            <option value="">Default</option>
+          </select>
+          <select id="b-sort-dir" class="form-select">
+            <option value="asc">Ascending <i class="fas fa-arrow-up"></i></option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+    <div class="card-footer d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-secondary" onclick="closeBuilder()">Cancel</button>
+      <button type="button" class="btn btn-success" onclick="saveReport()">
+        <i class="fas fa-save me-1"></i> <span id="save-btn-label">Save Report</span>
+      </button>
+    </div>
+
+    <!-- Hidden forms for save / update -->
+    <form id="form-save" method="POST" action="{{ url_for('save_report') }}" style="display:none">
+      <input type="hidden" name="name" id="f-name">
+      <input type="hidden" name="description" id="f-desc">
+      <input type="hidden" name="config" id="f-config">
+    </form>
+    <form id="form-update" method="POST" action="" style="display:none">
+      <input type="hidden" name="name" id="fu-name">
+      <input type="hidden" name="description" id="fu-desc">
+      <input type="hidden" name="config" id="fu-config">
+    </form>
+  </div>
+
+</div>
+
+<style>
+.report-card { transition: box-shadow 0.15s; }
+.report-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+.filter-row { background: var(--bg-soft, #f8f9fa); border-radius: 8px; padding: 8px 10px; }
+.source-btn.active { background: var(--bs-primary) !important; color: #fff !important; }
+</style>
+
+<script>
+const SOURCES  = {{ sources_json | safe }};
+const MEM_TYPE_OPTIONS = {{ membership_type_options_json | safe }};
+
+/* Report metadata keyed by ID — avoids HTML-attribute encoding issues */
+const REPORT_DATA = {
+  {% for rpt in reports %}
+  {{ rpt.id }}: {
+    config: {{ rpt.config | safe }},
+    name:   {{ rpt.name | tojson }},
+    desc:   {{ (rpt.description or '') | tojson }}
+  }{% if not loop.last %},{% endif %}
+  {% endfor %}
+};
+
+let currentSource = 'members';
+let editingId = null;
+
+/* ── Builder open/close ────────────────────────────── */
+function openBuilder(id, config, name, desc) {
+  editingId = id || null;
+  document.getElementById('builder-panel').style.display = 'block';
+  document.getElementById('builder-panel').scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('builder-title').innerHTML =
+    '<i class="fas fa-sliders me-2"></i>' + (id ? 'Edit Report' : 'Report Builder');
+  document.getElementById('save-btn-label').textContent = id ? 'Save Changes' : 'Save Report';
+
+  if (id && config) {
+    document.getElementById('b-name').value = name || '';
+    document.getElementById('b-desc').value = desc || '';
+    const src = config.source || 'members';
+    setSource(src);
+    // Restore columns
+    if (config.columns) {
+      document.querySelectorAll('.col-check').forEach(cb => {
+        cb.checked = config.columns.includes(cb.value);
+      });
+    }
+    // Restore sort
+    document.getElementById('b-sort-by').value = config.sort_by || '';
+    document.getElementById('b-sort-dir').value = config.sort_dir || 'asc';
+    // Restore dates
+    document.getElementById('b-date-from').value = config.date_from || '';
+    document.getElementById('b-date-to').value   = config.date_to   || '';
+    // Restore filters
+    document.getElementById('filter-rows').innerHTML = '';
+    (config.filters || []).forEach(f => addFilterRow(f));
+  } else {
+    document.getElementById('b-name').value = '';
+    document.getElementById('b-desc').value = '';
+    setSource('members');
+  }
+}
+
+function closeBuilder() {
+  document.getElementById('builder-panel').style.display = 'none';
+  editingId = null;
+}
+
+/* ── Source selection ──────────────────────────────── */
+document.querySelectorAll('.source-btn').forEach(btn => {
+  btn.addEventListener('click', () => setSource(btn.dataset.source));
+});
+
+function setSource(src) {
+  currentSource = src;
+  document.querySelectorAll('.source-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.source === src);
+  });
+  renderColumns(src);
+  renderSortOptions(src);
+  // Date range visibility
+  const hasDates = SOURCES[src] && SOURCES[src].has_dates;
+  document.getElementById('date-range-section').style.display = hasDates ? '' : 'none';
+  // Clear filters when source changes
+  document.getElementById('filter-rows').innerHTML = '';
+  updateNoFiltersMsg();
+}
+
+/* ── Column checkboxes ─────────────────────────────── */
+function renderColumns(src) {
+  const grid = document.getElementById('col-grid');
+  grid.innerHTML = '';
+  (SOURCES[src] || {columns:[]}).columns.forEach(col => {
+    const d = document.createElement('div');
+    d.className = 'form-check';
+    d.innerHTML = `<input class="form-check-input col-check" type="checkbox" id="col_${col.key}" value="${col.key}" checked>
+                   <label class="form-check-label small" for="col_${col.key}">${col.label}</label>`;
+    grid.appendChild(d);
+  });
+}
+
+function selectAllCols(checked) {
+  document.querySelectorAll('.col-check').forEach(cb => cb.checked = checked);
+}
+
+/* ── Sort options ──────────────────────────────────── */
+function renderSortOptions(src) {
+  const sel = document.getElementById('b-sort-by');
+  sel.innerHTML = '<option value="">Default</option>';
+  (SOURCES[src] || {sortable:[]}).sortable.forEach(s => {
+    sel.insertAdjacentHTML('beforeend', `<option value="${s.key}">${s.label}</option>`);
+  });
+}
+
+/* ── Filter rows ───────────────────────────────────── */
+const NUM_OPS  = [{v:'eq',l:'='},{v:'gt',l:'>'},{v:'gte',l:'>='},{v:'lt',l:'<'},{v:'lte',l:'<='}];
+const STR_OPS  = [{v:'contains',l:'contains'},{v:'eq',l:'equals'},{v:'ne',l:'not equals'}];
+const DATE_OPS = [{v:'eq',l:'on'},{v:'gte',l:'on or after'},{v:'lte',l:'on or before'},{v:'gt',l:'after'},{v:'lt',l:'before'}];
+
+function addFilterRow(preset) {
+  const filterable = (SOURCES[currentSource] || {filterable:[]}).filterable;
+  if (!filterable.length) return;
+
+  const container = document.getElementById('filter-rows');
+  const row = document.createElement('div');
+  row.className = 'filter-row d-flex gap-2 align-items-start flex-wrap';
+
+  // Field select
+  const fieldSel = document.createElement('select');
+  fieldSel.className = 'form-select form-select-sm filter-field';
+  fieldSel.style.minWidth = '140px';
+  filterable.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.key; opt.textContent = f.label; opt.dataset.type = f.type;
+    if (preset && preset.field === f.key) opt.selected = true;
+    fieldSel.appendChild(opt);
+  });
+
+  // Op select
+  const opSel = document.createElement('select');
+  opSel.className = 'form-select form-select-sm filter-op';
+  opSel.style.minWidth = '120px';
+
+  // Value input (will be rebuilt on field change)
+  const valWrap = document.createElement('div');
+  valWrap.className = 'flex-grow-1';
+
+  // Remove btn
+  const rmBtn = document.createElement('button');
+  rmBtn.type = 'button';
+  rmBtn.className = 'btn btn-outline-danger btn-sm';
+  rmBtn.innerHTML = '<i class="fas fa-times"></i>';
+  rmBtn.onclick = () => { row.remove(); updateNoFiltersMsg(); };
+
+  row.appendChild(fieldSel);
+  row.appendChild(opSel);
+  row.appendChild(valWrap);
+  row.appendChild(rmBtn);
+  container.appendChild(row);
+
+  function rebuildOpsAndVal() {
+    const selectedOpt = fieldSel.options[fieldSel.selectedIndex];
+    const ftype = selectedOpt ? selectedOpt.dataset.type : 'str';
+    const fkey  = fieldSel.value;
+
+    // Build ops
+    let ops = ftype === 'number' ? NUM_OPS :
+              ftype === 'date'   ? DATE_OPS :
+              ftype === 'bool'   ? [{v:'eq',l:'is'}] :
+              ftype === 'select' ? [{v:'eq',l:'equals'}] : STR_OPS;
+    opSel.innerHTML = '';
+    ops.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.v; opt.textContent = o.l;
+      if (preset && preset.op === o.v) opt.selected = true;
+      opSel.appendChild(opt);
+    });
+
+    // Build value input
+    valWrap.innerHTML = '';
+    let valEl;
+    if (ftype === 'bool') {
+      valEl = document.createElement('select');
+      valEl.className = 'form-select form-select-sm filter-val';
+      valEl.innerHTML = '<option value="true">Yes</option><option value="false">No</option>';
+      if (preset && preset.value !== undefined)
+        valEl.value = String(preset.value);
+    } else if (ftype === 'select' && fkey === 'membership_type') {
+      valEl = document.createElement('select');
+      valEl.className = 'form-select form-select-sm filter-val';
+      MEM_TYPE_OPTIONS.forEach(opt => {
+        valEl.insertAdjacentHTML('beforeend',
+          `<option value="${opt.value}" ${preset && preset.value===opt.value?'selected':''}>${opt.label}</option>`);
+      });
+    } else if (ftype === 'date') {
+      valEl = document.createElement('input');
+      valEl.type = 'date';
+      valEl.className = 'form-control form-control-sm filter-val';
+      if (preset) valEl.value = preset.value || '';
+    } else if (ftype === 'number' || ftype === 'currency') {
+      valEl = document.createElement('input');
+      valEl.type = 'number'; valEl.step = '0.01'; valEl.min = '0';
+      valEl.className = 'form-control form-control-sm filter-val';
+      valEl.placeholder = '0';
+      if (preset) valEl.value = preset.value || '';
+    } else {
+      valEl = document.createElement('input');
+      valEl.type = 'text';
+      valEl.className = 'form-control form-control-sm filter-val';
+      if (preset) valEl.value = preset.value || '';
+    }
+    valWrap.appendChild(valEl);
+  }
+
+  fieldSel.addEventListener('change', rebuildOpsAndVal);
+  rebuildOpsAndVal();
+  updateNoFiltersMsg();
+}
+
+function updateNoFiltersMsg() {
+  const rows = document.querySelectorAll('#filter-rows .filter-row');
+  document.getElementById('no-filters-msg').style.display = rows.length ? 'none' : '';
+}
+
+/* ── Save ──────────────────────────────────────────── */
+function saveReport() {
+  const name = document.getElementById('b-name').value.trim();
+  if (!name) { alert('Please enter a report name.'); return; }
+
+  const cols = [...document.querySelectorAll('.col-check:checked')].map(c => c.value);
+  if (!cols.length) { alert('Select at least one column.'); return; }
+
+  const filters = [...document.querySelectorAll('#filter-rows .filter-row')].map(row => ({
+    field: row.querySelector('.filter-field').value,
+    op:    row.querySelector('.filter-op').value,
+    value: row.querySelector('.filter-val').value,
+  }));
+
+  const config = {
+    source:    currentSource,
+    columns:   cols,
+    filters:   filters,
+    sort_by:   document.getElementById('b-sort-by').value,
+    sort_dir:  document.getElementById('b-sort-dir').value,
+    date_from: document.getElementById('b-date-from').value,
+    date_to:   document.getElementById('b-date-to').value,
+  };
+  const configStr = JSON.stringify(config);
+
+  if (editingId) {
+    document.getElementById('fu-name').value   = name;
+    document.getElementById('fu-desc').value   = document.getElementById('b-desc').value;
+    document.getElementById('fu-config').value = configStr;
+    const form = document.getElementById('form-update');
+    form.action = `/admin/reports/${editingId}/update`;
+    form.submit();
+  } else {
+    document.getElementById('f-name').value   = name;
+    document.getElementById('f-desc').value   = document.getElementById('b-desc').value;
+    document.getElementById('f-config').value = configStr;
+    document.getElementById('form-save').submit();
+  }
+}
+
+/* ── Edit buttons ──────────────────────────────────── */
+document.querySelectorAll('.edit-report-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    const id = parseInt(btn.dataset.id);
+    const d  = REPORT_DATA[id];
+    if (!d) { console.error('No report data for id', id); return; }
+    openBuilder(id, d.config, d.name, d.desc);
+  });
+});
+
+/* ── Init ──────────────────────────────────────────── */
+setSource('members');
+updateNoFiltersMsg();
+</script>
+{% endblock %}

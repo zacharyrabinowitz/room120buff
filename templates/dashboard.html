@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid px-4 mt-4">
   <h2 class="mb-4">Room 120 Analytics</h2>
 
   <!-- Quick Stats -->
@@ -24,18 +24,14 @@
         <p>Inactive</p>
       </div>
     </div>
+    {% for tc in type_counts %}
     <div class="col-md-2">
       <div class="card p-3 text-center">
-        <h4>{{ corporate_count }}</h4>
-        <p>Corporate</p>
+        <h4>{{ tc.count }}</h4>
+        <p>{{ tc.display_name }}</p>
       </div>
     </div>
-    <div class="col-md-2">
-      <div class="card p-3 text-center">
-        <h4>{{ single_count }}</h4>
-        <p>Single</p>
-      </div>
-    </div>
+    {% endfor %}
     <div class="col-md-2">
       <div class="card p-3 text-center">
         <h4>{{ total_reservations }}</h4>
@@ -76,8 +72,9 @@
         <label>Membership Type</label>
         <select name="type" class="form-select">
           <option value="">All</option>
-          <option value="corporate" {% if filter_type == 'corporate' %}selected{% endif %}>Corporate</option>
-          <option value="single" {% if filter_type == 'single' %}selected{% endif %}>Single</option>
+          {% for t in all_membership_types %}
+            <option value="{{ t.name }}" {% if filter_type == t.name %}selected{% endif %}>{{ t.display_name }}</option>
+          {% endfor %}
         </select>
       </div>
       <div class="col-md-3 d-flex align-items-end">

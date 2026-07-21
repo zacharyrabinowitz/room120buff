@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Set Up Your Room 120 Account</title>
+
+  <script>
+    (function () {
+      var t = localStorage.getItem('r120-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style_member.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .setup-card {
+      width: 100%;
+      max-width: 440px;
+    }
+    .brand-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .brand-header h1 {
+      font-family: 'Playfair Display', serif;
+      color: var(--accent);
+      font-size: 2rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+    }
+    .brand-header .accent-bar {
+      width: 40px;
+      height: 2px;
+      background: var(--accent);
+      margin: 0.5rem auto 0;
+      opacity: 0.6;
+    }
+    .welcome-name {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+    .strength-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .strength-fill {
+      height: 100%;
+      border-radius: 2px;
+      width: 0;
+      transition: width 0.3s, background 0.3s;
+    }
+    .strength-label {
+      font-size: 0.72rem;
+      margin-top: 3px;
+      min-height: 1em;
+    }
+  </style>
+</head>
+<body>
+<div class="setup-card">
+
+  <div class="brand-header">
+    <h1>Room 120</h1>
+    <div class="accent-bar"></div>
+    {% if member %}
+    <p class="welcome-name">Welcome, {{ member.first_name }} {{ member.last_name }}</p>
+    {% endif %}
+  </div>
+
+  {% if error %}
+  <!-- ── Error state ─────────────────────────────────── -->
+  <div class="card text-center p-4">
+    <i class="fas fa-link-slash fa-2x mb-3" style="color:var(--text-muted);opacity:0.5;"></i>
+    <h5 class="mb-2">Link Unavailable</h5>
+    <p class="text-muted mb-3" style="font-size:0.9rem;">{{ error }}</p>
+    <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm">Go to Login</a>
+  </div>
+
+  {% else %}
+  <!-- ── Setup form ──────────────────────────────────── -->
+  <div class="card">
+    <div class="card-body p-4">
+      <h5 class="mb-1">Set up your account</h5>
+      <p class="text-muted mb-4" style="font-size:0.85rem;">
+        Choose a password to get started. Your name and membership tier are already set up.
+      </p>
+
+      {% if errors %}
+      <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:0.85rem;">
+        {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="POST">
+        <!-- Pre-filled read-only info -->
+        <div class="mb-3 d-flex gap-3 p-3 rounded" style="background:var(--bg-elevated);font-size:0.84rem;">
+          <div class="flex-grow-1">
+            <div class="text-muted" style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;">Name</div>
+            <div class="fw-medium">{{ member.first_name }} {{ member.last_name }}</div>
+          </div>
+          {% if member.membership_type %}
+          <div>
+            <div class="text-muted" style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;">Tier</div>
+            <div class="fw-medium">{{ member.membership_type | capitalize }}</div>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="form-label fw-medium" for="password">Password</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="password" name="password"
+                   placeholder="At least 8 characters" autocomplete="new-password" required>
+            <button type="button" class="btn btn-outline-secondary" id="togglePw" tabindex="-1">
+              <i class="fas fa-eye" id="togglePwIcon"></i>
+            </button>
+          </div>
+          <div class="strength-bar mt-2">
+            <div class="strength-fill" id="strengthFill"></div>
+          </div>
+          <div class="strength-label text-muted" id="strengthLabel"></div>
+        </div>
+
+        <!-- Confirm password -->
+        <div class="mb-3">
+          <label class="form-label fw-medium" for="confirm_password">Confirm Password</label>
+          <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                 placeholder="Repeat your password" autocomplete="new-password" required>
+          <div class="mt-1" id="matchHint" style="font-size:0.75rem;min-height:1em;"></div>
+        </div>
+
+        <!-- Phone (optional) -->
+        <div class="mb-4">
+          <label class="form-label fw-medium" for="phone">
+            Phone <span class="text-muted fw-normal">(optional)</span>
+          </label>
+          <input type="tel" class="form-control" id="phone" name="phone"
+                 placeholder="e.g. 716-555-1234"
+                 value="{{ member.phone or '' }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+          <i class="fas fa-arrow-right me-1"></i> Set Up My Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <p class="text-center text-muted mt-3" style="font-size:0.78rem;">
+    Already have credentials? <a href="{{ url_for('login') }}">Log in</a>
+  </p>
+  {% endif %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function () {
+  // ── Theme toggle (match rest of app) ───────────────
+  const getTheme = () => document.documentElement.getAttribute('data-theme') || 'dark';
+
+  // ── Show/hide password ─────────────────────────────
+  const toggleBtn  = document.getElementById('togglePw');
+  const toggleIcon = document.getElementById('togglePwIcon');
+  const pwField    = document.getElementById('password');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const isText = pwField.type === 'text';
+      pwField.type = isText ? 'password' : 'text';
+      toggleIcon.className = isText ? 'fas fa-eye' : 'fas fa-eye-slash';
+    });
+  }
+
+  // ── Password strength ──────────────────────────────
+  const fill  = document.getElementById('strengthFill');
+  const label = document.getElementById('strengthLabel');
+  function calcStrength(pw) {
+    let score = 0;
+    if (pw.length >= 8)  score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    return score;
+  }
+  if (pwField && fill && label) {
+    pwField.addEventListener('input', () => {
+      const pw = pwField.value;
+      const s  = calcStrength(pw);
+      const pct = pw.length ? Math.min(100, s * 20) : 0;
+      const colors = ['#ef4444','#f59e0b','#f59e0b','#22c55e','#22c55e','#22c55e'];
+      const labels = ['','Too short','Weak','Fair','Good','Strong'];
+      fill.style.width     = pct + '%';
+      fill.style.background = colors[s] || '#ef4444';
+      label.textContent    = pw.length ? (labels[s] || 'Strong') : '';
+      label.style.color    = colors[s] || '';
+    });
+  }
+
+  // ── Confirm match hint ─────────────────────────────
+  const confirmField = document.getElementById('confirm_password');
+  const matchHint    = document.getElementById('matchHint');
+  if (confirmField && matchHint) {
+    function updateMatch() {
+      if (!confirmField.value) { matchHint.textContent = ''; return; }
+      const ok = pwField.value === confirmField.value;
+      matchHint.textContent = ok ? '✓ Passwords match' : '✗ Passwords do not match';
+      matchHint.style.color = ok ? '#22c55e' : '#ef4444';
+    }
+    confirmField.addEventListener('input', updateMatch);
+    pwField.addEventListener('input', updateMatch);
+  }
+})();
+</script>
+</body>
+</html>

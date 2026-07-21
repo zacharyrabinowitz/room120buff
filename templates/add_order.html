@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block content %}
-<div class="container mt-5">
+<div class="container-fluid px-4 mt-4">
   <h2 class="mb-4">Add New Order</h2>
   <form method="POST" action="{{ url_for('add_order', user_id=user.id) }}">
     <div class="row">
@@ -19,7 +19,7 @@
       <div class="line-item d-flex gap-2 mb-2">
         <input type="text" name="item_name[]" class="form-control" placeholder="Item Name" required>
         <input type="number" name="item_price[]" step="0.01" class="form-control" placeholder="Price" required>
-        <button type="button" class="btn btn-danger btn-sm remove-item">×</button>
+        <button type="button" class="btn btn-danger btn-sm remove-item">&times;</button>
       </div>
     </div>
 
@@ -67,7 +67,7 @@ document.getElementById('add-item').addEventListener('click', function () {
   newItem.innerHTML = `
     <input type="text" name="item_name[]" class="form-control" placeholder="Item Name" required>
     <input type="number" name="item_price[]" step="0.01" class="form-control" placeholder="Price" required>
-    <button type="button" class="btn btn-danger btn-sm remove-item">×</button>
+    <button type="button" class="btn btn-danger btn-sm remove-item">&times;</button>
   `;
   container.appendChild(newItem);
 });

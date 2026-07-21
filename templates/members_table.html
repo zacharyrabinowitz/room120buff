@@ -1,80 +1,212 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container-fluid mt-5">
-  <h2 class="mb-4">Members Table</h2>
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <input type="text" id="search-bar" class="form-control w-50" placeholder="Search members...">
-    <button type="button" id="save-all-btn" class="btn btn-primary">Save All Changes</button>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover w-100" id="members-table">
-      <thead class="table-dark">
-        <tr>
-          <th>ID</th>
-          <th>Username</th>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>Member Number</th>
-          <th>Membership Type</th>
-          <th>Active</th>
-          <th>Amount Spent</th>
-          <th>Amount Owed</th>
-          <th>Tax Owed</th>
-          <th>Gratuity Owed</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for member in members %}
-        <tr>
-          <td>{{ member.id }}</td>
-          <td contenteditable="true" data-field="username" data-id="{{ member.id }}">{{ member.username }}</td>
-          <td contenteditable="true" data-field="first_name" data-id="{{ member.id }}">{{ member.first_name }}</td>
-          <td contenteditable="true" data-field="last_name" data-id="{{ member.id }}">{{ member.last_name }}</td>
-          <td contenteditable="true" data-field="email" data-id="{{ member.id }}">{{ member.email }}</td>
-          <td contenteditable="true" data-field="phone" data-id="{{ member.id }}">{{ member.phone }}</td>
-          <td contenteditable="true" data-field="member_number" data-id="{{ member.id }}">{{ member.member_number }}</td>
-          <td>
-            <select class="form-select" data-field="membership_type" data-id="{{ member.id }}">
-              <option value="single" {% if member.membership_type == 'single' %}selected{% endif %}>Single</option>
-              <option value="corporate" {% if member.membership_type == 'corporate' %}selected{% endif %}>Corporate</option>
-            </select>
-          </td>
-          <td>
-            <select class="form-select" data-field="active" data-id="{{ member.id }}">
-              <option value="True" {% if member.active %}selected{% endif %}>Yes</option>
-              <option value="False" {% if not member.active %}selected{% endif %}>No</option>
-            </select>
-          </td>
-          <td contenteditable="true" data-field="amount_spent" data-id="{{ member.id }}">{{ "%.2f"|format(member.amount_spent or 0) }}</td>
-          <td contenteditable="true" data-field="amount_owed" data-id="{{ member.id }}">{{ "%.2f"|format(member.amount_owed or 0) }}</td>
-          <td contenteditable="true" data-field="tax_owed" data-id="{{ member.id }}">{{ "%.2f"|format(member.tax_owed or 0) }}</td>
-          <td contenteditable="true" data-field="gratuity_owed" data-id="{{ member.id }}">{{ "%.2f"|format(member.gratuity_owed or 0) }}</td>
-          <td>
-            <button type="button" class="btn btn-sm btn-success save-btn" data-id="{{ member.id }}">Save</button>
+<div class="container-fluid mt-4 px-4">
 
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+    <div>
+      <h2 class="mb-0">Members Table</h2>
+      <p class="text-muted mb-0" style="font-size:0.82rem;">Click any cell to edit · Tab to move · Save row or Save All</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button type="button" id="save-all-btn" class="btn btn-primary btn-sm">
+        <i class="fas fa-floppy-disk me-1"></i>Save All
+      </button>
+      <a href="{{ url_for('home') }}" class="btn btn-secondary btn-sm">Back</a>
+    </div>
   </div>
-  <div class="d-flex justify-content-end mt-3">
-    <button type="button" id="save-all-btn-bottom" class="btn btn-primary">Save All Changes</button>
+
+  <div class="mb-3" style="max-width:360px;">
+    <input type="text" id="search-bar" class="form-control form-control-sm" placeholder="Search members…">
   </div>
-  <a href="{{ url_for('home') }}" class="btn btn-secondary mt-3">Back to Home</a>
+
+  <div class="card p-0" style="overflow:hidden;">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 members-table" id="members-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Mbr #</th>
+            <th>Role</th>
+            <th>Type</th>
+            <th>Active</th>
+            <th>Spent</th>
+            <th>Owed</th>
+            <th>Tax Owed</th>
+            <th>Tax Paid</th>
+            <th>Grat. Owed</th>
+            <th>Grat. Paid</th>
+            <th>Min. Adj</th>
+            <th>Fav. Drink</th>
+            <th>Seating Pref.</th>
+            <th>Allergies</th>
+            <th>Notes</th>
+            <th>New Password</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for member in members %}
+          <tr data-member-id="{{ member.id }}">
+            <td class="id-cell">{{ member.id }}</td>
+
+            <td class="edit-td"><span class="ec" contenteditable="true" data-field="first_name" data-id="{{ member.id }}">{{ member.first_name or '' }}</span></td>
+            <td class="edit-td"><span class="ec" contenteditable="true" data-field="last_name"  data-id="{{ member.id }}">{{ member.last_name  or '' }}</span></td>
+            <td class="edit-td"><span class="ec" contenteditable="true" data-field="username"   data-id="{{ member.id }}">{{ member.username   or '' }}</span></td>
+            <td class="edit-td"><span class="ec" contenteditable="true" data-field="email"      data-id="{{ member.id }}">{{ member.email      or '' }}</span></td>
+            <td class="edit-td"><span class="ec" contenteditable="true" data-field="phone"      data-id="{{ member.id }}">{{ member.phone      or '' }}</span></td>
+            <td class="edit-td"><span class="ec" contenteditable="true" data-field="member_number" data-id="{{ member.id }}">{{ member.member_number or '' }}</span></td>
+
+            <td>
+              <select class="cs" data-field="role" data-id="{{ member.id }}">
+                <option value="member" {% if member.role == 'member' %}selected{% endif %}>Member</option>
+                <option value="staff"  {% if member.role == 'staff'  %}selected{% endif %}>Staff</option>
+                <option value="admin"  {% if member.role == 'admin'  %}selected{% endif %}>Admin</option>
+              </select>
+            </td>
+
+            <td>
+              <select class="cs" data-field="membership_type" data-id="{{ member.id }}">
+                {% for t in all_membership_types %}
+                <option value="{{ t.name }}" {% if member.membership_type == t.name %}selected{% endif %}>{{ t.display_name }}</option>
+                {% endfor %}
+              </select>
+            </td>
+
+            <td>
+              <select class="cs" data-field="active" data-id="{{ member.id }}">
+                <option value="True"  {% if member.active  %}selected{% endif %}>Yes</option>
+                <option value="False" {% if not member.active %}selected{% endif %}>No</option>
+              </select>
+            </td>
+
+            <td class="edit-td"><span class="ec num" contenteditable="true" data-field="amount_spent"       data-id="{{ member.id }}">{{ "%.2f"|format(member.amount_spent       or 0) }}</span></td>
+            <td class="edit-td"><span class="ec num" contenteditable="true" data-field="amount_owed"        data-id="{{ member.id }}">{{ "%.2f"|format(member.amount_owed        or 0) }}</span></td>
+            <td class="edit-td"><span class="ec num" contenteditable="true" data-field="tax_owed"           data-id="{{ member.id }}">{{ "%.2f"|format(member.tax_owed           or 0) }}</span></td>
+            <td class="edit-td"><span class="ec num" contenteditable="true" data-field="tax_paid"           data-id="{{ member.id }}">{{ "%.2f"|format(member.tax_paid           or 0) }}</span></td>
+            <td class="edit-td"><span class="ec num" contenteditable="true" data-field="gratuity_owed"      data-id="{{ member.id }}">{{ "%.2f"|format(member.gratuity_owed      or 0) }}</span></td>
+            <td class="edit-td"><span class="ec num" contenteditable="true" data-field="gratuity_paid"      data-id="{{ member.id }}">{{ "%.2f"|format(member.gratuity_paid      or 0) }}</span></td>
+            <td class="edit-td"><span class="ec num" contenteditable="true" data-field="minimum_adjustment" data-id="{{ member.id }}">{{ "%.2f"|format(member.minimum_adjustment or 0) }}</span></td>
+
+            <td class="edit-td wide"><span class="ec" contenteditable="true" data-field="favorite_drink"     data-id="{{ member.id }}">{{ member.favorite_drink     or '' }}</span></td>
+            <td class="edit-td wide"><span class="ec" contenteditable="true" data-field="seating_preference" data-id="{{ member.id }}">{{ member.seating_preference or '' }}</span></td>
+            <td class="edit-td wide"><span class="ec" contenteditable="true" data-field="allergies"          data-id="{{ member.id }}">{{ member.allergies          or '' }}</span></td>
+            <td class="edit-td wide"><span class="ec" contenteditable="true" data-field="preferences_notes"  data-id="{{ member.id }}">{{ member.preferences_notes  or '' }}</span></td>
+
+            <td>
+              <input type="password" class="pw-input" data-field="password" data-id="{{ member.id }}"
+                     placeholder="leave blank to keep" autocomplete="new-password">
+            </td>
+
+            <td>
+              <button type="button" class="btn btn-success btn-sm save-btn" data-id="{{ member.id }}" title="Save this row">
+                <i class="fas fa-check"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
+
+<style>
+.members-table {
+  font-size: 0.8rem;
+  width: 100%;
+}
+.members-table th {
+  font-size: 0.7rem;
+  padding: 0.5rem 0.6rem;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: var(--bg-elevated);
+  z-index: 1;
+}
+.members-table td {
+  padding: 0.3rem 0.6rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.id-cell {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  width: 32px;
+}
+.edit-td { min-width: 90px; }
+.edit-td.wide { min-width: 130px; }
+
+/* editable cell */
+.ec {
+  display: block;
+  outline: none;
+  border-radius: 4px;
+  padding: 2px 4px;
+  cursor: text;
+  min-height: 1.4em;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+.ec:focus {
+  background: var(--accent-soft, rgba(245,180,92,0.1));
+  box-shadow: inset 0 0 0 1px var(--accent, #f5b45c);
+}
+.ec.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* compact select */
+.cs {
+  background: var(--input-bg, #fff) !important;
+  border: 1px solid var(--border, #ccc) !important;
+  color: var(--text, #111) !important;
+  font-size: 0.76rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 5px;
+  outline: none;
+  width: 100%;
+  min-width: 80px;
+}
+.cs:focus { border-color: var(--accent, #f5b45c) !important; }
+.cs option { background: var(--bg-elevated); color: var(--text); }
+
+/* password input */
+.pw-input {
+  background: var(--input-bg, #fff) !important;
+  border: 1px solid var(--border, #ccc) !important;
+  color: var(--text, #111) !important;
+  font-size: 0.74rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 5px;
+  outline: none;
+  min-width: 140px;
+  width: 140px;
+}
+.pw-input:focus { border-color: var(--accent, #f5b45c) !important; box-shadow: 0 0 0 2px rgba(245,180,92,0.2); }
+.pw-input::placeholder { font-style: italic; opacity: 0.5; }
+</style>
 
 <script>
 function collectRowData(row) {
   const data = {};
-  row.querySelectorAll('[data-field]').forEach(cell => {
-    if (cell.tagName === 'TD') {
-      data[cell.dataset.field] = cell.textContent.trim();
-    } else if (cell.tagName === 'SELECT') {
-      data[cell.dataset.field] = cell.value;
+  row.querySelectorAll('[data-field]').forEach(el => {
+    const field = el.dataset.field;
+    if (el.tagName === 'SELECT') {
+      data[field] = el.value;
+    } else if (el.tagName === 'INPUT') {
+      if (field === 'password' && !el.value.trim()) return; // skip blank password
+      data[field] = el.value;
+    } else {
+      // contenteditable span
+      let val = el.textContent.trim();
+      if (el.classList.contains('num')) {
+        val = val.replace(/[^0-9.\-]/g, ''); // strip $, commas, etc.
+      }
+      data[field] = val;
     }
   });
   return data;
@@ -83,85 +215,75 @@ function collectRowData(row) {
 function saveRow(memberId, data) {
   return fetch(`/update_member/${memberId}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  }).then(response => response.json());
+  }).then(r => r.json());
 }
 
-document.querySelectorAll('.save-btn').forEach(button => {
-  button.addEventListener('click', function () {
+function flashRow(row, ok) {
+  row.style.transition = 'background 0.25s';
+  row.style.background = ok ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)';
+  setTimeout(() => { row.style.background = ''; }, 900);
+}
+
+// Per-row save button
+document.querySelectorAll('.save-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
     const memberId = this.dataset.id;
-    const row = document.querySelectorAll(`[data-id="${memberId}"]`);
-    const data = collectRowData(row[0].closest('tr'));
-
-    saveRow(memberId, data)
-      .then(result => {
-        if (result.success) {
-        } else {
-          alert('Failed to save changes.');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while saving changes.');
-      });
-  });
-});
-
-document.querySelectorAll('#save-all-btn, #save-all-btn-bottom').forEach(button => {
-  button.addEventListener('click', function () {
-    const rows = document.querySelectorAll('tbody tr');
-    const promises = [];
-
-    rows.forEach(row => {
-      const memberId = row.querySelector('[data-id]').dataset.id;
-      const data = collectRowData(row);
-      promises.push(saveRow(memberId, data));
+    const row  = this.closest('tr');
+    const icon = this.querySelector('i');
+    icon.className = 'fas fa-spinner fa-spin';
+    saveRow(memberId, collectRowData(row)).then(result => {
+      icon.className = result.success ? 'fas fa-check' : 'fas fa-xmark text-danger';
+      flashRow(row, result.success);
+      if (!result.success) console.warn('Save error:', result.error);
+      // clear password field after save
+      const pwField = row.querySelector('.pw-input');
+      if (pwField) pwField.value = '';
+      setTimeout(() => { icon.className = 'fas fa-check'; }, 1800);
+    }).catch(err => {
+      icon.className = 'fas fa-xmark text-danger';
+      console.error(err);
+      setTimeout(() => { icon.className = 'fas fa-check'; }, 1800);
     });
-
-    Promise.all(promises)
-      .then(results => {
-        if (results.every(result => result.success)) {
-        } else {
-          alert('Some changes failed to save.');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while saving changes.');
-      });
   });
 });
 
+// Save All
+document.getElementById('save-all-btn').addEventListener('click', function () {
+  const btn = this;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving…';
+  const rows = [...document.querySelectorAll('#members-table tbody tr')];
+  const promises = rows.map(row => {
+    const memberId = row.dataset.memberId;
+    return saveRow(memberId, collectRowData(row)).then(result => {
+      flashRow(row, result.success);
+      const pwField = row.querySelector('.pw-input');
+      if (pwField) pwField.value = '';
+      return result;
+    });
+  });
+  Promise.all(promises).then(results => {
+    const allOk = results.every(r => r.success);
+    btn.innerHTML = allOk
+      ? '<i class="fas fa-check me-1"></i>Saved!'
+      : '<i class="fas fa-xmark me-1"></i>Some failed';
+    btn.disabled = false;
+    setTimeout(() => { btn.innerHTML = '<i class="fas fa-floppy-disk me-1"></i>Save All'; }, 2200);
+  }).catch(() => {
+    btn.innerHTML = '<i class="fas fa-xmark me-1"></i>Error';
+    btn.disabled = false;
+    setTimeout(() => { btn.innerHTML = '<i class="fas fa-floppy-disk me-1"></i>Save All'; }, 2200);
+  });
+});
+
+// Search filter
 document.getElementById('search-bar').addEventListener('input', function () {
-  const searchTerm = this.value.toLowerCase();
-  const rows = document.querySelectorAll('#members-table tbody tr');
-
-  rows.forEach(row => {
-    const rowText = row.textContent.toLowerCase();
-    row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#members-table tbody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
 });
-
-function confirmDelete() {
-  return confirm('Are you sure you want to delete this member? This action cannot be undone.');
-}
 </script>
-
-<style>
-.delete-button {
-  background-color: #ff4d4d;
-  color: white;
-  border: none;
-  padding: 3px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.delete-button:hover {
-  background-color: #e60000;
-}
-</style>
 {% endblock %}

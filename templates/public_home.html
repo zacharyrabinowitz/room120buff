@@ -64,7 +64,7 @@
           <li><a href="#membership">Membership</a></li>
           <li><a href="#gallery">Gallery</a></li>
           <li><a href="#visit">Visit</a></li>
-          <a href="{{ url_for('login') }}" class="btn">Member Login</a>
+          <li><a href="{{ url_for('login') }}" class="btn">Member Login</a></li>
         </ul>
       </nav>
     </div>
@@ -291,22 +291,11 @@
       <nav aria-label="Footer">
         <a href="#about">About</a>
         <a href="#membership">Membership</a>
-        <a href="#reservations">Reservations</a>
+        <a href="#gallery">Gallery</a>
         <a href="#events">Events</a>
         <a href="#visit">Visit</a>
       </nav>
     </div>
   </footer>
-  <script>
-    const toggleBtn = document.querySelector(".nav-toggle");
-    const menu = document.querySelector(".nav-menu");
-    
-    toggleBtn.addEventListener("click", () => {
-      const expanded = toggleBtn.getAttribute("aria-expanded") === "true";
-      toggleBtn.setAttribute("aria-expanded", !expanded);
-      menu.classList.toggle("show");
-    });
-    </script>
-    
 </body>
 </html>

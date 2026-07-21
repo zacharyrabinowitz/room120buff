@@ -2,48 +2,46 @@
 {% block content %}
 
 <style>
-/* ---- Centered Layout ---- */
 .map-wrapper {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 25px;
+    padding: 20px 25px;
     color: #f7f3ea;
 }
 
 .map-header {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .map-header h1 {
     font-family: "Playfair Display", serif;
     font-size: 2rem;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 #event-select {
     max-width: 320px;
     margin: 0 auto;
-    margin-top: 8px;
 }
 
-/* Canvas */
 #canvas {
     background: #ffffff;
     border-radius: 14px;
-    border: 2px solid rgba(255,255,255,0.08);
+    border: 2px solid #d0ccc4;
     height: 75vh;
     position: relative;
     overflow: hidden;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.04);
 }
 
-/* ---- Tables & Walls ---- */
-.table-item, .wall-item {
+/* ---- Tables ---- */
+.table-item {
     position: absolute;
-    background: #777678;
-    border: 2px solid #ffcf7a;
-    color: #000000;
-    font-weight: bold;
+    background: #c8a050;
+    border: 2px solid #8b6010;
+    color: #1a0a00;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -52,93 +50,318 @@
     user-select: none;
     padding: 4px;
     text-align: center;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+}
+
+/* ---- Bar seats ---- */
+.table-item[data-kind="bar-seat"] {
+    background: #2e1a08;
+    border: 2.5px solid #c8a050;
+    border-radius: 50%;
+    color: #f7e8c0;
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+
+.table-item[data-kind="bar-seat"].occupied {
+    background: #5a3218;
+    border-color: #ffcf7a;
+}
+
+/* ---- Walls ---- */
+.wall-item {
+    position: absolute;
+    background: #7a7a7a;
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    user-select: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    pointer-events: none;
 }
 
 .wall-curved { border-radius: 40px !important; }
 
-.table-label {
+/* Table items allow content to extend beyond their border */
+.table-item { overflow: visible; }
+
+/* Small original identifier inside the table/seat */
+.item-id {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    opacity: 0.8;
     pointer-events: none;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+.table-item[data-kind="bar-seat"] .item-id { display: none; }
+
+/* Floating member-name badge below the table */
+.table-item .table-label {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: rgba(10, 6, 0, 0.9);
+    color: #ffe7a8;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 3px 11px;
+    border-radius: 12px;
+    border: 1px solid rgba(200, 160, 80, 0.75);
+    pointer-events: none;
+    z-index: 30;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+.table-item[data-kind="bar-seat"] .table-label {
+    font-size: 0.7rem;
+    padding: 2px 7px;
+    max-width: 130px;
 }
 
-/* ---- Popup ---- */
+.wall-item .table-label { pointer-events: none; }
+
+/* Unsaved-change highlight on seats */
+.table-item.pending {
+    outline: 2.5px dashed #ffd700 !important;
+    outline-offset: 3px;
+}
+
+#save-seating-btn {
+    background: #198754;
+    color: #fff;
+    border: none;
+    padding: 6px 18px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+#save-seating-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+/* ── Overlay ── */
+#popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.52);
+    backdrop-filter: blur(3px);
+    z-index: 9990;
+}
+#popup-overlay.open { display: block; }
+
+/* ── Popup shell ── */
 #reservation-popup {
+    display: none;
     position: fixed;
     left: 50%;
     top: 50%;
-    width: 420px;
-    transform: translate(-50%, -50%);
-    background: #0a0a12;
-    padding: 25px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.12);
-    display: none;
+    transform: translate(-50%, -50%) scale(0.96);
+    width: 460px;
+    max-width: calc(100vw - 24px);
+    max-height: 92vh;
+    overflow-y: auto;
+    background: #0d0b18;
+    border: 1px solid rgba(255,207,122,0.22);
+    border-radius: 18px;
+    box-shadow: 0 28px 70px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04);
     z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+#reservation-popup.open {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
 }
 
-.popup-title {
-    font-family: "Playfair Display", serif;
-    font-size: 1.4rem;
-    color: #ffcf7a;
-    margin-bottom: 10px;
+/* ── Header ── */
+.popup-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
 }
-
-.popup-row {
-    margin-top: 8px;
-}
-
-.popup-row label {
-    display: block;
-    font-size: 0.8rem;
+.popup-header-info { display: flex; flex-direction: column; gap: 4px; }
+.popup-seat-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    margin-bottom: 3px;
-    color: #f7f3ea;
+    color: #ffcf7a;
+    opacity: 0.75;
 }
-
-.popup-row input,
-.popup-row select,
-.popup-row textarea {
-    width: 100%;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: #151520;
-    color: #f7f3ea;
-    padding: 7px 9px;
-    font-size: 0.9rem;
-}
-
-.popup-row textarea {
-    min-height: 70px;
-}
-
-.popup-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 16px;
-}
-
-.popup-btn {
-    width: 100%;
-    padding: 9px;
-    background: #ffcf7a;
-    border: none;
-    color: #050508;
+.popup-title {
+    font-family: "Playfair Display", serif;
+    font-size: 1.25rem;
     font-weight: 700;
-    border-radius: 10px;
+    color: #f7f3ea;
+    line-height: 1.2;
+}
+.popup-close-btn {
+    background: rgba(255,255,255,0.06);
+    border: none;
+    color: #a09898;
+    font-size: 1.3rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     cursor: pointer;
-    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.12s, color 0.12s;
 }
+.popup-close-btn:hover { background: rgba(255,255,255,0.13); color: #f7f3ea; }
 
-.popup-btn.secondary {
-    background: #777678;
-    color: #050508;
+/* ── RSVP quick cards ── */
+.popup-rsvp-section { padding: 14px 20px 12px; }
+.popup-section-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #ffcf7a;
+    margin-bottom: 8px;
 }
+.rsvp-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 108px;
+    overflow-y: auto;
+}
+.rsvp-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 9px;
+    padding: 7px 11px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.12s, border-color 0.12s;
+    flex: 1 1 140px;
+}
+.rsvp-card:hover { background: rgba(255,207,122,0.09); border-color: rgba(255,207,122,0.32); }
+.rsvp-card.active { background: rgba(255,207,122,0.14); border-color: #ffcf7a; }
+.rsvp-card-name { font-size: 0.85rem; font-weight: 700; color: #f7f3ea; }
+.rsvp-card-meta { font-size: 0.72rem; color: #8a8298; margin-top: 1px; }
 
-.popup-btn.danger {
-    background: #ff0000;
-    color: #ffffff;
+.popup-sep { height: 1px; background: rgba(255,255,255,0.07); margin: 0 20px; }
+
+/* ── Fields ── */
+.popup-fields {
+    padding: 14px 20px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.popup-field-row {
+    display: grid;
+    grid-template-columns: 1fr 88px;
+    gap: 10px;
+}
+.popup-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #6e6880;
+    margin-bottom: 5px;
+}
+.popup-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: 9px;
+    color: #f7f3ea;
+    padding: 8px 10px;
+    font-size: 0.88rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.12s, box-shadow 0.12s;
+}
+.popup-input:focus {
+    border-color: rgba(255,207,122,0.55);
+    box-shadow: 0 0 0 3px rgba(255,207,122,0.1);
+}
+select.popup-input {
+    cursor: pointer;
+    background: #1a1528;
+    color: #f7f3ea;
+}
+select.popup-input option {
+    background: #1a1528;
+    color: #f7f3ea;
+}
+textarea.popup-input { min-height: 50px; resize: vertical; }
+
+/* ── Action buttons ── */
+.popup-actions {
+    display: flex;
+    gap: 8px;
+    padding: 14px 20px 20px;
+}
+.popup-action-apply {
+    flex: 1;
+    padding: 11px;
+    background: #ffcf7a;
+    color: #0a0600;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.popup-action-apply:hover { background: #ffe09a; }
+.popup-action-clear {
+    padding: 11px 15px;
+    background: rgba(220,53,69,0.12);
+    color: #ff7080;
+    border: 1px solid rgba(220,53,69,0.28);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.12s;
+}
+.popup-action-clear:hover { background: rgba(220,53,69,0.22); }
+
+/* ── Member search-select combo ── */
+.member-select-wrap { display: flex; flex-direction: column; }
+.member-search-input {
+    border-radius: 9px 9px 0 0 !important;
+    border-bottom: none !important;
+}
+.member-select-list {
+    border-radius: 0 0 9px 9px !important;
+    border-top: 1px solid rgba(255,255,255,0.06) !important;
+    max-height: 130px;
+    overflow-y: auto;
 }
 </style>
 
@@ -148,54 +371,62 @@
     <div class="map-header">
         <h1>Seating Map</h1>
 
-        <!-- EVENT SELECT -->
         <form method="GET" action="{{ url_for('seating_map') }}">
             <select name="event_id" id="event-select" class="form-select" onchange="this.form.submit()">
                 <option value="">Select Event</option>
-
                 {% for event in events %}
                     <option value="{{ event.id }}"
                         {% if selected_event and selected_event.id == event.id %}selected{% endif %}>
-                        {{ event.name }} — {{ event.event_date }}
+                        {{ event.name }} &mdash; {{ event.date }}
                     </option>
                 {% endfor %}
             </select>
         </form>
 
         {% if selected_event %}
-            <p style="margin-top:8px;font-size:0.9rem;color:#a7a0b3;">
-                Managing reservations for: <strong>{{ selected_event.name }}</strong>
-            </p>
+            <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;">
+                <p style="margin:0;font-size:0.88rem;color:#a7a0b3;">
+                    Managing: <strong>{{ selected_event.name }}</strong>
+                    {% if event_rsvps %}
+                    &mdash; <span style="color:#ffcf7a;">{{ event_rsvps|length }} RSVP{{ 's' if event_rsvps|length != 1 }}</span>
+                    {% endif %}
+                </p>
+                <button id="save-seating-btn" onclick="saveAllPending()" disabled>
+                    All Saved
+                </button>
+                <button onclick="resetEventSeating()"
+                        style="background:#dc3545;color:#fff;border:none;padding:6px 16px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;">
+                    Reset All Seating
+                </button>
+            </div>
         {% endif %}
     </div>
 
-    <!-- CANVAS WITH TABLES FROM DATABASE -->
     <div id="canvas">
         {% for item in items %}
             {% set res = reservation_map.get(item.id) if reservation_map else None %}
-
-            {# ---- LABEL PRIORITY:
-               1) Member name (if member_id is set)
-               2) Guest name (if no member, but guest set)
-               3) Original table label
-            #}
-            {% set label_text = item.label %}
+            {# Fix Jinja2 scope: use namespace so inner-loop assignment updates outer variable #}
+            {% set ns = namespace(label=item.label or '') %}
             {% if res %}
                 {% if res.member_id %}
-                    {# Find the member in the members list by member_id #}
                     {% for m in members %}
                         {% if m.id == res.member_id %}
-                            {% set label_text = m.first_name ~ ' ' ~ m.last_name %}
+                            {% set ns.label = m.first_name ~ ((' ' ~ m.last_name) if m.last_name and m.last_name != 'None' else '') %}
+                            {% if res.seats_occupied and res.seats_occupied > 1 %}
+                                {% set ns.label = ns.label ~ ' ×' ~ res.seats_occupied %}
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
                 {% elif res.guest_name %}
-                    {% set label_text = res.guest_name %}
+                    {% set ns.label = res.guest_name %}
+                    {% if res.seats_occupied and res.seats_occupied > 1 %}
+                        {% set ns.label = ns.label ~ ' ×' ~ res.seats_occupied %}
+                    {% endif %}
                 {% endif %}
             {% endif %}
 
-            <div class="table-item
-                        {% if item.kind.startswith('wall') %}wall-item{% endif %}
-                        {% if item.kind == 'wall-curve' %}wall-curved{% endif %}"
+            {% set is_wall = item.kind and item.kind.startswith('wall') %}
+            <div class="{{ 'wall-item' if is_wall else 'table-item' }} {{ 'wall-curved' if item.kind == 'wall-curve' else '' }} {{ 'occupied' if res and (res.member_id or res.guest_name) else '' }}"
                  data-id="{{ item.id }}"
                  data-kind="{{ item.kind }}"
                  data-member-id="{{ res.member_id if res else '' }}"
@@ -203,15 +434,21 @@
                  data-num-guests="{{ res.num_guests if res else '' }}"
                  data-timeslots="{{ res.timeslots if res else '' }}"
                  data-notes="{{ res.notes if res else '' }}"
+                 data-seats-occupied="{{ res.seats_occupied if res and res.seats_occupied else 1 }}"
                  data-original-label="{{ item.label }}"
                  style="
                      left: {{ item.x }}px;
                      top: {{ item.y }}px;
                      width: {{ item.width }}px;
                      height: {{ item.height }}px;
-                     border-radius: {% if item.kind == 'circle' %}50%{% else %}6px{% endif %};
+                     {% if item.kind in ('circle', 'bar-seat') %}border-radius: 50%;{% endif %}
                  ">
-                <span class="table-label">{{ label_text }}</span>
+                {% if not is_wall %}
+                    <span class="item-id">{{ item.label or '' }}</span>
+                    <span class="table-label">{% if res and (res.member_id or res.guest_name) %}{{ ns.label }}{% endif %}</span>
+                {% else %}
+                    <span class="table-label">{{ item.label or '' }}</span>
+                {% endif %}
             </div>
         {% endfor %}
     </div>
@@ -219,241 +456,381 @@
 </div>
 
 
-<!-- RESERVATION POPUP -->
+<!-- Backdrop -->
+<div id="popup-overlay" onclick="closePopup()"></div>
+
+<!-- Reservation popup -->
 <div id="reservation-popup">
-    <div class="popup-title">Assign Reservation</div>
+    <input type="hidden" id="popup-table-id">
 
-    <form id="reservation-form" onsubmit="return false;">
+    <!-- Header -->
+    <div class="popup-header">
+        <div class="popup-header-info">
+            <span class="popup-seat-badge" id="popup-seat-name"></span>
+            <span class="popup-title">Seat Assignment</span>
+        </div>
+        <button class="popup-close-btn" onclick="closePopup()" aria-label="Close">&#215;</button>
+    </div>
 
-        <input type="hidden" id="popup-table-id">
+    <!-- RSVP quick-select cards (only rendered when RSVPs exist) -->
+    {% if event_rsvps %}
+    <div class="popup-rsvp-section">
+        <div class="popup-section-label">Quick-fill from Reservation</div>
+        <div class="rsvp-cards" id="rsvp-cards">
+            {% for r in event_rsvps %}
+            <button class="rsvp-card"
+                    data-member-id="{{ r.id }}"
+                    data-guests="{{ r.guests }}"
+                    data-time="{{ r.time }}"
+                    data-notes="{{ r.notes }}"
+                    onclick="fillFromRsvpCard(this)">
+                <span class="rsvp-card-name">{{ r.name }}</span>
+                <span class="rsvp-card-meta">
+                    {{ r.guests }} guest{{ 's' if r.guests != 1 else '' }}{% if r.time %} &middot; {{ r.time }}{% endif %}
+                </span>
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="popup-sep"></div>
+    {% endif %}
 
-        <div class="popup-row">
-            <label for="member-select">Member</label>
-            <select id="member-select">
-                <option value="">Select Member</option>
-                {% for m in members %}
-                    <option value="{{ m.id }}">
-                        {{ m.first_name }} {{ m.last_name }}
-                    </option>
-                {% endfor %}
+    <!-- Manual fields -->
+    <div class="popup-fields">
+        <div class="popup-field-row">
+            <div>
+                <label class="popup-label" for="member-search">Member</label>
+                <div class="member-select-wrap">
+                    <input type="text" id="member-search" class="popup-input member-search-input"
+                           placeholder="Search members…" autocomplete="off"
+                           oninput="filterMemberOptions(this.value)">
+                    <select id="member-select" class="popup-input member-select-list">
+                        <option value="">— No member —</option>
+                        {% for m in members %}
+                            <option value="{{ m.id }}">{{ m.first_name }}{% if m.last_name and m.last_name != 'None' %} {{ m.last_name }}{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="popup-label" for="num-guests">Guests</label>
+                <input type="number" id="num-guests" class="popup-input" min="1" placeholder="1">
+            </div>
+        </div>
+
+        <div>
+            <label class="popup-label" for="guest-name">
+                Guest Name <span style="font-weight:400;opacity:0.55;">(walk-in, no member)</span>
+            </label>
+            <input type="text" id="guest-name" class="popup-input" placeholder="Name">
+        </div>
+
+        <div id="seats-occupied-row" style="display:none;">
+            <label class="popup-label" for="seats-occupied">Bar Seats Occupied</label>
+            <select id="seats-occupied" class="popup-input">
+                <option value="1">1 seat</option>
+                <option value="2">2 seats</option>
+                <option value="3">3 seats</option>
+                <option value="4">4 seats</option>
+                <option value="5">5 seats</option>
+                <option value="6">6 seats</option>
             </select>
         </div>
 
-        <div class="popup-row">
-            <label for="guest-name">Guest Name (optional)</label>
-            <input type="text" id="guest-name">
+        <div>
+            <label class="popup-label" for="timeslots">Timeslot</label>
+            <input type="text" id="timeslots" class="popup-input" placeholder="e.g. 7:00 PM, 9:00 PM">
         </div>
 
-        <div class="popup-row">
-            <label for="num-guests">Number of Guests</label>
-            <input type="number" id="num-guests" min="1">
+        <div>
+            <label class="popup-label" for="notes">Notes</label>
+            <textarea id="notes" class="popup-input" placeholder="Dietary needs, special requests…"></textarea>
         </div>
+    </div>
 
-        <div class="popup-row">
-            <label for="timeslots">Timeslots</label>
-            <input type="text" id="timeslots" placeholder="7:00 PM, 9:00 PM">
-        </div>
-
-        <div class="popup-row">
-            <label for="notes">Notes</label>
-            <textarea id="notes"></textarea>
-        </div>
-
-        <div class="popup-actions">
-            <button type="button" class="popup-btn" onclick="saveSingleTable()">Save Table</button>
-            <button type="button" class="popup-btn secondary" onclick="closePopup()">Close</button>
-            <button type="button" class="popup-btn danger" onclick="resetSingleTable()">Reset All Event Seating Assignments</button>
-        </div>
-
-    </form>
+    <!-- Actions -->
+    <div class="popup-actions">
+        <button class="popup-action-apply" onclick="applyTableChange()">Apply</button>
+        <button class="popup-action-clear" onclick="resetSingleTable()">Clear Seat</button>
+    </div>
 </div>
 
 
 <script>
 let selectedEventId = "{{ selected_event.id if selected_event else '' }}";
 
+// ── Pending-change buffer ─────────────────────────────────────────────────
+// Map: String(seating_item_id) → payload object  |  null (= clear the slot)
+const pendingChanges = new Map();
+
+function markPending(itemId, payload) {
+    pendingChanges.set(String(itemId), payload);
+    updateSaveBtn();
+}
+
+function updateSaveBtn() {
+    const btn = document.getElementById("save-seating-btn");
+    if (!btn) return;
+    const n = pendingChanges.size;
+    if (n > 0) {
+        btn.disabled = false;
+        btn.textContent = `Save (${n} change${n > 1 ? 's' : ''})`;
+    } else {
+        btn.disabled = true;
+        btn.textContent = "All Saved";
+    }
+}
+
+async function saveAllPending() {
+    if (!pendingChanges.size || !selectedEventId) return;
+    const btn = document.getElementById("save-seating-btn");
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+
+    try {
+        await Promise.all([...pendingChanges.entries()].map(([itemId, payload]) =>
+            fetch("{{ url_for('save_single_reservation') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    seating_item_id: itemId,
+                    event_id: selectedEventId,
+                    ...(payload || { member_id: null, guest_name: null })
+                })
+            }).then(r => r.json())
+        ));
+
+        // Remove pending highlight on all saved seats
+        pendingChanges.forEach((_, itemId) => {
+            const el = document.querySelector(`.table-item[data-id="${itemId}"]`);
+            if (el) el.classList.remove("pending");
+        });
+        pendingChanges.clear();
+    } catch (_) {
+        alert("Some changes couldn't be saved. Please try again.");
+    }
+    updateSaveBtn();
+}
+
+// ── Popup helpers ─────────────────────────────────────────────────────────
+function filterMemberOptions(query) {
+    const sel = document.getElementById("member-select");
+    const q   = query.toLowerCase().trim();
+    Array.from(sel.options).forEach(opt => {
+        opt.hidden = q.length > 0 && !opt.textContent.toLowerCase().includes(q);
+    });
+}
+
+function fillFromRsvpCard(btn) {
+    document.querySelectorAll(".rsvp-card").forEach(c => c.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("member-select").value = btn.dataset.memberId || "";
+    if (btn.dataset.guests) document.getElementById("num-guests").value = btn.dataset.guests;
+    if (btn.dataset.time)   document.getElementById("timeslots").value  = btn.dataset.time;
+    if (btn.dataset.notes)  document.getElementById("notes").value      = btn.dataset.notes;
+    document.getElementById("guest-name").value = "";
+}
+
 function openPopupForElement(el) {
-    const tableId = el.dataset.id;
+    document.getElementById("popup-table-id").value = el.dataset.id;
+    document.getElementById("member-select").value  = el.dataset.memberId  || "";
+    document.getElementById("guest-name").value     = el.dataset.guestName || "";
+    document.getElementById("num-guests").value     = el.dataset.numGuests || "";
+    document.getElementById("timeslots").value      = el.dataset.timeslots || "";
+    document.getElementById("notes").value          = el.dataset.notes     || "";
 
-    // Fill hidden field
-    document.getElementById("popup-table-id").value = tableId;
+    // Reset member search
+    const memberSearch = document.getElementById("member-search");
+    if (memberSearch) { memberSearch.value = ""; filterMemberOptions(""); }
 
-    // Prefill from data attributes (per-table data)
-    const memberId   = el.dataset.memberId || "";
-    const guestName  = el.dataset.guestName || "";
-    const numGuests  = el.dataset.numGuests || "";
-    const timeslots  = el.dataset.timeslots || "";
-    const notes      = el.dataset.notes || "";
+    // Update seat badge in header
+    const badge = document.getElementById("popup-seat-name");
+    if (badge) badge.textContent = el.dataset.originalLabel || (el.dataset.kind === "bar-seat" ? "Bar Seat" : "Table");
 
-    // Set form fields
-    document.getElementById("member-select").value = memberId;
-    document.getElementById("guest-name").value    = guestName;
-    document.getElementById("num-guests").value    = numGuests;
-    document.getElementById("timeslots").value     = timeslots;
-    document.getElementById("notes").value         = notes;
+    // Highlight the matching RSVP card (if any)
+    document.querySelectorAll(".rsvp-card").forEach(c => {
+        c.classList.toggle("active", !!el.dataset.memberId && c.dataset.memberId === el.dataset.memberId);
+    });
 
-    document.getElementById("reservation-popup").style.display = "block";
+    const isBar = el.dataset.kind === "bar-seat";
+    document.getElementById("seats-occupied-row").style.display = isBar ? "" : "none";
+    if (isBar) document.getElementById("seats-occupied").value = el.dataset.seatsOccupied || "1";
+
+    // Animate in
+    const overlay = document.getElementById("popup-overlay");
+    const popup   = document.getElementById("reservation-popup");
+    overlay.classList.add("open");
+    popup.style.display = "block";
+    requestAnimationFrame(() => popup.classList.add("open"));
 }
 
 function closePopup() {
-    document.getElementById("reservation-popup").style.display = "none";
+    const popup = document.getElementById("reservation-popup");
+    popup.classList.remove("open");
+    document.getElementById("popup-overlay").classList.remove("open");
+    setTimeout(() => { popup.style.display = "none"; }, 180);
 }
 
-function resetSingleTable() {
-    if (!selectedEventId) {
-        alert("Select an event first.");
-        return;
+// ── Apply (stage change locally, no server call yet) ─────────────────────
+function applyTableChange() {
+    if (!selectedEventId) { alert("Select an event first."); return; }
+
+    const tableId      = document.getElementById("popup-table-id").value;
+    const memberId     = document.getElementById("member-select").value  || null;
+    const guestName    = document.getElementById("guest-name").value     || null;
+    const numGuests    = document.getElementById("num-guests").value     || null;
+    const timeslots    = document.getElementById("timeslots").value      || null;
+    const notes        = document.getElementById("notes").value          || null;
+    const seatsRow     = document.getElementById("seats-occupied-row");
+    const seatsOccupied = seatsRow.style.display === "none" ? 1 :
+                          (parseInt(document.getElementById("seats-occupied").value) || 1);
+
+    // Compute display label client-side (avoids a server round-trip)
+    let displayLabel = "";
+    if (memberId) {
+        const opt = document.querySelector(`#member-select option[value="${memberId}"]`);
+        displayLabel = opt ? opt.textContent.trim() : "";
+    } else if (guestName) {
+        displayLabel = guestName;
     }
+    if (seatsOccupied > 1 && displayLabel) displayLabel += ` ×${seatsOccupied}`;
+
+    const el = document.querySelector(`.table-item[data-id="${tableId}"]`);
+    if (!el) { closePopup(); return; }
+
+    const payload = memberId || guestName
+        ? { member_id: memberId, guest_name: guestName, num_guests: numGuests,
+            timeslots, notes, seats_occupied: seatsOccupied }
+        : null;
+
+    applySeatLabel(el, memberId, guestName, numGuests, timeslots, notes, seatsOccupied, displayLabel);
+    el.classList.add("pending");
+    markPending(tableId, payload);
+
+    // Spread to adjacent bar seats (also buffered)
+    if (el.dataset.kind === "bar-seat" && seatsOccupied > 1) {
+        queueAdjacentBarSeats(el, seatsOccupied, payload,
+            displayLabel.replace(/ ×\d+$/, ""));
+    }
+
+    closePopup();
+}
+
+// ── Clear a single seat (buffered) ───────────────────────────────────────
+function resetSingleTable() {
+    if (!selectedEventId) { alert("Select an event first."); return; }
+    if (!confirm("Clear this seat assignment?")) return;
 
     const tableId = document.getElementById("popup-table-id").value;
-
-    if (!tableId) {
-        alert("Select a table and select 'Reset All Event Seating Assignments'");
-        return;
-    }
-
-    if (!confirm("Reset All Event Seating Assignments? This cannot be undone.")) {
-        return;
-    }
-
-    const payload = {
-        seating_item_id: tableId,
-        event_id: selectedEventId,
-        reset: true
-    };
-
-    fetch("{{ url_for('save_single_reservation') }}", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.status !== "ok") {
-            alert(data.message || "Error resetting table.");
-            return;
-        }
-
-        // Reset UI back to original label
-        const el = document.querySelector('.table-item[data-id="' + tableId + '"]');
-        if (el) {
-            const label = el.dataset.originalLabel || "Table " + tableId;
-
-            // wipe data attributes
-            el.dataset.memberId = "";
-            el.dataset.guestName = "";
-            el.dataset.numGuests = "";
-            el.dataset.timeslots = "";
-            el.dataset.notes = "";
-
-            // update label display
-            const labelSpan = el.querySelector(".table-label");
-            if (labelSpan) labelSpan.textContent = label;
-        }
-
-        closePopup();
-        alert("All seating assignments for the selected event have been reset.");
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Error resetting seating assignments.");
-    });
+    const el = document.querySelector(`.table-item[data-id="${tableId}"]`);
+    if (el) { clearSeatEl(el); el.classList.add("pending"); }
+    markPending(tableId, null); // null = delete on save
+    closePopup();
 }
 
-// Attach click to each table (per-table, not global)
+// ── Reset ALL seats (immediate — deliberate bulk wipe) ───────────────────
+function resetEventSeating() {
+    if (!selectedEventId) { alert("Select an event first."); return; }
+    if (!confirm("This will clear ALL seat assignments for this event. Continue?")) return;
+
+    fetch("/reset_event_seating/" + selectedEventId, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(r => {
+        if (!r.ok) return r.text().then(t => Promise.reject("Server " + r.status + ": " + t.substring(0, 300)));
+        return r.json();
+    })
+    .then(data => {
+        if (data.status !== "ok") { alert(data.message || "Error resetting."); return; }
+        document.querySelectorAll(".table-item").forEach(el => {
+            clearSeatEl(el);
+            el.classList.remove("pending");
+        });
+        pendingChanges.clear();
+        updateSaveBtn();
+    })
+    .catch(err => alert("Reset failed: " + err));
+}
+
+// ── DOM helpers ───────────────────────────────────────────────────────────
+function clearSeatEl(el) {
+    el.dataset.memberId = ""; el.dataset.guestName = "";
+    el.dataset.numGuests = ""; el.dataset.timeslots = "";
+    el.dataset.notes = ""; el.dataset.seatsOccupied = "1";
+    el.classList.remove("occupied");
+    const s = el.querySelector(".table-label");
+    if (s) s.textContent = "";
+}
+
+function applySeatLabel(el, memberId, guestName, numGuests, timeslots, notes, seatsOccupied, displayLabel) {
+    el.dataset.memberId      = memberId      || "";
+    el.dataset.guestName     = guestName     || "";
+    el.dataset.numGuests     = numGuests     || "";
+    el.dataset.timeslots     = timeslots     || "";
+    el.dataset.notes         = notes         || "";
+    el.dataset.seatsOccupied = seatsOccupied || 1;
+    const span = el.querySelector(".table-label");
+    if (memberId || guestName) {
+        el.classList.add("occupied");
+        if (span) span.textContent = displayLabel || guestName || "";
+    } else {
+        el.classList.remove("occupied");
+        if (span) span.textContent = "";
+    }
+}
+
+// ── Adjacent bar-seat spreading (buffered, no fetch) ─────────────────────
+function queueAdjacentBarSeats(primaryEl, totalSeats, basePayload, baseName) {
+    const allBarSeats = Array.from(document.querySelectorAll('.table-item[data-kind="bar-seat"]'))
+        .sort((a, b) => {
+            const dx = (parseInt(a.style.left) || 0) - (parseInt(b.style.left) || 0);
+            return dx !== 0 ? dx : (parseInt(a.style.top) || 0) - (parseInt(b.style.top) || 0);
+        });
+
+    const primaryIdx = allBarSeats.indexOf(primaryEl);
+    const leftCount  = Math.floor((totalSeats - 1) / 2);
+    const rightCount = totalSeats - 1 - leftCount;
+
+    for (let i = -leftCount; i <= rightCount; i++) {
+        if (i === 0) continue;
+        const idx = primaryIdx + i;
+        if (idx < 0 || idx >= allBarSeats.length) continue;
+        const adjEl  = allBarSeats[idx];
+        const payload = basePayload ? { ...basePayload, seats_occupied: 1 } : null;
+        applySeatLabel(adjEl,
+            basePayload?.member_id   || null,
+            basePayload?.guest_name  || null,
+            basePayload?.num_guests  || null,
+            basePayload?.timeslots   || null,
+            basePayload?.notes       || null,
+            1, baseName);
+        adjEl.classList.add("pending");
+        markPending(adjEl.dataset.id, payload);
+    }
+}
+
+// ── Wire up table clicks ──────────────────────────────────────────────────
 document.querySelectorAll(".table-item").forEach(el => {
     el.addEventListener("click", () => {
-        if (!selectedEventId) {
-            alert("Select an event first.");
-            return;
-        }
+        if (!selectedEventId) { alert("Select an event first."); return; }
         openPopupForElement(el);
     });
 });
-
-
-/* ===========================================================
-   SAVE SINGLE TABLE RESERVATION (per table, per event)
-=========================================================== */
-function saveSingleTable() {
-    if (!selectedEventId) {
-        alert("Select an event first.");
-        return;
-    }
-
-    const tableId   = document.getElementById("popup-table-id").value;
-    const memberId  = document.getElementById("member-select").value;
-    const guestName = document.getElementById("guest-name").value;
-    const numGuests = document.getElementById("num-guests").value;
-    const timeslots = document.getElementById("timeslots").value;
-    const notes     = document.getElementById("notes").value;
-
-    const payload = {
-        seating_item_id: tableId,
-        event_id: selectedEventId,
-        member_id: memberId,
-        guest_name: guestName,
-        num_guests: numGuests,
-        timeslots: timeslots,
-        notes: notes
-    };
-
-    fetch("{{ url_for('save_single_reservation') }}", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.status !== "ok") {
-            alert(data.message || "Error saving.");
-            return;
-        }
-
-        // Update ONLY that table's label and data attributes
-        const el = document.querySelector('.table-item[data-id="' + tableId + '"]');
-        if (el) {
-            // update data-* so next click shows correct info
-            el.dataset.memberId   = memberId;
-            el.dataset.guestName  = guestName;
-            el.dataset.numGuests  = numGuests;
-            el.dataset.timeslots  = timeslots;
-            el.dataset.notes      = notes;
-
-            // Show label from server, or fallback
-            const label = data.display_label || guestName || el.dataset.originalLabel || "Table " + tableId;
-            const labelSpan = el.querySelector(".table-label");
-            if (labelSpan) {
-                labelSpan.textContent = label;
-            } else {
-                el.textContent = label;
-            }
-        }
-
-        closePopup();
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Error saving reservation");
-    });
-}
 </script>
 
-<!-- html2canvas for browser screenshot -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-<button id="download-pdf-btn" class="popup-btn" 
-        style="position:fixed; bottom:25px; right:25px; z-index:9999;">
+<button id="download-pdf-btn"
+        style="position:fixed;bottom:22px;right:22px;z-index:9999;width:auto;padding:10px 18px;
+               background:#ffcf7a;color:#050508;border:none;border-radius:10px;
+               font-weight:700;font-size:0.88rem;cursor:pointer;">
     Download Seating PDF
 </button>
 <script>
 document.getElementById("download-pdf-btn").addEventListener("click", function () {
-
-    const canvasArea = document.getElementById("canvas");
-
-    html2canvas(canvasArea).then(canvas => {
+    html2canvas(document.getElementById("canvas")).then(canvas => {
         const imgData = canvas.toDataURL("image/png");
-
         fetch("{{ url_for('download_seating_pdf') }}", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -463,16 +840,12 @@ document.getElementById("download-pdf-btn").addEventListener("click", function (
         .then(blob => {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
-            a.href = url;
-            a.download = "seating_map.pdf";
-            a.click();
+            a.href = url; a.download = "seating_map.pdf"; a.click();
             window.URL.revokeObjectURL(url);
         })
         .catch(err => console.error(err));
-
     });
 });
 </script>
-
 
 {% endblock %}

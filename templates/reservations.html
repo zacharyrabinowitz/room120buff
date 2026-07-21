@@ -1,69 +1,86 @@
-{% extends 'base.html' %}
+﻿﻿{% extends 'base.html' %}
 {% block content %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container-fluid px-4 mt-4">
 
-<div class="container mt-5">
-  <h2 class="text-center mb-4">Make a Reservation</h2>
+  <div class="page-header text-center">
+    <h2>Make a Reservation</h2>
+    <div class="accent-bar"></div>
+  </div>
 
   {% if error %}
     <div class="alert alert-danger text-center">{{ error }}</div>
   {% endif %}
 
-  <form method="POST" class="styled-form mx-auto" style="max-width: 500px;">
-    <div class="form-group mb-3">
-      <label for="date" class="form-label">Date</label>
-      <input type="date" id="date" name="date" class="form-control" required value="{{ prefill_date or '' }}">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card">
+        <div class="card-body">
+          <form method="POST">
+            <div class="mb-3">
+              <label for="date" class="form-label">Date</label>
+              <input type="date" id="date" name="date" class="form-control" required value="{{ prefill_date or '' }}">
+            </div>
+            <div class="mb-3">
+              <label for="time" class="form-label">Time</label>
+              <input type="time" id="time" name="time" class="form-control" required value="{{ prefill_time or '' }}">
+            </div>
+            <div class="mb-3">
+              <label for="guests" class="form-label">Number of Guests</label>
+              <input type="number" id="guests" name="guests" class="form-control" min="1" required>
+            </div>
+            <div class="mb-4">
+              <label for="notes" class="form-label">Notes</label>
+              <textarea id="notes" name="notes" class="form-control" rows="3"
+                        placeholder="Any special requests?">{{ prefill_note or '' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fas fa-calendar-check me-2"></i>Submit Reservation
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
-
-    <div class="form-group mb-3">
-      <label for="time" class="form-label">Time</label>
-      <input type="time" id="time" name="time" class="form-control" required value="{{ prefill_time or '' }}">
-    </div>
-
-    <div class="form-group mb-3">
-      <label for="guests" class="form-label">Number of Guests</label>
-      <input type="number" id="guests" name="guests" class="form-control" min="1" required>
-    </div>
-
-    <div class="form-group mb-3">
-      <label for="notes" class="form-label">Notes</label>
-      <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Any special requests?">{{ prefill_note or '' }}</textarea>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">Submit Reservation</button>
-  </form>
+  </div>
 
   {% if reservations %}
-    <h3 class="text-center mt-5">Your Reservations</h3>
-    <div class="table-responsive mt-3">
-      <table class="table table-bordered table-hover table-striped">
-        <thead class="table-dark">
-          <tr>
-            <th scope="col">Date</th>
-            <th scope="col">Time</th>
-            <th scope="col">Guests</th>
-            <th scope="col">Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for reservation in reservations %}
-            <tr>
-              <td>{{ reservation.date.strftime('%B %d, %Y') }}</td>
-              <td>{{ reservation.time.strftime('%I:%M %p') }}</td>
-              <td>{{ reservation.guests }}</td>
-              <td>{{ reservation.notes or '—' }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="mt-5">
+      <h3 class="text-center mb-3">Your Reservations</h3>
+      <div class="accent-bar"></div>
+      <div class="card mt-3">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Guests</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for reservation in reservations %}
+                <tr>
+                  <td>{{ reservation.date.strftime('%B %d, %Y') }}</td>
+                  <td>{{ reservation.time.strftime('%I:%M %p') }}</td>
+                  <td>{{ reservation.guests }}</td>
+                  <td class="text-muted">{{ reservation.notes or '—' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   {% endif %}
 
   {% if blocked_dates %}
-    <div class="alert alert-warning mt-5 text-center">
-      <strong>Blocked Reservation Dates:</strong>
-      {{ blocked_dates | join(', ') }}
+    <div class="alert alert-warning mt-4 text-center">
+      <i class="fas fa-ban me-2"></i>
+      <strong>Blocked Dates:</strong> {{ blocked_dates | join(', ') }}
     </div>
   {% endif %}
+
 </div>
 {% endblock %}

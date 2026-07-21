@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1"><i class="fas fa-champagne-glasses me-2" style="color:var(--accent);"></i>Private Event Requests</h2>
+      <p class="text-muted mb-0">Review and manage member buyout and hosted-night requests</p>
+    </div>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+  </div>
+
+  <!-- Status filter -->
+  <div class="d-flex gap-2 mb-4 flex-wrap">
+    {% for s, label in [('', 'All'), ('pending', 'Pending'), ('approved', 'Approved'), ('denied', 'Denied')] %}
+    <a href="{{ url_for('admin_private_events', status=s) }}"
+       class="btn btn-sm {{ 'btn-primary' if status_filter == s else 'btn-outline-secondary' }}">
+      {{ label }}
+      {% if s == 'pending' %}
+        {% set cnt = requests | selectattr('status', 'eq', 'pending') | list | length %}
+        {% if status_filter != 'pending' and cnt %}
+          <span class="badge bg-warning text-dark ms-1">{{ cnt }}</span>
+        {% endif %}
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if requests %}
+  <div class="d-flex flex-column gap-3">
+    {% for r in requests %}
+    {% set badge_class = 'bg-warning text-dark' if r.status == 'pending' else ('bg-success' if r.status == 'approved' else 'bg-danger') %}
+    <div class="card {{ 'border-warning' if r.status == 'pending' else '' }}">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+
+          <!-- Event info -->
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+              <h5 class="mb-0">{{ r.event_name }}</h5>
+              <span class="badge {{ badge_class }}">{{ r.status | capitalize }}</span>
+              <span class="badge bg-secondary">{{ 'Full Buyout' if r.event_type == 'buyout' else 'Hosted Night' }}</span>
+            </div>
+
+            <div class="text-muted small d-flex gap-3 flex-wrap mt-1">
+              <span><i class="fas fa-user me-1"></i>
+                <a href="{{ url_for('view_member', user_id=r.member_id) }}" class="text-muted text-decoration-none">
+                  {{ r.member.first_name }} {{ r.member.last_name }}
+                </a>
+              </span>
+              <span><i class="fas fa-calendar me-1"></i>{{ r.event_date.strftime('%B %d, %Y') }}</span>
+              {% if r.start_time %}<span><i class="fas fa-clock me-1"></i>{{ r.start_time }}{% if r.end_time %} – {{ r.end_time }}{% endif %}</span>{% endif %}
+              {% if r.estimated_guests %}<span><i class="fas fa-users me-1"></i>~{{ r.estimated_guests }} guests est.</span>{% endif %}
+              <span class="opacity-50">Submitted {{ r.submitted_at.strftime('%b %d, %Y') }}</span>
+            </div>
+
+            {% if r.description %}
+            <p class="mt-2 mb-1 small">{{ r.description }}</p>
+            {% endif %}
+            {% if r.special_requests %}
+            <p class="text-muted small mb-0"><strong>Special requests:</strong> {{ r.special_requests }}</p>
+            {% endif %}
+
+            {% if r.admin_notes %}
+            <div class="alert alert-{{ 'success' if r.status == 'approved' else 'secondary' }} mt-2 mb-0 py-2 small">
+              <strong>Admin note:</strong> {{ r.admin_notes }}
+            </div>
+            {% endif %}
+
+            {% if r.status == 'approved' %}
+            <div class="mt-2 d-flex align-items-center gap-2">
+              <span class="text-muted small">Actual attendance:</span>
+              <form method="POST" action="{{ url_for('update_private_event_guests', req_id=r.id) }}"
+                    class="d-flex gap-2 align-items-center">
+                <input type="number" name="actual_guests" class="form-control form-control-sm"
+                       style="width:90px;" min="0"
+                       value="{{ r.actual_guests or '' }}" placeholder="—">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Update</button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Action buttons -->
+          {% if r.status == 'pending' and authorized('manage_private_events') %}
+          <div class="d-flex gap-2 flex-shrink-0">
+            <button class="btn btn-success btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#reviewModal{{ r.id }}"
+                    data-action="approve">
+              <i class="fas fa-check me-1"></i>Approve
+            </button>
+            <button class="btn btn-outline-danger btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#reviewModal{{ r.id }}"
+                    data-action="deny">
+              <i class="fas fa-times me-1"></i>Deny
+            </button>
+          </div>
+          {% elif r.status != 'pending' and r.reviewed_at %}
+          <div class="text-muted small text-end flex-shrink-0">
+            {% if r.reviewed_by %}{{ r.reviewed_by.first_name }} {{ r.reviewed_by.last_name }}<br>{% endif %}
+            {{ r.reviewed_at.strftime('%b %d, %Y') }}
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Review modal -->
+    {% if r.status == 'pending' %}
+    <div class="modal fade" id="reviewModal{{ r.id }}" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="POST" action="{{ url_for('review_private_event', req_id=r.id) }}"
+                id="reviewForm{{ r.id }}">
+            <input type="hidden" name="action" id="reviewAction{{ r.id }}" value="">
+            <div class="modal-header">
+              <h5 class="modal-title" id="reviewModalLabel{{ r.id }}">Review Request</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p class="mb-1"><strong>{{ r.event_name }}</strong></p>
+              <p class="text-muted small mb-3">
+                {{ r.member.first_name }} {{ r.member.last_name }} · {{ r.event_date.strftime('%B %d, %Y') }}
+              </p>
+              <label class="form-label fw-semibold">Note to member <span class="text-muted fw-normal">(optional)</span></label>
+              <textarea name="admin_notes" class="form-control" rows="3"
+                        placeholder="Confirmation details, alternative dates, pricing info…"></textarea>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-success" id="approveBtn{{ r.id }}"
+                      onclick="document.getElementById('reviewAction{{ r.id }}').value='approve'">
+                <i class="fas fa-check me-1"></i>Approve
+              </button>
+              <button type="submit" class="btn btn-danger" id="denyBtn{{ r.id }}"
+                      onclick="document.getElementById('reviewAction{{ r.id }}').value='deny'">
+                <i class="fas fa-times me-1"></i>Deny
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="card p-5 text-center text-muted">
+    <i class="fas fa-champagne-glasses fa-3x mb-3 opacity-25"></i>
+    <h5>No requests{% if status_filter %} with status "{{ status_filter }}"{% endif %}</h5>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

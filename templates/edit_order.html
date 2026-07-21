@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block content %}
-<div class="container mt-5">
+<div class="container-fluid px-4 mt-4">
   <h2 class="mb-4">Edit Order</h2>
   <form method="POST" action="{{ url_for('edit_order', order_id=order.id) }}">
     <div class="mb-3">

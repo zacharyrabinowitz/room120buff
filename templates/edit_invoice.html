@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
+    <div>
+      <h2>Edit Invoice</h2>
+      <div class="text-muted" style="font-size:0.85rem;">{{ member.first_name }} {{ member.last_name }}</div>
+    </div>
+    <a href="{{ url_for('view_member', user_id=member.id) }}" class="btn btn-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i>Back
+    </a>
+  </div>
+
+  <div class="card" style="max-width:720px;">
+    <div class="card-body">
+      <form method="POST">
+
+        <!-- Paid status -->
+        <div class="mb-4 d-flex align-items-center gap-3">
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" name="is_paid" id="is_paid" {% if invoice.is_paid %}checked{% endif %}>
+            <label class="form-check-label fw-medium" for="is_paid">Mark as Paid</label>
+          </div>
+          {% if invoice.is_paid %}
+            <span class="badge bg-success">Paid</span>
+          {% else %}
+            <span class="badge bg-warning">Unpaid</span>
+          {% endif %}
+        </div>
+
+        {% set editable = invoice.original_filename in ('Manual Entry', 'Generated from Order', 'Generated from Orders') %}
+
+        {% if editable %}
+        <!-- Line items -->
+        <div class="mb-3">
+          <label class="form-label fw-medium">Line Items</label>
+          <div id="line-items-container">
+            {% for item in invoice.line_items %}
+            <div class="row mb-2 align-items-center line-item-row">
+              <div class="col-7">
+                <input type="text" name="description[]" class="form-control form-control-sm" value="{{ item.description }}" placeholder="Description" required>
+              </div>
+              <div class="col-3">
+                <input type="number" name="amount[]" step="0.01" class="form-control form-control-sm line-amount" value="{{ '%.2f'|format(item.amount) }}" placeholder="0.00" required>
+              </div>
+              <div class="col-2">
+                <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeRow(this)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <button type="button" class="btn btn-outline-secondary btn-sm mt-1" onclick="addLineItem()">
+            <i class="fas fa-plus me-1"></i>Add Line Item
+          </button>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label for="tax_amount" class="form-label fw-medium">Tax ($)</label>
+            <input type="number" step="0.01" name="tax_amount" id="tax_amount" class="form-control"
+                   value="{{ '%.2f'|format(invoice.tax_amount or 0) }}" oninput="updateTotal()">
+          </div>
+          <div class="col-md-6">
+            <label for="gratuity_amount" class="form-label fw-medium">Gratuity ($)</label>
+            <input type="number" step="0.01" name="gratuity_amount" id="gratuity_amount" class="form-control"
+                   value="{{ '%.2f'|format(invoice.gratuity_amount or 0) }}" oninput="updateTotal()">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background:var(--bg-soft);border:1px solid var(--border);">
+            <span class="text-muted">Calculated Total</span>
+            <strong id="total-display">${{ '%.2f'|format(invoice.total_amount or 0) }}</strong>
+          </div>
+        </div>
+
+        {% else %}
+        <!-- Uploaded PDFs: editable amounts -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label fw-medium">Subtotal ($)</label>
+            <input type="number" step="0.01" name="total_amount" id="total_amount" class="form-control"
+                   value="{{ '%.2f'|format((invoice.total_amount or 0) - (invoice.tax_amount or 0) - (invoice.gratuity_amount or 0)) }}" oninput="updateTotal()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-medium">Tax ($)</label>
+            <input type="number" step="0.01" name="tax_amount" id="tax_amount" class="form-control"
+                   value="{{ '%.2f'|format(invoice.tax_amount or 0) }}" oninput="updateTotal()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-medium">Gratuity ($)</label>
+            <input type="number" step="0.01" name="gratuity_amount" id="gratuity_amount" class="form-control"
+                   value="{{ '%.2f'|format(invoice.gratuity_amount or 0) }}" oninput="updateTotal()">
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center p-3 rounded" style="background:var(--bg-soft);border:1px solid var(--border);">
+            <span class="text-muted">Calculated Total</span>
+            <strong id="total-display">${{ '%.2f'|format(invoice.total_amount or 0) }}</strong>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="mb-4">
+          <label for="notes" class="form-label fw-medium">Notes</label>
+          <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Optional notes...">{{ invoice.notes or '' }}</textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i>Save Changes
+          </button>
+          <a href="{{ url_for('view_member', user_id=member.id) }}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  {% if invoice.original_filename in ('Manual Entry', 'Generated from Order', 'Generated from Orders') %}
+  function addLineItem() {
+    var container = document.getElementById('line-items-container');
+    var row = document.createElement('div');
+    row.className = 'row mb-2 align-items-center line-item-row';
+    row.innerHTML =
+      '<div class="col-7"><input type="text" name="description[]" class="form-control form-control-sm" placeholder="Description" required></div>' +
+      '<div class="col-3"><input type="number" name="amount[]" step="0.01" class="form-control form-control-sm line-amount" placeholder="0.00" oninput="updateTotal()" required></div>' +
+      '<div class="col-2"><button type="button" class="btn btn-danger btn-sm w-100" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></div>';
+    container.appendChild(row);
+  }
+
+  function removeRow(btn) {
+    btn.closest('.line-item-row').remove();
+    updateTotal();
+  }
+
+  function updateTotal() {
+    var amounts = document.querySelectorAll('.line-amount');
+    var sub = 0;
+    amounts.forEach(function(el) { sub += parseFloat(el.value) || 0; });
+    var tax = parseFloat(document.getElementById('tax_amount').value) || 0;
+    var grat = parseFloat(document.getElementById('gratuity_amount').value) || 0;
+    document.getElementById('total-display').textContent = '$' + (sub + tax + grat).toFixed(2);
+  }
+
+  document.querySelectorAll('.line-amount').forEach(function(el) {
+    el.addEventListener('input', updateTotal);
+  });
+  {% else %}
+  function updateTotal() {
+    var sub = parseFloat(document.getElementById('total_amount').value) || 0;
+    var tax = parseFloat(document.getElementById('tax_amount').value) || 0;
+    var grat = parseFloat(document.getElementById('gratuity_amount').value) || 0;
+    document.getElementById('total-display').textContent = '$' + (sub + tax + grat).toFixed(2);
+  }
+  {% endif %}
+</script>
+{% endblock %}

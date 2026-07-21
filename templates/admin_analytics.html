@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a href="{{ url_for('admin_reports') }}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <h2 class="mb-0"><i class="fas fa-chart-line me-2" style="color:var(--accent);"></i>Analytics Dashboard</h2>
+      </div>
+      <p class="text-muted mb-0 ms-5">Growth, churn, visit frequency &amp; revenue — last 12 months</p>
+    </div>
+  </div>
+
+  <!-- ── KPI Cards ─────────────────────────────────────────────── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card text-center p-3">
+        <div class="text-muted small mb-1" style="letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;">Total Members</div>
+        <div class="fw-bold" style="font-size:2rem;color:var(--accent);">{{ total_members }}</div>
+        <div class="text-muted small">{{ active_members }} active · {{ inactive_members }} inactive</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card text-center p-3">
+        <div class="text-muted small mb-1" style="letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;">Churn Rate</div>
+        <div class="fw-bold" style="font-size:2rem;color:{% if churn_rate > 20 %}var(--bs-danger){% elif churn_rate > 10 %}var(--bs-warning){% else %}var(--bs-success){% endif %};">{{ churn_rate }}%</div>
+        <div class="text-muted small">% of members inactive</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card text-center p-3">
+        <div class="text-muted small mb-1" style="letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;">Revenue / Member</div>
+        <div class="fw-bold" style="font-size:2rem;color:var(--accent);">${{ "{:,.0f}".format(avg_revenue_per_member) }}</div>
+        <div class="text-muted small">avg lifetime per active member</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card text-center p-3">
+        <div class="text-muted small mb-1" style="letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;">Avg Visit Frequency</div>
+        <div class="fw-bold" style="font-size:2rem;color:var(--accent);">{{ avg_monthly_visits }}</div>
+        <div class="text-muted small">reservations / member / month <span class="opacity-50">(90-day)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Revenue Over Time ──────────────────────────────────────── -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-dollar-sign me-2" style="color:var(--accent);"></i>Monthly Revenue
+        </div>
+        <div class="card-body">
+          <canvas id="revenueChart" height="110"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-id-badge me-2" style="color:var(--accent);"></i>Membership Breakdown
+        </div>
+        <div class="card-body d-flex align-items-center justify-content-center">
+          <canvas id="typeChart" style="max-height:240px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Growth & Visit Frequency ──────────────────────────────── -->
+  <div class="row g-3 mb-5">
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-users me-2" style="color:var(--accent);"></i>Member Growth <span class="text-muted fw-normal small">(new members per month)</span>
+        </div>
+        <div class="card-body">
+          <canvas id="growthChart" height="140"></canvas>
+          {% set total_new = monthly_new_members | sum %}
+          {% if total_new == 0 %}
+          <p class="text-muted small text-center mt-2 mb-0">
+            <i class="fas fa-info-circle me-1"></i>Growth tracking began when this system was set up. New members added going forward will appear here.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-calendar-check me-2" style="color:var(--accent);"></i>Visit Frequency <span class="text-muted fw-normal small">(reservations / member / month)</span>
+        </div>
+        <div class="card-body">
+          <canvas id="visitChart" height="140"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labels      = {{ month_labels | tojson }};
+const revenue     = {{ monthly_revenue | tojson }};
+const newMembers  = {{ monthly_new_members | tojson }};
+const reservations = {{ monthly_reservations | tojson }};
+const rpm         = {{ monthly_rpm | tojson }};
+const typeLabels  = {{ type_labels | tojson }};
+const typeCounts  = {{ type_counts_list | tojson }};
+const activeCount = {{ active_members }};
+
+// ── Colour helpers ─────────────────────────────────────────────
+const accent  = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#f5b45c';
+const isDark  = document.documentElement.getAttribute('data-theme') !== 'light';
+const gridCol = isDark ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)';
+const textCol = isDark ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.55)';
+
+const PALETTE = [
+  '#f5b45c','#5c9bf5','#5cf5a4','#f55c7a','#c45cf5','#f5e25c','#5cf5e2','#f5945c'
+];
+
+const baseFont = { color: textCol, family: "'Inter', sans-serif", size: 11 };
+const gridOpts = { color: gridCol, drawBorder: false };
+
+function lineOpts(label, color, data, yFmt) {
+  return {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label,
+        data,
+        borderColor: color,
+        backgroundColor: color + '22',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        fill: true,
+        tension: 0.35,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => yFmt ? yFmt(ctx.parsed.y) : ctx.parsed.y
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { ...baseFont, maxTicksLimit: 6 }, grid: gridOpts },
+        y: { beginAtZero: true, ticks: { ...baseFont, callback: yFmt || null }, grid: gridOpts }
+      }
+    }
+  };
+}
+
+// ── Revenue chart ──────────────────────────────────────────────
+const fmtDollar = v => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 0 });
+new Chart(document.getElementById('revenueChart'), lineOpts('Revenue', accent, revenue, fmtDollar));
+
+// ── Membership type pie ────────────────────────────────────────
+new Chart(document.getElementById('typeChart'), {
+  type: 'doughnut',
+  data: {
+    labels: typeLabels,
+    datasets: [{
+      data: typeCounts,
+      backgroundColor: PALETTE,
+      borderWidth: 2,
+      borderColor: isDark ? '#1a1a1a' : '#ffffff',
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { ...baseFont, padding: 12 } }
+    }
+  }
+});
+
+// ── Growth chart ───────────────────────────────────────────────
+new Chart(document.getElementById('growthChart'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [{
+      label: 'New Members',
+      data: newMembers,
+      backgroundColor: accent + 'bb',
+      borderColor: accent,
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { ...baseFont, maxTicksLimit: 6 }, grid: { ...gridOpts, display: false } },
+      y: { beginAtZero: true, ticks: { ...baseFont, precision: 0 }, grid: gridOpts }
+    }
+  }
+});
+
+// ── Visit frequency: reservations / active members per month ───
+const visitFreq = reservations.map(r => activeCount > 0 ? Math.round((r / activeCount) * 100) / 100 : 0);
+new Chart(document.getElementById('visitChart'), lineOpts('Visits/Member', '#5c9bf5', visitFreq, v => v.toFixed(2)));
+</script>
+
+{% endblock %}

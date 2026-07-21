@@ -1,37 +1,65 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block content %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container-fluid px-4 mt-4">
 
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Events</h2>
-    {% if session.get('role') == 'admin' %}
-    <a href="{{ url_for('admin_events') }}" class="btn btn-secondary">Manage Events</a>
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
+    <div>
+      <h2>Upcoming Events</h2>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      {% if session.get('user_id') %}
+      <a href="{{ url_for('private_event_request') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-champagne-glasses me-1"></i> Request Private Event
+      </a>
+      {% endif %}
+      {% if authorized('view_events') %}
+      <a href="{{ url_for('admin_events') }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-cog me-1"></i> Manage Events
+      </a>
+      {% endif %}
+      {% if authorized('view_private_events') %}
+      <a href="{{ url_for('admin_private_events') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-list me-1"></i> Private Requests
+      </a>
+      {% endif %}
+    </div>
   </div>
-  {% endif %}
 
   {% if events %}
-    {% for event in events %}
-      <div class="card mb-3 p-3 shadow-sm">
-        <h5 class="mb-1">{{ event.name }}</h5>
-        <p class="mb-1"><strong>Date:</strong> {{ event.date.strftime('%B %d, %Y') }}</p>
-        <p class="mb-1"><strong>Time:</strong> {{ event.time.strftime('%I:%M %p') }}</p>
-        <p class="mb-2">{{ event.description }}</p>
-
-        <a href="{{ url_for('reservations', date=event.date.strftime('%Y-%m-%d'), time=event.time.strftime('%H:%M'), note='RSVP for ' + event.name) }}" class="btn btn-success btn-sm">RSVP</a>
-
-        {% if session.get('role') == 'admin' %}
-          <div class="mt-3 d-flex gap-2">
-            <a href="{{ url_for('edit_event', event_id=event.id) }}" class="btn btn-warning btn-sm">Edit</a>
-            <form action="{{ url_for('delete_event', event_id=event.id) }}" method="POST">
-              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-            </form>
+    <div class="row g-3">
+      {% for event in events %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+          <div class="card-body d-flex flex-column">
+            <h5 class="mb-2" style="font-family:'Playfair Display',serif;color:var(--accent);">{{ event.name }}</h5>
+            <div class="d-flex gap-3 mb-3" style="font-size:0.82rem;color:var(--text-muted);">
+              <span><i class="fas fa-calendar me-1"></i>{{ event.date.strftime('%B %d, %Y') }}</span>
+              <span><i class="fas fa-clock me-1"></i>{{ event.time.strftime('%I:%M %p') }}</span>
+            </div>
+            <p class="text-muted mb-3" style="font-size:0.88rem;flex:1;">{{ event.description }}</p>
+            <div class="d-flex gap-2 flex-wrap">
+              <a href="{{ url_for('reservations', date=event.date.strftime('%Y-%m-%d'), time=event.time.strftime('%H:%M'), note='RSVP for ' + event.name) }}"
+                 class="btn btn-success btn-sm">
+                <i class="fas fa-check me-1"></i>RSVP
+              </a>
+              {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('edit_event', event_id=event.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                <form action="{{ url_for('delete_event', event_id=event.id) }}" method="POST" class="d-inline">
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              {% endif %}
+            </div>
           </div>
-        {% endif %}
+        </div>
       </div>
-    {% endfor %}
+      {% endfor %}
+    </div>
   {% else %}
-    <p>No events found.</p>
+    <div class="text-center py-5" style="color:var(--text-muted);">
+      <i class="fas fa-champagne-glasses fa-2x mb-3" style="opacity:0.3;"></i>
+      <p>No upcoming events at this time.</p>
+    </div>
   {% endif %}
+
 </div>
 {% endblock %}

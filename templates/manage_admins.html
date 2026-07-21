@@ -1,44 +1,233 @@
 {% extends 'base.html' %}
 {% block content %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container-fluid px-4 mt-4">
 
-<div class="container mt-4">
-  <h2>Manage Admins</h2>
-<a href="{{ url_for('register_admin') }}" class="btn btn-info btn-sm">Add New Admin</a>
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1"><i class="fas fa-user-shield me-2" style="color:var(--accent);"></i>Admins &amp; Staff</h2>
+      <p class="text-muted mb-0">Manage administrator and staff user accounts</p>
+    </div>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+  </div>
 
-  <table class="table table-hover table-striped mt-4">
-    <thead class="table-dark">
-      <tr>
-        <th>Name</th>
-        <th>Username</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for admin in admins %}
-        <tr>
-          <td>{{ admin.first_name }} {{ admin.last_name }}</td>
-          <td>{{ admin.username }}</td>
-          <td>
-            {% if admin.active %}
-              <span class="badge bg-success">Active</span>
-            {% else %}
-              <span class="badge bg-secondary">Inactive</span>
-            {% endif %}
-          </td>
-          <td>
-            <a href="{{ url_for('edit_admin', user_id=admin.id) }}" class="btn btn-info btn-sm">Edit</a>
-            <form action="{{ url_for('toggle_admin', user_id=admin.id) }}" method="POST" style="display:inline-block;">
-              <button type="submit" class="btn btn-warning btn-sm">Change Access</button>
-            </form>
-            <form action="{{ url_for('delete_admin', user_id=admin.id) }}" method="POST" style="display:inline-block;">
-              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-            </form>
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <!-- ── Administrators ───────────────────────────────────────── -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-shield-halved me-2"></i>Administrators</span>
+      <a href="{{ url_for('register_admin') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-plus me-1"></i> Add Admin
+      </a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Username</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for admin in admins %}
+            <tr>
+              <td class="fw-medium">{{ admin.first_name }} {{ admin.last_name }}</td>
+              <td class="text-muted">{{ admin.username }}</td>
+              <td class="text-center">
+                {% if admin.active %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Inactive</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <div class="d-flex gap-2 justify-content-center">
+                  <a href="{{ url_for('edit_admin', user_id=admin.id) }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-pen me-1"></i>Edit
+                  </a>
+                  <form action="{{ url_for('toggle_admin', user_id=admin.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-outline-warning btn-sm">Toggle Access</button>
+                  </form>
+                  <form action="{{ url_for('delete_admin', user_id=admin.id) }}" method="POST" class="d-inline"
+                        onsubmit="return confirm('Delete admin {{ admin.first_name }}? This cannot be undone.')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Staff Users ──────────────────────────────────────────── -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-user-tag me-2"></i>Staff Users</span>
+      <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+        <i class="fas fa-plus me-1"></i> Add Staff User
+      </button>
+    </div>
+    <div class="card-body p-0">
+      {% if staff_users %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for su in staff_users %}
+            <tr>
+              <td class="fw-medium">{{ su.first_name }} {{ su.last_name }}</td>
+              <td class="text-muted">{{ su.username }}</td>
+              <td>
+                {% if su.staff_role %}
+                  <span class="badge bg-{{ su.staff_role.color }}">{{ su.staff_role.display_name }}</span>
+                {% else %}
+                  <span class="badge bg-light text-muted border">No Role</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                {% if su.active %}
+                  <span class="badge bg-success">Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Inactive</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <div class="d-flex gap-2 justify-content-center">
+                  <button class="btn btn-outline-primary btn-sm"
+                          data-bs-toggle="modal"
+                          data-bs-target="#assignRoleModal{{ su.id }}">
+                    <i class="fas fa-tag me-1"></i>Role
+                  </button>
+                  <form action="{{ url_for('toggle_admin', user_id=su.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-outline-warning btn-sm">Toggle</button>
+                  </form>
+                  <form action="{{ url_for('delete_admin', user_id=su.id) }}" method="POST" class="d-inline"
+                        onsubmit="return confirm('Delete staff user {{ su.first_name }}?')">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Assign Role Modal -->
+            <div class="modal fade" id="assignRoleModal{{ su.id }}" tabindex="-1">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form method="POST" action="{{ url_for('assign_staff_role', user_id=su.id) }}">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Assign Role — {{ su.first_name }} {{ su.last_name }}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <label class="form-label fw-semibold">Staff Role</label>
+                      <select name="staff_role_id" class="form-select">
+                        <option value="">— No Role (no access) —</option>
+                        {% for sr in staff_roles %}
+                        <option value="{{ sr.id }}" {% if su.staff_role_id == sr.id %}selected{% endif %}>
+                          {{ sr.display_name }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                      <div class="form-text mt-2">
+                        Changes take effect on the staff user's next login.
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="p-4 text-center text-muted">
+          No staff users yet. Add one to get started.
+        </div>
+      {% endif %}
+    </div>
+    <div class="card-footer text-muted small">
+      <i class="fas fa-info-circle me-1"></i>
+      Staff users' access is controlled by their assigned role. Configure roles in
+      <a href="{{ url_for('admin_settings') }}">Settings</a>.
+    </div>
+  </div>
+
 </div>
+
+<!-- Add Staff User Modal -->
+<div class="modal fade" id="addStaffModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('register_staff') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-plus me-2"></i>New Staff User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
+              <input type="text" name="first_name" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Last Name</label>
+              <input type="text" name="last_name" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+              <input type="text" name="username" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
+              <input type="password" name="password" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Email</label>
+              <input type="email" name="email" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Staff Role</label>
+              <select name="staff_role_id" class="form-select">
+                <option value="">— No Role —</option>
+                {% for sr in staff_roles %}
+                <option value="{{ sr.id }}">{{ sr.display_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> Create Staff User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

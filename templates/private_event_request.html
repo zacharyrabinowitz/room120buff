@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4" style="max-width:700px;">
+
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <a href="{{ url_for('events') }}" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-arrow-left"></i>
+    </a>
+    <div>
+      <h2 class="mb-0"><i class="fas fa-champagne-glasses me-2" style="color:var(--accent);"></i>Request a Private Event</h2>
+      <p class="text-muted mb-0 small">Submit a buyout or hosted-night request. Our team will review and respond within 48 hours.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('private_event_request') }}">
+
+        <!-- Event type -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Event Type <span class="text-danger">*</span></label>
+          <div class="d-flex gap-3 flex-wrap">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="event_type" value="buyout"
+                     id="typeBuyout" checked>
+              <label class="form-check-label" for="typeBuyout">
+                <strong>Full Venue Buyout</strong>
+                <div class="text-muted small">Exclusive use of the entire space</div>
+              </label>
+            </div>
+            <div class="form-check ms-md-4">
+              <input class="form-check-input" type="radio" name="event_type" value="hosted_night"
+                     id="typeHosted">
+              <label class="form-check-label" for="typeHosted">
+                <strong>Member-Hosted Night</strong>
+                <div class="text-muted small">You host guests within normal operating hours</div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold">Event Name <span class="text-danger">*</span></label>
+            <input type="text" name="event_name" class="form-control"
+                   placeholder="e.g. Holiday Dinner, Birthday Celebration" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Date <span class="text-danger">*</span></label>
+            <input type="date" name="event_date" class="form-control" required
+                   min="{{ now.strftime('%Y-%m-%d') }}">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Start Time</label>
+            <input type="time" name="start_time" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">End Time</label>
+            <input type="time" name="end_time" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Estimated Guests</label>
+            <input type="number" name="estimated_guests" class="form-control" min="1" placeholder="20">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Event Description</label>
+          <textarea name="description" class="form-control" rows="3"
+                    placeholder="Tell us about the occasion, atmosphere you're looking for, etc."></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Special Requests</label>
+          <textarea name="special_requests" class="form-control" rows="2"
+                    placeholder="Catering requirements, AV equipment, decorations, dietary needs…"></textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane me-2"></i>Submit Request
+          </button>
+          <a href="{{ url_for('my_private_events') }}" class="btn btn-outline-secondary">
+            View My Requests
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

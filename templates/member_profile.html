@@ -1,245 +1,478 @@
-{% extends 'base.html' %}
+﻿﻿{% extends 'base.html' %}
 {% block content %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container-fluid px-4 mt-4">
 
-<div class="container mt-4">
-  <h2>Member Profile: {{ member.first_name }} {{ member.last_name }}</h2>
+  <div class="page-header">
+    <h2>{{ member.first_name }} {{ member.last_name }}</h2>
+    <div class="d-flex gap-2 align-items-center mt-1">
+      {% if member.active %}
+        <span class="badge bg-success">Active</span>
+      {% else %}
+        <span class="badge bg-secondary">Inactive</span>
+      {% endif %}
+      <span class="badge" style="background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-dim);">
+        {{ member.membership_type|capitalize }}
+      </span>
+    </div>
+  </div>
 
   <!-- Tabs -->
   <ul class="nav nav-tabs" id="memberTab" role="tablist">
-    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#info">Information</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#balance">Balance</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#orders">Order History</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#reservations">Reservations</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#invoices">Invoices</button></li>
+    <li class="nav-item">
+      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#info">
+        <i class="fas fa-user me-1"></i>Information
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#balance">
+        <i class="fas fa-wallet me-1"></i>Balance
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#orders">
+        <i class="fas fa-receipt me-1"></i>Orders
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reservations">
+        <i class="fas fa-calendar me-1"></i>Reservations
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invoices">
+        <i class="fas fa-file-invoice me-1"></i>Invoices
+      </button>
+    </li>
     {% if is_admin %}
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#notes">Notes</button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#admin">Admin Actions</button></li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#notes">
+        <i class="fas fa-note-sticky me-1"></i>Notes
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#admin">
+        <i class="fas fa-shield-halved me-1"></i>Admin
+      </button>
+    </li>
     {% endif %}
   </ul>
 
-  <div class="tab-content pt-3">
+  <div class="tab-content">
+
     <!-- Information Tab -->
     <div class="tab-pane fade show active" id="info">
-      <p><strong>Username:</strong> {{ member.username }}</p>
-      <p><strong>Email:</strong> {{ member.email }}</p>
-      <p><strong>Phone Number:</strong> {{ member.phone }}</p>
-      <p><strong>Member Number:</strong> {{ member.member_number }}</p>
-      <p><strong>Membership Type:</strong> {{ member.membership_type|capitalize }}</p>
-      {% if is_admin %}
-      {% if is_admin and user.stripe_customer_id %}
-{% endif %}
-
-      <a href="{{ url_for('edit_member', user_id=member.id) }}" class="btn btn-info">Edit Info</a>
-      {% endif %}
-    </div>
-
-<!-- Balance Tab -->
-<div class="tab-pane fade" id="balance" role="tabpanel">
-  {% set amount_spent = user.amount_spent or 0 %}
-  {% set amount_owed = user.amount_owed or 0 %}
-  {% set tax_paid = user.tax_paid or 0 %}
-  {% set tax_owed = user.tax_owed or 0 %}
-  {% set gratuity_paid = user.gratuity_paid or 0 %}
-  {% set gratuity_owed = user.gratuity_owed or 0 %}
-  {% set minimum_requirement = 5000 if user.membership_type == 'corporate' else 3000 %}
-  {% set remaining = minimum_requirement - amount_spent - (user.minimum_adjustment or 0) %}
-  {% set has_balance = amount_owed > 0 or tax_owed > 0 or gratuity_owed > 0 %}
-
-  <div class="row g-3">
-
-    <div class="col-md-6">
-      <div class="card shadow-sm border-info">
-        <div class="card-header bg-info text-white">
-          <strong>Membership Status</strong>
+      <div class="row g-3" style="max-width:600px;">
+        <div class="col-12">
+          <div class="d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border);">
+              <span class="text-muted" style="font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;">Username</span>
+              <span>{{ member.username }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border);">
+              <span class="text-muted" style="font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;">Email</span>
+              <span>{{ member.email }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border);">
+              <span class="text-muted" style="font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;">Phone</span>
+              <span>{{ member.phone }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border);">
+              <span class="text-muted" style="font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;">Member #</span>
+              <span>{{ member.member_number }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2">
+              <span class="text-muted" style="font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;">Membership</span>
+              <span>{{ member.membership_type|capitalize }}</span>
+            </div>
+          </div>
         </div>
-        <div class="card-body">
-          <p><strong>Minimum Spend Requirement:</strong> ${{ minimum_requirement }}</p>
-          <p><strong>Total Spent (Paid Orders):</strong> ${{ "%.2f"|format(amount_spent) }}</p>
-          {% if remaining <= 0 %}
-            <p class="text-success fw-bold">✔ Minimum Requirement Met</p>
-          {% else %}
-            <p class="text-warning fw-bold">Remaining to Meet Minimum: ${{ "%.2f"|format(remaining) }}</p>
+        {% if is_admin %}
+        <div class="col-12 mt-2">
+          <a href="{{ url_for('edit_member', user_id=member.id) }}" class="btn btn-info btn-sm">
+            <i class="fas fa-pen me-1"></i>Edit Info
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Preferences -->
+      {% set can_edit_prefs = is_admin or (session.get('user_id') == member.id) %}
+      <div class="mt-4" style="max-width:600px;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="mb-0" style="color:var(--accent);letter-spacing:0.06em;font-size:0.78rem;text-transform:uppercase;">
+            <i class="fas fa-heart me-2"></i>Preferences &amp; Notes
+          </h6>
+          {% if can_edit_prefs %}
+          <button class="btn btn-outline-secondary btn-sm" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#prefsForm">
+            <i class="fas fa-pen me-1"></i>Edit
+          </button>
           {% endif %}
         </div>
-      </div>
-    </div>
 
-    <div class="col-md-6">
-      <div class="card shadow-sm border-danger">
-        <div class="card-header bg-danger text-white">
-          <strong>Outstanding Balances</strong>
+        <!-- Read-only view -->
+        <div id="prefsDisplay">
+          <div class="d-flex flex-column gap-1">
+            <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border);">
+              <span class="text-muted" style="font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;">Favorite Drink</span>
+              <span>{{ member.favorite_drink or '—' }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border);">
+              <span class="text-muted" style="font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;">Seating Preference</span>
+              <span>{{ member.seating_preference or '—' }}</span>
+            </div>
+            <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border);">
+              <span class="text-muted" style="font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;">Allergies / Dietary</span>
+              <span>{{ member.allergies or '—' }}</span>
+            </div>
+            {% if member.preferences_notes %}
+            <div class="py-2">
+              <div class="text-muted mb-1" style="font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;">Additional Notes</div>
+              <div style="white-space:pre-wrap;">{{ member.preferences_notes }}</div>
+            </div>
+            {% endif %}
+          </div>
         </div>
-        <div class="card-body">
-          <p><strong>Amount Owed:</strong> ${{ "%.2f"|format(amount_owed) }}</p>
-          <p><strong>Tax Owed:</strong> ${{ "%.2f"|format(tax_owed) }}</p>
-          <p><strong>Gratuity Owed:</strong> ${{ "%.2f"|format(gratuity_owed) }}</p>
-          {% if not has_balance %}
-            <div class="alert alert-success mt-3 mb-0 text-center">No outstanding balances</div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
 
-    <div class="col-md-6">
-      <div class="card shadow-sm border-success">
-        <div class="card-header bg-success text-white">
-          <strong>Paid Totals</strong>
-        </div>
-        <div class="card-body">
-          <p><strong>Tax Paid:</strong> ${{ "%.2f"|format(tax_paid) }}</p>
-          <p><strong>Gratuity Paid:</strong> ${{ "%.2f"|format(gratuity_paid) }}</p>
-        </div>
-      </div>
-    </div>
-
-    {% if is_admin %}
-    <div class="col-12">
-      <div class="card mt-4">
-        <div class="card-header bg-secondary text-white">
-          <strong>Edit Balance</strong>
-        </div>
-        <div class="card-body">
-          <form method="POST" action="{{ url_for('update_balance', user_id=user.id) }}" class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label">Amount Spent</label>
-              <input type="number" step="0.01" name="amount_spent" value="{{ amount_spent }}" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Amount Owed</label>
-              <input type="number" step="0.01" name="amount_owed" value="{{ amount_owed }}" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Tax Owed</label>
-              <input type="number" step="0.01" name="tax_owed" value="{{ tax_owed }}" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Tax Paid</label>
-              <input type="number" step="0.01" name="tax_paid" value="{{ tax_paid }}" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Gratuity Owed</label>
-              <input type="number" step="0.01" name="gratuity_owed" value="{{ gratuity_owed }}" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Gratuity Paid</label>
-              <input type="number" step="0.01" name="gratuity_paid" value="{{ gratuity_paid }}" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-              <label for="minimum_adjustment">Minimum Adjustment ($)</label>
-              <input type="number" step="0.01" name="minimum_adjustment" value="{{ user.minimum_adjustment or 0 }}" required>
-            </div>
-
-            
-            <div class="col-12 text-end">
-              <button type="submit" class="btn btn-primary mt-2">Update Balance</button>
+        {% if can_edit_prefs %}
+        <!-- Edit form (collapsed by default) -->
+        <div class="collapse mt-3" id="prefsForm">
+          <form method="POST" action="{{ url_for('save_preferences', user_id=member.id) }}">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Favorite Drink</label>
+                <input type="text" name="favorite_drink" class="form-control"
+                       placeholder="e.g. Old Fashioned, Chardonnay"
+                       value="{{ member.favorite_drink or '' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Seating Preference</label>
+                <input type="text" name="seating_preference" class="form-control"
+                       placeholder="e.g. Booth, Window, Quiet corner"
+                       value="{{ member.seating_preference or '' }}">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold">Allergies / Dietary Restrictions</label>
+                <input type="text" name="allergies" class="form-control"
+                       placeholder="e.g. Peanuts, Gluten-free, Vegan"
+                       value="{{ member.allergies or '' }}">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold">Additional Notes</label>
+                <textarea name="preferences_notes" class="form-control" rows="3"
+                          placeholder="Any other preferences or notes for staff...">{{ member.preferences_notes or '' }}</textarea>
+              </div>
+              <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <i class="fas fa-save me-1"></i>Save Preferences
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm"
+                        data-bs-toggle="collapse" data-bs-target="#prefsForm">
+                  Cancel
+                </button>
+              </div>
             </div>
           </form>
         </div>
+        {% endif %}
       </div>
     </div>
-    {% endif %}
 
-  </div>
-</div>
+    <!-- Balance Tab -->
+    <div class="tab-pane fade" id="balance" role="tabpanel">
+      {% set amount_spent = member.amount_spent or 0 %}
+      {% set amount_owed = member.amount_owed or 0 %}
+      {% set tax_paid = member.tax_paid or 0 %}
+      {% set tax_owed = member.tax_owed or 0 %}
+      {% set gratuity_paid = member.gratuity_paid or 0 %}
+      {% set gratuity_owed = member.gratuity_owed or 0 %}
+      {% set _mem_type = membership_type_map.get(member.membership_type) %}
+      {% set minimum_requirement = (_mem_type.min_spend if _mem_type else 0) | float %}
+      {% set remaining = minimum_requirement - amount_spent - (member.minimum_adjustment or 0) %}
+      {% set has_balance = amount_owed > 0 or tax_owed > 0 or gratuity_owed > 0 %}
 
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card border-info">
+            <div class="card-header bg-info">Membership Status</div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Minimum Requirement</span>
+                <strong>${{ minimum_requirement }}</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Total Spent</span>
+                <strong>${{ "%.2f"|format(amount_spent) }}</strong>
+              </div>
+              {% if remaining <= 0 %}
+                <div class="alert alert-success mt-3 mb-0 text-center">
+                  <i class="fas fa-circle-check me-1"></i>Minimum Requirement Met
+                </div>
+              {% else %}
+                <div class="alert alert-warning mt-3 mb-0 text-center">
+                  <i class="fas fa-clock me-1"></i>${{ "%.2f"|format(remaining) }} remaining
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
 
+        <div class="col-md-6">
+          <div class="card border-danger">
+            <div class="card-header bg-danger">Outstanding Balances</div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Amount Owed</span>
+                <strong class="{% if amount_owed > 0 %}text-danger{% endif %}">${{ "%.2f"|format(amount_owed) }}</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Tax Owed</span>
+                <strong class="{% if tax_owed > 0 %}text-danger{% endif %}">${{ "%.2f"|format(tax_owed) }}</strong>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Gratuity Owed</span>
+                <strong class="{% if gratuity_owed > 0 %}text-danger{% endif %}">${{ "%.2f"|format(gratuity_owed) }}</strong>
+              </div>
+              {% if not has_balance %}
+                <div class="alert alert-success mt-3 mb-0 text-center">
+                  <i class="fas fa-circle-check me-1"></i>No outstanding balances
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card border-success">
+            <div class="card-header bg-success">Paid Totals</div>
+            <div class="card-body">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Tax Paid</span>
+                <strong class="text-success">${{ "%.2f"|format(tax_paid) }}</strong>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Gratuity Paid</span>
+                <strong class="text-success">${{ "%.2f"|format(gratuity_paid) }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% if is_admin %}
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header bg-secondary">Edit Balance</div>
+            <div class="card-body">
+              <form method="POST" action="{{ url_for('update_balance', user_id=user.id) }}" class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Amount Spent</label>
+                  <input type="number" step="0.01" name="amount_spent" value="{{ amount_spent }}" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Amount Owed</label>
+                  <input type="number" step="0.01" name="amount_owed" value="{{ amount_owed }}" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Tax Owed</label>
+                  <input type="number" step="0.01" name="tax_owed" value="{{ tax_owed }}" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Tax Paid</label>
+                  <input type="number" step="0.01" name="tax_paid" value="{{ tax_paid }}" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Gratuity Owed</label>
+                  <input type="number" step="0.01" name="gratuity_owed" value="{{ gratuity_owed }}" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Gratuity Paid</label>
+                  <input type="number" step="0.01" name="gratuity_paid" value="{{ gratuity_paid }}" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Minimum Adjustment</label>
+                  <input type="number" step="0.01" name="minimum_adjustment" value="{{ user.minimum_adjustment or 0 }}" class="form-control" required>
+                </div>
+                <div class="col-12 text-end">
+                  <button type="submit" class="btn btn-primary">Update Balance</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
 
     <!-- Orders Tab -->
     <div class="tab-pane fade" id="orders">
       {% if is_admin %}
-      <a href="{{ url_for('add_order', user_id=member.id) }}" class="btn btn-primary mb-3">Add New Order</a>
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <a href="{{ url_for('add_order', user_id=member.id) }}" class="btn btn-primary btn-sm">
+          <i class="fas fa-plus me-1"></i>Add Order
+        </a>
+        <div class="d-flex gap-2 align-items-center">
+          <span id="order-selected-count" class="text-muted" style="font-size:0.85rem;"></span>
+          <button type="submit" form="multi-invoice-form" id="multi-invoice-btn" class="btn btn-secondary btn-sm" disabled>
+            <i class="fas fa-file-invoice me-1"></i>Generate Combined Invoice
+          </button>
+        </div>
+      </div>
+      <form id="multi-invoice-form" action="{{ url_for('generate_invoice_multi') }}" method="post"></form>
       {% endif %}
-      <h5>Order History</h5>
-      <ul class="list-group">
+      <ul class="list-group list-group-flush">
         {% for order in orders %}
         <li class="list-group-item">
-          <strong>Date:</strong> {{ order.date.strftime('%Y-%m-%d') }} {{ order.time.strftime('%I:%M %p') if order.time }}<br>
-          <strong>Subtotal:</strong> ${{ "%.2f"|format(order.subtotal) }}<br>
-          <strong>Tax:</strong> ${{ "%.2f"|format(order.tax) }}<br>
-          <strong>Gratuity:</strong> ${{ "%.2f"|format(order.gratuity) }}<br>
-          <strong>Total:</strong> ${{ "%.2f"|format(order.total) }}<br>
-          {% if order.notes %}<strong>Notes:</strong> {{ order.notes }}<br>{% endif %}
-          {% if order.paid_by_credit %}
-          <span class="badge bg-success">Paid by Credit Card</span>
-          {% else %}
-          <span class="badge bg-warning text-dark">Added to Balance</span>
-          {% endif %}
-          {% if is_admin %}
-          <div class="mt-2">
-            <a href="{{ url_for('edit_order', order_id=order.id) }}" class="btn btn-sm btn-warning">Edit</a>
-            <form action="{{ url_for('delete_order', order_id=order.id) }}" method="post" class="d-inline">
-              <button class="btn btn-sm btn-danger">Delete</button>
-            </form>
-            <a href="{{ url_for('toggle_order_paid', order_id=order.id) }}" class="btn btn-sm btn-outline-secondary">
-              {% if order.paid_by_credit %}Unmark as Paid{% else %}Mark as Paid{% endif %}
-            </a>
-            <form action="{{ url_for('generate_invoice', order_id=order.id) }}" method="post" class="d-inline">
-              <button class="btn btn-sm btn-primary">Generate Invoice</button>
-            </form>
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div class="d-flex align-items-start gap-3">
+              {% if is_admin %}
+              <div class="pt-1">
+                <input type="checkbox" class="form-check-input order-checkbox" name="order_ids[]" value="{{ order.id }}" form="multi-invoice-form">
+              </div>
+              {% endif %}
+              <div>
+                <div class="fw-medium mb-1">{{ order.date.strftime('%B %d, %Y') }}{% if order.time %} &middot; {{ order.time.strftime('%I:%M %p') }}{% endif %}</div>
+                <div class="d-flex gap-3" style="font-size:0.85rem;">
+                  <span><span class="text-muted">Subtotal</span> ${{ "%.2f"|format(order.subtotal) }}</span>
+                  <span><span class="text-muted">Tax</span> ${{ "%.2f"|format(order.tax) }}</span>
+                  <span><span class="text-muted">Grat.</span> ${{ "%.2f"|format(order.gratuity) }}</span>
+                  <span class="fw-semibold"><span class="text-muted">Total</span> ${{ "%.2f"|format(order.total) }}</span>
+                </div>
+                {% if order.notes %}<div class="text-muted mt-1" style="font-size:0.82rem;">{{ order.notes }}</div>{% endif %}
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              {% if order.paid_by_credit %}
+                <span class="badge bg-success">Paid by Card</span>
+              {% else %}
+                <span class="badge bg-warning">On Balance</span>
+              {% endif %}
+              {% if is_admin %}
+                <a href="{{ url_for('edit_order', order_id=order.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                <form action="{{ url_for('delete_order', order_id=order.id) }}" method="post" class="d-inline">
+                  <button class="btn btn-danger btn-sm">Delete</button>
+                </form>
+                <a href="{{ url_for('toggle_order_paid', order_id=order.id) }}" class="btn btn-outline-secondary btn-sm">
+                  {% if order.paid_by_credit %}Unmark Paid{% else %}Mark Paid{% endif %}
+                </a>
+                <form action="{{ url_for('generate_invoice', order_id=order.id) }}" method="post" class="d-inline">
+                  <button class="btn btn-primary btn-sm"><i class="fas fa-file-invoice me-1"></i>Invoice</button>
+                </form>
+              {% endif %}
+            </div>
           </div>
-          {% endif %}
         </li>
         {% else %}
-        <li class="list-group-item">No orders found.</li>
+        <li class="list-group-item text-muted">No orders found.</li>
+        {% endfor %}
+      </ul>
+      {% if is_admin %}
+      <script>
+        (function () {
+          var checkboxes = document.querySelectorAll('.order-checkbox');
+          var btn = document.getElementById('multi-invoice-btn');
+          var countEl = document.getElementById('order-selected-count');
+          function update() {
+            var n = document.querySelectorAll('.order-checkbox:checked').length;
+            btn.disabled = n < 2;
+            countEl.textContent = n > 0 ? n + ' selected' : '';
+          }
+          checkboxes.forEach(function(cb) { cb.addEventListener('change', update); });
+        })();
+      </script>
+      {% endif %}
+    </div>
+
+    <!-- Reservations Tab -->
+    <div class="tab-pane fade" id="reservations">
+      <div class="mb-3">
+        <a href="{{ url_for('reservations') }}" class="btn btn-primary btn-sm">
+          <i class="fas fa-calendar-plus me-1"></i>Make a Reservation
+        </a>
+      </div>
+      <ul class="list-group list-group-flush">
+        {% for r in reservations %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+              <div class="fw-medium">{{ r.date.strftime('%B %d, %Y') }} at {{ r.time.strftime('%I:%M %p') }}</div>
+              <div class="text-muted" style="font-size:0.85rem;">{{ r.guests }} guest{{ 's' if r.guests != 1 else '' }}</div>
+              {% if r.notes %}<div class="text-muted" style="font-size:0.82rem;">{{ r.notes }}</div>{% endif %}
+            </div>
+            <div class="d-flex gap-2">
+              <a href="{{ url_for('edit_reservation', reservation_id=r.id) }}" class="btn btn-warning btn-sm">Edit</a>
+              <form action="{{ url_for('delete_reservation', reservation_id=r.id) }}" method="post" class="d-inline">
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </div>
+          </div>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">No reservations found.</li>
         {% endfor %}
       </ul>
     </div>
 
-<!-- Reservations Tab -->
-<div class="tab-pane fade" id="reservations">
-  <a href="{{ url_for('reservations') }}" class="btn btn-primary mb-2">Make a Reservation</a>
-  <ul class="list-group">
-    {% for r in reservations %}
-    <li class="list-group-item">
-      <td>{{ r.date.strftime('%B %d, %Y') }} at {{ r.time.strftime('%I:%M %p') }}</td> for {{ r.guests }} guests<br>
-      Notes: {{ r.notes or 'None' }}
-      <div class="mt-2">
-        <a href="{{ url_for('edit_reservation', reservation_id=r.id) }}" class="btn btn-sm btn-warning">Edit</a>
-        <form action="{{ url_for('delete_reservation', reservation_id=r.id) }}" method="post" class="d-inline">
-          <button class="btn btn-sm btn-danger">Delete</button>
-        </form>
-      </div>
-      {% if is_admin %}
-      <div class="mt-2">
-        <a href="{{ url_for('edit_reservation', reservation_id=r.id) }}" class="btn btn-sm btn-warning">Edit</a>
-        <form action="{{ url_for('delete_reservation', reservation_id=r.id) }}" method="post" class="d-inline">
-          <button class="btn btn-sm btn-danger">Delete</button>
-        </form>
-      </div>
-      {% endif %}
-    </li>
-    {% else %}
-    <li class="list-group-item">No reservations found.</li>
-    {% endfor %}
-  </ul>
-</div>
-
-
     <!-- Invoices Tab -->
     <div class="tab-pane fade" id="invoices">
       {% if is_admin %}
-      <form method="POST" action="{{ url_for('upload_invoice', user_id=member.id) }}" enctype="multipart/form-data" class="mb-3">
-        <input type="file" name="invoice" class="form-control" accept=".pdf" required>
-        <button type="submit" class="btn btn-primary mt-2">Upload Invoice</button>
-        <a href="{{ url_for('create_invoice') }}" class="btn btn-primary mt-2">Create Invoice</a>
-      </form>
+      <div class="mb-4">
+        <form method="POST" action="{{ url_for('upload_invoice', user_id=member.id) }}" enctype="multipart/form-data" class="d-flex gap-2 align-items-center flex-wrap">
+          <input type="file" name="invoice" class="form-control" accept=".pdf" required style="max-width:280px;">
+          <button type="submit" class="btn btn-secondary btn-sm">
+            <i class="fas fa-upload me-1"></i>Upload PDF
+          </button>
+        </form>
+        <div class="mt-2">
+          <a href="{{ url_for('create_invoice') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i>Create Invoice
+          </a>
+        </div>
+      </div>
       {% endif %}
-      <ul class="list-group">
+      <ul class="list-group list-group-flush">
         {% for invoice in member.invoices %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          {{ invoice.original_filename }} ({{ invoice.upload_date.strftime('%Y-%m-%d') }})
-          <div class="d-flex gap-2">
-            <a href="{{ url_for('download_invoice', invoice_id=invoice.id) }}" class="btn btn-sm btn-secondary">Download</a>
-            {% if is_admin %}
-            <form action="{{ url_for('delete_invoice', invoice_id=invoice.id) }}" method="post">
-              <button class="btn btn-sm btn-danger">Delete</button>
-            </form>
-            {% endif %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+              <div class="fw-medium">{{ invoice.original_filename }}</div>
+              <div class="text-muted" style="font-size:0.8rem;">{{ (invoice.date_created or invoice.upload_date).strftime('%B %d, %Y') }}</div>
+              {% if invoice.notes %}
+              <div class="text-muted mt-1" style="font-size:0.82rem;">{{ invoice.notes }}</div>
+              {% endif %}
+              {% if invoice.total_amount %}
+              <div style="font-size:0.85rem;" class="mt-1">
+                <span class="text-muted">Total</span> <strong>${{ '%.2f'|format(invoice.total_amount) }}</strong>
+                {% if invoice.tax_amount %}<span class="text-muted ms-2">Tax</span> ${{ '%.2f'|format(invoice.tax_amount) }}{% endif %}
+              </div>
+              {% endif %}
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              {% if invoice.is_paid %}
+                <span class="badge bg-success"><i class="fas fa-circle-check me-1"></i>Paid</span>
+              {% else %}
+                <span class="badge bg-warning">Unpaid</span>
+              {% endif %}
+              <a href="{{ url_for('download_invoice', invoice_id=invoice.id) }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-download me-1"></i>Download
+              </a>
+              {% if is_admin %}
+              <a href="{{ url_for('edit_invoice', invoice_id=invoice.id) }}" class="btn btn-warning btn-sm">
+                <i class="fas fa-pen me-1"></i>Edit
+              </a>
+              <form action="{{ url_for('toggle_invoice_paid', invoice_id=invoice.id) }}" method="post" class="d-inline">
+                <button class="btn btn-outline-secondary btn-sm">
+                  {% if invoice.is_paid %}Mark Unpaid{% else %}Mark Paid{% endif %}
+                </button>
+              </form>
+              <form action="{{ url_for('delete_invoice', invoice_id=invoice.id) }}" method="post" class="d-inline">
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </form>
+              {% endif %}
+            </div>
           </div>
         </li>
         {% else %}
-        <li class="list-group-item">No invoices available.</li>
+        <li class="list-group-item text-muted">No invoices available.</li>
         {% endfor %}
       </ul>
     </div>
@@ -247,38 +480,53 @@
     {% if is_admin %}
     <!-- Notes Tab -->
     <div class="tab-pane fade" id="notes">
-      <form action="{{ url_for('add_note', user_id=member.id) }}" method="post">
-        <textarea name="note" class="form-control mb-2" placeholder="Add a note..." required></textarea>
-        <button class="btn btn-success">Add Note</button>
+      <form action="{{ url_for('add_note', user_id=member.id) }}" method="post" class="mb-4">
+        <textarea name="note" class="form-control mb-2" placeholder="Add a note..." rows="3" required></textarea>
+        <button class="btn btn-success btn-sm">
+          <i class="fas fa-plus me-1"></i>Add Note
+        </button>
       </form>
-      <ul class="list-group mt-3">
+      <ul class="list-group list-group-flush">
         {% for note in member.notes_received %}
         <li class="list-group-item">
-          <p>{{ note.content }}</p>
-          <small class="text-muted">By {{ note.author.first_name }} {{ note.author.last_name }} on {{ note.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
-          <div class="mt-2">
-            <a href="{{ url_for('edit_note', note_id=note.id) }}" class="btn btn-sm btn-warning">Edit</a>
-            <form action="{{ url_for('delete_note', note_id=note.id) }}" method="post" class="d-inline">
-              <button class="btn btn-sm btn-danger">Delete</button>
-            </form>
+          <p class="mb-1">{{ note.content }}</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">{{ note.author.first_name }} {{ note.author.last_name }} &middot; {{ note.timestamp.strftime('%B %d, %Y') }}</small>
+            <div class="d-flex gap-2">
+              <a href="{{ url_for('edit_note', note_id=note.id) }}" class="btn btn-warning btn-sm">Edit</a>
+              <form action="{{ url_for('delete_note', note_id=note.id) }}" method="post" class="d-inline">
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </div>
           </div>
         </li>
         {% else %}
-        <li class="list-group-item">No notes available.</li>
+        <li class="list-group-item text-muted">No notes yet.</li>
         {% endfor %}
       </ul>
     </div>
 
     <!-- Admin Actions Tab -->
     <div class="tab-pane fade" id="admin">
-      <form action="{{ url_for('toggle_member', user_id=member.id) }}" method="post" class="mb-2">
-        <button class="btn btn-warning">{{ 'Reactivate' if not member.active else 'Deactivate' }}</button>
-      </form>
-      <form action="{{ url_for('delete_member', user_id=member.id) }}" method="post">
-        <button class="btn btn-danger">Delete Member</button>
-      </form>
+      <div class="d-flex flex-column gap-3" style="max-width:300px;">
+        <form action="{{ url_for('toggle_member', user_id=member.id) }}" method="post">
+          <button class="btn btn-warning w-100">
+            {% if member.active %}
+              <i class="fas fa-user-slash me-2"></i>Deactivate Member
+            {% else %}
+              <i class="fas fa-user-check me-2"></i>Reactivate Member
+            {% endif %}
+          </button>
+        </form>
+        <form action="{{ url_for('delete_member', user_id=member.id) }}" method="post">
+          <button class="btn btn-danger w-100">
+            <i class="fas fa-trash me-2"></i>Delete Member
+          </button>
+        </form>
+      </div>
     </div>
     {% endif %}
+
   </div>
 </div>
 {% endblock %}

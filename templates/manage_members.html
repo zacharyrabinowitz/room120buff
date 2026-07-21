@@ -1,55 +1,69 @@
-{% extends 'base.html' %}
+﻿﻿{% extends 'base.html' %}
 {% block content %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container-fluid mt-4 px-4">
 
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-md-12">
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-3">
+    <div>
       <h2>Manage Members</h2>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('add_member_page') }}" class="btn btn-primary btn-sm">
+        <i class="fas fa-plus me-1"></i> Add Member
+      </a>
+      <a href="{{ url_for('import_members') }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-upload me-1"></i> Import
+      </a>
+      <a href="{{ url_for('export_members') }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-download me-1"></i> Export
+      </a>
+      <a href="{{ url_for('admin_sales_report') }}" class="btn btn-warning btn-sm">
+        <i class="fas fa-chart-bar me-1"></i> Sales Report
+      </a>
+    </div>
+  </div>
 
-      <!-- Other Actions -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <form method="POST" action="{{ url_for('import_members') }}" enctype="multipart/form-data" class="d-flex align-items-center">
-          <input type="file" class="form-control me-2" name="csv_file" accept=".csv" required>
-          <button type="submit" class="btn btn-primary">Import</button>
-        </form>
-        <a href="{{ url_for('add_member_page') }}" class="btn btn-success">Add New Member</a>
-        <a href="{{ url_for('export_members') }}" class="btn btn-info me-2">Export Members</a>
-      </div>
+  <!-- Search -->
+  <div class="mb-4">
+    <form method="GET" action="{{ url_for('manage_members') }}" class="d-flex gap-2" style="max-width:420px;">
+      <input type="text" class="form-control" name="search"
+             placeholder="Search members..." value="{{ search_term }}">
+      <button type="submit" class="btn btn-secondary" style="white-space:nowrap;">Search</button>
+    </form>
+  </div>
 
-      <!-- Search Bar -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <form method="GET" action="{{ url_for('manage_members') }}" class="d-flex align-items-center me-3">
-          <input type="text" class="form-control me-2" name="search" placeholder="Search members..." value="{{ search_term }}">
-          <button type="submit" class="btn btn-secondary">Search</button>
-        </form>
-      </div>
-
-      <!-- Members Table -->
+  <!-- Table -->
+  <div class="card">
+    <div class="card-body p-0">
       <form method="POST" action="{{ url_for('bulk_delete_members') }}">
-        <button type="submit" id="bulkDeleteBtn" class="btn btn-danger mb-2" style="display: none;">Delete Selected Members</button>
+        <div class="px-3 pt-3 pb-2">
+          <button type="submit" id="bulkDeleteBtn" class="btn btn-danger btn-sm"
+                  style="display:none;">
+            <i class="fas fa-trash me-1"></i> Delete Selected
+          </button>
+        </div>
 
-        <table class="table table-hover table-striped">
-          <thead class="table-light">
-            <tr>
-              <th><input type="checkbox" id="selectAll"></th>
-              <th>Name</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Membership Type</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for member in members %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
               <tr>
-                <td><input type="checkbox" name="selected_members" value="{{ member.id }}" class="member-checkbox"></td>
-                <td>{{ member.first_name }} {{ member.last_name }}</td>
-                <td>{{ member.username }}</td>
-                <td>{{ member.email }}</td>
-                <td>{{ member.phone }}</td>
+                <th style="width:40px;"><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for member in members %}
+              <tr>
+                <td><input type="checkbox" name="selected_members" value="{{ member.id }}" class="member-checkbox form-check-input"></td>
+                <td class="fw-medium">{{ member.first_name }} {{ member.last_name }}</td>
+                <td class="text-muted">{{ member.username }}</td>
+                <td class="text-muted">{{ member.email }}</td>
+                <td class="text-muted">{{ member.phone }}</td>
                 <td>{{ member.membership_type|capitalize }}</td>
                 <td>
                   {% if member.active %}
@@ -58,34 +72,120 @@
                     <span class="badge bg-secondary">Inactive</span>
                   {% endif %}
                 </td>
-                <td>
+                <td class="d-flex gap-1 flex-wrap">
                   <a href="{{ url_for('view_member', user_id=member.id) }}" class="btn btn-primary btn-sm">View</a>
+                  {% if authorized('edit_member') %}
+                  <button type="button" class="btn btn-outline-secondary btn-sm send-setup-btn"
+                          data-id="{{ member.id }}"
+                          data-name="{{ member.first_name }} {{ member.last_name }}"
+                          title="Send account setup link">
+                    <i class="fas fa-link"></i>
+                  </button>
+                  {% endif %}
                 </td>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- Setup link modal -->
+<div class="modal fade" id="setupLinkModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="setupLinkModalTitle">Send Setup Link</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="setupLinkModalBody">
+        <div class="text-center py-3">
+          <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--accent);"></i>
+          <p class="mt-2 mb-0 text-muted">Generating link…</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 document.getElementById('selectAll').addEventListener('change', function() {
-  const checkboxes = document.querySelectorAll('.member-checkbox');
-  checkboxes.forEach(cb => cb.checked = this.checked);
+  document.querySelectorAll('.member-checkbox').forEach(cb => cb.checked = this.checked);
   updateBulkDeleteButton();
 });
-
 document.querySelectorAll('.member-checkbox').forEach(cb => {
   cb.addEventListener('change', updateBulkDeleteButton);
 });
-
 function updateBulkDeleteButton() {
-  const checkboxes = document.querySelectorAll('.member-checkbox');
-  const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-  const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-  bulkDeleteBtn.style.display = anyChecked ? 'inline-block' : 'none';
+  const anyChecked = Array.from(document.querySelectorAll('.member-checkbox')).some(cb => cb.checked);
+  document.getElementById('bulkDeleteBtn').style.display = anyChecked ? 'inline-block' : 'none';
 }
+
+// ── Setup link buttons ──────────────────────────────────────────────
+document.querySelectorAll('.send-setup-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    const memberId   = this.dataset.id;
+    const memberName = this.dataset.name;
+    const modal      = new bootstrap.Modal(document.getElementById('setupLinkModal'));
+    const title      = document.getElementById('setupLinkModalTitle');
+    const body       = document.getElementById('setupLinkModalBody');
+
+    title.textContent = `Setup Link — ${memberName}`;
+    body.innerHTML = `
+      <div class="text-center py-3">
+        <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--accent);"></i>
+        <p class="mt-2 mb-0 text-muted">Generating link…</p>
+      </div>`;
+    modal.show();
+
+    fetch(`/admin/send-setup-link/${memberId}`, { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) {
+          body.innerHTML = `<div class="alert alert-danger mb-0">${data.error}</div>`;
+          return;
+        }
+        const emailBlock = data.email_sent
+          ? `<div class="alert alert-success py-2 mb-3">
+               <i class="fas fa-check me-1"></i>
+               Setup email sent to <strong>${memberName}</strong>.
+             </div>`
+          : `<div class="alert alert-warning py-2 mb-3">
+               <i class="fas fa-triangle-exclamation me-1"></i>
+               Email not sent (${data.email_error || 'email not configured'}).
+               Copy the link below to share manually.
+             </div>`;
+
+        body.innerHTML = `
+          ${emailBlock}
+          <p class="mb-1 small fw-semibold">Setup link <span class="text-muted fw-normal">(expires in 48 hours)</span></p>
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control font-monospace" id="setupUrlInput"
+                   value="${data.setup_url}" readonly>
+            <button class="btn btn-outline-secondary" type="button" id="copySetupUrl">
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>`;
+
+        document.getElementById('copySetupUrl').addEventListener('click', function () {
+          const input = document.getElementById('setupUrlInput');
+          input.select();
+          navigator.clipboard.writeText(input.value).catch(() => document.execCommand('copy'));
+          this.innerHTML = '<i class="fas fa-check"></i>';
+          setTimeout(() => { this.innerHTML = '<i class="fas fa-copy"></i>'; }, 1500);
+        });
+      })
+      .catch(err => {
+        body.innerHTML = `<div class="alert alert-danger mb-0">Request failed: ${err}</div>`;
+      });
+  });
+});
 </script>
 {% endblock %}

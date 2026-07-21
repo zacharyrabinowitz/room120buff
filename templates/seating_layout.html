@@ -2,118 +2,217 @@
 {% block content %}
 
 <style>
-/* ==== Layout + Colors ==== */
 .layout-wrapper {
     display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 20px;
-    padding: 20px;
-    background: #050508;
-    min-height: 85vh;
-    color: #f7f3ea;
+    grid-template-columns: 240px 1fr;
+    gap: 16px;
+    padding: 16px 20px;
+    min-height: 88vh;
 }
 
+/* ---- Toolbox ---- */
 .toolbox {
-    background: #0a0a12;
-    padding: 20px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--bg-card);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .toolbox h2 {
     font-family: "Playfair Display", serif;
-    color: #ffcf7a;
-    margin-bottom: 15px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    font-size: 1.15rem;
 }
 
 .tool-btn, .toggle-btn, .delete-btn {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 8px;
-    background: #151520;
-    color: #f7f3ea;
-    border: 1px solid rgba(255,255,255,0.12);
+    padding: 9px 12px;
+    background: var(--bg-elevated);
+    color: var(--text);
+    border: 1px solid var(--border);
     border-radius: 8px;
     cursor: pointer;
     text-align: left;
+    font-size: 0.875rem;
+    transition: background 0.15s;
 }
 
-.tool-btn:hover,
-.toggle-btn:hover,
-.delete-btn:hover {
-    background: #1f1f2b;
+.tool-btn:hover, .toggle-btn:hover, .delete-btn:hover {
+    background: var(--bg-soft);
 }
 
 .toggle-btn.active {
-    background: #ffcf7a !important;
-    color: #050508;
+    background: var(--accent) !important;
+    color: #0a0600;
     font-weight: 700;
+    border-color: var(--accent);
 }
 
 .delete-btn.active {
-    background: #ff5e5e !important;
-    color: white;
+    background: #dc3545 !important;
+    color: #fff;
     font-weight: 700;
+    border-color: #dc3545;
 }
 
+#save-layout {
+    background: var(--accent) !important;
+    color: #0a0600 !important;
+    font-weight: 700;
+    border-color: var(--accent) !important;
+    margin-top: 4px;
+}
+
+#save-layout:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.toolbox hr {
+    border-color: var(--border);
+    margin: 4px 0;
+}
+
+/* ---- Canvas ---- */
 #canvas {
-    background: #101018;
-    border-radius: 14px;
-    border: 2px solid rgba(255,255,255,0.08);
-    height: 75vh;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 2px solid #d0ccc4;
+    height: 80vh;
     position: relative;
     overflow: hidden;
-    transition: border-color 0.25s;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.04);
 }
 
 #canvas.delete-mode {
-    border-color: #ff5e5e;
+    border-color: #dc3545;
+    box-shadow: inset 0 0 0 3px rgba(220,53,69,0.15);
 }
 
-/* ==== Elements ==== */
-.table-item, .wall-item {
+/* ---- Tables ---- */
+.table-item {
     position: absolute;
-    background: #777678;
-    border: 2px solid #ffcf7a;
-    color: #050508;
-    font-weight: bold;
+    background: #c8a050;
+    border: 2px solid #8b6010;
+    color: #1a0a00;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: move;
     user-select: none;
     border-radius: 6px;
+    font-size: 0.8rem;
+    text-align: center;
 }
 
-/* Curved wall pill shape */
+.table-item[data-kind="circle"] {
+    border-radius: 50%;
+}
+
+/* ---- Bar seats ---- */
+.table-item[data-kind="bar-seat"] {
+    background: #2e1a08;
+    border: 2.5px solid #c8a050;
+    border-radius: 50%;
+    color: #f7e8c0;
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+
+/* ---- Walls ---- */
+.wall-item {
+    position: absolute;
+    background: #7a7a7a;
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.72rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: move;
+    user-select: none;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
 .wall-curved {
     border-radius: 40px !important;
 }
 
-/* Resize handle */
+/* ---- Resize handle ---- */
 .resize-handle {
-    width: 14px;
-    height: 14px;
-    background: #ffcf7a;
+    width: 12px;
+    height: 12px;
+    background: rgba(255,255,255,0.9);
+    border: 1.5px solid #888;
     border-radius: 50%;
     position: absolute;
-    bottom: -7px;
-    right: -7px;
+    bottom: -6px;
+    right: -6px;
     cursor: se-resize;
     z-index: 5;
 }
 
-/* Label input */
-.table-item input,
+.wall-item .resize-handle {
+    background: rgba(255,255,255,0.7);
+    border-color: #555;
+}
+
+/* ---- Label input on dblclick ---- */
+.table-item input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: rgba(255,255,255,0.7);
+    color: #1a0a00;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
 .wall-item input {
     width: 100%;
     height: 100%;
     border: none;
-    background: #fff4d6;
-    color: #000;
-    font-weight: bold;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    font-weight: 600;
     text-align: center;
-    border-radius: 6px;
+    font-size: 0.72rem;
+    border-radius: 3px;
+}
+
+/* ---- Save status ---- */
+#save-status {
+    font-size: 0.78rem;
+    text-align: center;
+    min-height: 18px;
+    color: var(--text-muted);
+}
+
+/* ---- Selection ---- */
+.table-item.selected,
+.wall-item.selected {
+    outline: 2px dashed #4a90e2 !important;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 5px rgba(74,144,226,0.18) !important;
+}
+
+#selection-box {
+    position: absolute;
+    border: 1.5px dashed #4a90e2;
+    background: rgba(74,144,226,0.08);
+    pointer-events: none;
+    display: none;
+    z-index: 1000;
 }
 </style>
 
@@ -124,14 +223,20 @@
     <div class="toolbox">
         <h2>Layout Editor</h2>
 
-        <button class="tool-btn" data-type="square">Add Square Table</button>
-        <button class="tool-btn" data-type="circle">Add Round Table</button>
-        <button class="tool-btn" data-type="rect">Add Rectangle Table</button>
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:2px;">Tables</div>
+        <button class="tool-btn" data-type="square">Square Table</button>
+        <button class="tool-btn" data-type="circle">Round Table</button>
+        <button class="tool-btn" data-type="rect">Rectangle Table</button>
+        <button class="tool-btn" data-type="bar-seat" style="display:flex;align-items:center;gap:8px;">
+            <span style="display:inline-block;width:18px;height:18px;background:#2e1a08;border:2px solid #c8a050;border-radius:50%;flex-shrink:0;"></span>
+            Bar Seat
+        </button>
 
         <hr>
 
-        <button class="tool-btn" data-type="wall-straight">Add Straight Wall</button>
-        <button class="tool-btn" data-type="wall-curve">Add Curved Wall</button>
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:2px;">Walls</div>
+        <button class="tool-btn" data-type="wall-straight">Straight Wall</button>
+        <button class="tool-btn" data-type="wall-curve">Curved Wall</button>
 
         <hr>
 
@@ -140,27 +245,29 @@
 
         <hr>
 
-        <button id="save-layout" class="tool-btn" style="background:#ffcf7a;color:#050508;font-weight:700;">
+        <button id="save-layout" class="tool-btn">
             Save Layout
         </button>
+        <div id="save-status"></div>
     </div>
 
 
     <!-- CANVAS -->
     <div id="canvas">
+        <div id="selection-box"></div>
         {% for item in items %}
-        <div class="table-item"
+        {% set is_wall = item.kind and item.kind.startswith('wall') %}
+        <div class="{{ 'wall-item' if is_wall else 'table-item' }} {{ 'wall-curved' if item.kind == 'wall-curve' else '' }}"
              data-id="{{ item.id }}"
              data-kind="{{ item.kind }}"
-             data-label="{{ item.label }}"
              style="
                  left: {{ item.x }}px;
                  top: {{ item.y }}px;
                  width: {{ item.width }}px;
                  height: {{ item.height }}px;
-                 border-radius: {{ '50%' if item.kind == 'circle' else '6px' }};
+                 {% if item.kind in ('circle', 'bar-seat') %}border-radius: 50%;{% endif %}
              ">
-            {{ item.label }}
+            {{ item.label or '' }}
             <div class="resize-handle"></div>
         </div>
         {% endfor %}
@@ -169,13 +276,10 @@
 </div>
 
 
-
 <script>
-/* ======================================================
-   GRID SNAPPING
-====================================================== */
+/* ---- Grid snapping ---- */
 let snapToGrid = false;
-let gridSize = 20;
+const gridSize = 20;
 
 document.getElementById("toggle-grid").addEventListener("click", function () {
     snapToGrid = !snapToGrid;
@@ -183,12 +287,11 @@ document.getElementById("toggle-grid").addEventListener("click", function () {
     this.classList.toggle("active");
 });
 
-/* ======================================================
-   DELETE MODE
-====================================================== */
+/* ---- Delete mode ---- */
 let deleteMode = false;
 const deleteBtn = document.getElementById("delete-mode-btn");
 const canvas = document.getElementById("canvas");
+const selBox  = document.getElementById("selection-box");
 
 deleteBtn.addEventListener("click", () => {
     deleteMode = !deleteMode;
@@ -197,44 +300,220 @@ deleteBtn.addEventListener("click", () => {
     canvas.classList.toggle("delete-mode");
 });
 
-/* ======================================================
-   ADD ELEMENT
-====================================================== */
+/* ---- Selection state ---- */
+const selectedEls = new Set();
+
+function selectEl(el)   { selectedEls.add(el);    el.classList.add("selected"); }
+function deselectEl(el) { selectedEls.delete(el); el.classList.remove("selected"); }
+function toggleEl(el)   { selectedEls.has(el) ? deselectEl(el) : selectEl(el); }
+function clearSelection() { [...selectedEls].forEach(deselectEl); }
+
+/* ---- Centralized drag/resize state ---- */
+// dragState: null | { type: 'group', startX, startY, origPositions: Map }
+//                 | { type: 'rubber', startX, startY }
+//                 | { type: 'resize', el, startX, startY, startW, startH }
+let dragState    = null;
+let pendingClick = null; // element whose click we might need to handle on mouseup
+let hasMoved     = false;
+
+/* ---- Canvas mousedown → rubber-band ---- */
+canvas.addEventListener("mousedown", e => {
+    if (e.target !== canvas && e.target !== selBox) return;
+    if (deleteMode) return;
+    if (!e.shiftKey) clearSelection();
+    const rect = canvas.getBoundingClientRect();
+    dragState = { type: 'rubber', startX: e.clientX - rect.left, startY: e.clientY - rect.top };
+    hasMoved = false;
+    selBox.style.left = dragState.startX + "px";
+    selBox.style.top  = dragState.startY + "px";
+    selBox.style.width  = "0";
+    selBox.style.height = "0";
+    selBox.style.display = "block";
+    e.preventDefault();
+});
+
+/* ---- Element drag ---- */
+function enableDrag(el) {
+    el.addEventListener("mousedown", e => {
+        if (e.target.classList.contains("resize-handle")) return;
+        if (deleteMode) return;
+        e.stopPropagation();
+
+        // Shift+click toggles; no-shift on unselected → clear and select this one
+        if (e.shiftKey) {
+            pendingClick = el; // handle in mouseup (need to know if drag happened)
+        } else if (!selectedEls.has(el)) {
+            clearSelection();
+            selectEl(el);
+        }
+
+        // Save start positions for everything that will move
+        const movers = selectedEls.has(el) ? new Set(selectedEls) : new Set([el]);
+        const origPositions = new Map();
+        movers.forEach(item => origPositions.set(item, {
+            x: parseInt(item.style.left) || 0,
+            y: parseInt(item.style.top)  || 0
+        }));
+        dragState = { type: 'group', startX: e.clientX, startY: e.clientY, origPositions };
+        hasMoved = false;
+        e.preventDefault();
+    });
+
+    el.addEventListener("mouseup", e => {
+        if (!hasMoved) {
+            if (deleteMode) { el.remove(); deselectEl(el); return; }
+            if (e.shiftKey) {
+                toggleEl(el);
+            } else if (!hasMoved && selectedEls.size > 1 && selectedEls.has(el)) {
+                // Clicking on a multi-selected item without shift collapses to just this one
+                clearSelection();
+                selectEl(el);
+            }
+        }
+        pendingClick = null;
+    });
+}
+
+/* ---- Resize ---- */
+function enableResize(el, handle) {
+    handle.addEventListener("mousedown", e => {
+        dragState = { type: 'resize', el, startX: e.clientX, startY: e.clientY, startW: el.offsetWidth, startH: el.offsetHeight };
+        hasMoved = false;
+        e.stopPropagation();
+        e.preventDefault();
+    });
+}
+
+/* ---- Global mousemove ---- */
+window.addEventListener("mousemove", e => {
+    if (!dragState) return;
+    hasMoved = true;
+
+    if (dragState.type === 'group') {
+        const dx = e.clientX - dragState.startX;
+        const dy = e.clientY - dragState.startY;
+        dragState.origPositions.forEach((orig, item) => {
+            let newX = orig.x + dx;
+            let newY = orig.y + dy;
+            if (snapToGrid) { newX = Math.round(newX / gridSize) * gridSize; newY = Math.round(newY / gridSize) * gridSize; }
+            item.style.left = newX + "px";
+            item.style.top  = newY + "px";
+        });
+    }
+
+    if (dragState.type === 'rubber') {
+        const rect = canvas.getBoundingClientRect();
+        const cx = e.clientX - rect.left;
+        const cy = e.clientY - rect.top;
+        const x = Math.min(cx, dragState.startX);
+        const y = Math.min(cy, dragState.startY);
+        selBox.style.left   = x + "px";
+        selBox.style.top    = y + "px";
+        selBox.style.width  = Math.abs(cx - dragState.startX) + "px";
+        selBox.style.height = Math.abs(cy - dragState.startY) + "px";
+    }
+
+    if (dragState.type === 'resize') {
+        let newW = dragState.startW + (e.clientX - dragState.startX);
+        let newH = dragState.startH + (e.clientY - dragState.startY);
+        if (snapToGrid) { newW = Math.round(newW / gridSize) * gridSize; newH = Math.round(newH / gridSize) * gridSize; }
+        if (newW > 30) dragState.el.style.width  = newW + "px";
+        if (newH > 20) dragState.el.style.height = newH + "px";
+    }
+});
+
+/* ---- Global mouseup ---- */
+window.addEventListener("mouseup", () => {
+    if (dragState && dragState.type === 'rubber') {
+        if (hasMoved) {
+            // Use canvas-relative CSS coords before hiding the box
+            const bLeft   = parseInt(selBox.style.left)   || 0;
+            const bTop    = parseInt(selBox.style.top)    || 0;
+            const bRight  = bLeft + (parseInt(selBox.style.width)  || 0);
+            const bBottom = bTop  + (parseInt(selBox.style.height) || 0);
+            document.querySelectorAll(".table-item, .wall-item").forEach(el => {
+                const eLeft   = parseInt(el.style.left) || 0;
+                const eTop    = parseInt(el.style.top)  || 0;
+                const eRight  = eLeft + el.offsetWidth;
+                const eBottom = eTop  + el.offsetHeight;
+                if (eLeft < bRight && eRight > bLeft && eTop < bBottom && eBottom > bTop) {
+                    selectEl(el);
+                }
+            });
+        }
+        selBox.style.display = "none";
+    }
+    dragState = null;
+    hasMoved  = false;
+});
+
+/* ---- Keyboard shortcuts ---- */
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") clearSelection();
+    if ((e.ctrlKey || e.metaKey) && e.key === "a") {
+        e.preventDefault();
+        clearSelection();
+        document.querySelectorAll(".table-item, .wall-item").forEach(selectEl);
+    }
+    if ((e.key === "Delete" || e.key === "Backspace") && selectedEls.size > 0 && document.activeElement === document.body) {
+        e.preventDefault();
+        [...selectedEls].forEach(el => el.remove());
+        clearSelection();
+    }
+});
+
+/* ---- Label edit on dblclick ---- */
+function enableLabelEdit(el) {
+    el.addEventListener("dblclick", () => {
+        if (deleteMode) return;
+        clearSelection();
+        const currentText = el.childNodes[0] ? el.childNodes[0].textContent.trim() : "";
+        const handle = el.querySelector(".resize-handle");
+        if (handle) handle.style.display = "none";
+        const input = document.createElement("input");
+        input.value = currentText;
+        el.innerHTML = "";
+        el.appendChild(input);
+        input.focus();
+        input.select();
+        const done = () => {
+            const val = input.value;
+            el.innerHTML = val;
+            if (handle) { el.appendChild(handle); handle.style.display = ""; }
+        };
+        input.addEventListener("blur", done);
+        input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); input.blur(); } });
+    });
+}
+
+/* ---- Delete (click in delete mode) ---- */
+function enableDelete(el) {
+    // Handled in enableDrag mouseup; this is a no-op kept for API compatibility
+}
+
+/* ---- Add element ---- */
 document.querySelectorAll(".tool-btn[data-type]").forEach(btn => {
     btn.addEventListener("click", () => {
-        let type = btn.dataset.type;
-        let el = document.createElement("div");
-        let isWall = type.includes("wall");
-
+        const type = btn.dataset.type;
+        const isWall = type.startsWith("wall");
+        const el = document.createElement("div");
         el.className = isWall ? "wall-item" : "table-item";
+        if (type === "wall-curve") el.classList.add("wall-curved");
         el.dataset.kind = type;
-
-        el.style.left = "40px";
-        el.style.top = "40px";
-
-        if (type === "square") { el.style.width = "90px"; el.style.height = "90px"; }
-        if (type === "circle") { el.style.width = "90px"; el.style.height = "90px"; el.style.borderRadius = "50%"; }
-        if (type === "rect")   { el.style.width = "140px"; el.style.height = "70px"; }
-
-        if (type === "wall-straight") {
-            el.style.width = "200px";
-            el.style.height = "30px";
-            el.textContent = "Wall";
-        }
-
-        if (type === "wall-curve") {
-            el.style.width = "200px";
-            el.style.height = "50px";
-            el.classList.add("wall-curved");
-            el.textContent = "Curved Wall";
-        }
-
-        let handle = document.createElement("div");
+        el.style.left = "60px";
+        el.style.top  = "60px";
+        if (type === "square")        { el.style.width = "90px";  el.style.height = "90px"; el.textContent = "Table"; }
+        if (type === "circle")        { el.style.width = "90px";  el.style.height = "90px"; el.style.borderRadius = "50%"; el.textContent = "Table"; }
+        if (type === "rect")          { el.style.width = "140px"; el.style.height = "70px"; el.textContent = "Table"; }
+        if (type === "bar-seat")      { el.style.width = "36px";  el.style.height = "36px"; el.style.borderRadius = "50%"; el.textContent = "B"; }
+        if (type === "wall-straight") { el.style.width = "200px"; el.style.height = "28px"; el.textContent = "Wall"; }
+        if (type === "wall-curve")    { el.style.width = "200px"; el.style.height = "50px"; el.textContent = "Wall"; }
+        const handle = document.createElement("div");
         handle.className = "resize-handle";
         el.appendChild(handle);
-
         canvas.appendChild(el);
-
+        clearSelection();
+        selectEl(el);
         enableDrag(el);
         enableResize(el, handle);
         enableLabelEdit(el);
@@ -242,141 +521,55 @@ document.querySelectorAll(".tool-btn[data-type]").forEach(btn => {
     });
 });
 
-/* ======================================================
-   DRAGGING
-====================================================== */
-function enableDrag(el) {
-    let drag = false, startX, startY, origX, origY;
+/* ---- Save ---- */
+const saveBtn    = document.getElementById("save-layout");
+const saveStatus = document.getElementById("save-status");
 
-    el.addEventListener("mousedown", e => {
-        if (e.target.classList.contains("resize-handle")) return;
-        if (deleteMode) return;
+saveBtn.addEventListener("click", () => {
+    const items = Array.from(document.querySelectorAll(".table-item, .wall-item")).map(el => ({
+        id: el.dataset.id || null,
+        kind: el.dataset.kind,
+        label: (el.childNodes[0] ? el.childNodes[0].textContent.trim() : el.textContent.trim()),
+        x: parseInt(el.style.left) || 0,
+        y: parseInt(el.style.top)  || 0,
+        width:  el.offsetWidth,
+        height: el.offsetHeight
+    }));
 
-        drag = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        origX = parseInt(el.style.left);
-        origY = parseInt(el.style.top);
-    });
-
-    window.addEventListener("mousemove", e => {
-        if (!drag) return;
-
-        let newX = origX + (e.clientX - startX);
-        let newY = origY + (e.clientY - startY); /* FIXED BUG HERE */
-
-        if (snapToGrid) {
-            newX = Math.round(newX / gridSize) * gridSize;
-            newY = Math.round(newY / gridSize) * gridSize;
-        }
-
-        el.style.left = newX + "px";
-        el.style.top = newY + "px";
-    });
-
-    window.addEventListener("mouseup", () => drag = false);
-}
-
-/* ======================================================
-   RESIZE
-====================================================== */
-function enableResize(el, handle) {
-    let resizing = false, startX, startY, startW, startH;
-
-    handle.addEventListener("mousedown", e => {
-        resizing = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        startW = el.offsetWidth;
-        startH = el.offsetHeight;
-        e.stopPropagation();
-    });
-
-    window.addEventListener("mousemove", e => {
-        if (!resizing) return;
-
-        let newW = startW + (e.clientX - startX);
-        let newH = startH + (e.clientY - startY);
-
-        if (snapToGrid) {
-            newW = Math.round(newW / gridSize) * gridSize;
-            newH = Math.round(newH / gridSize) * gridSize;
-        }
-
-        if (newW > 40) el.style.width = newW + "px";
-        if (newH > 40) el.style.height = newH + "px";
-    });
-
-    window.addEventListener("mouseup", () => resizing = false);
-}
-
-/* ======================================================
-   LABEL EDIT
-====================================================== */
-function enableLabelEdit(el) {
-    el.addEventListener("dblclick", () => {
-        if (deleteMode) return;
-
-        let existing = el.textContent.trim();
-        let handle = el.querySelector(".resize-handle");
-        handle.style.display = "none";
-
-        let input = document.createElement("input");
-        input.value = existing;
-
-        el.innerHTML = "";
-        el.appendChild(input);
-
-        input.focus();
-
-        input.addEventListener("blur", () => {
-            el.innerHTML = input.value;
-            el.appendChild(handle);
-            handle.style.display = "block";
-        });
-    });
-}
-
-/* ======================================================
-   DELETE ELEMENT
-====================================================== */
-function enableDelete(el) {
-    el.addEventListener("click", () => {
-        if (!deleteMode) return;
-        el.remove();
-    });
-}
-
-/* ======================================================
-   SAVE LAYOUT
-====================================================== */
-document.getElementById("save-layout").addEventListener("click", () => {
-
-    const items = Array.from(document.querySelectorAll(".table-item, .wall-item"))
-        .map(el => ({
-            id: el.dataset.id || null,
-            kind: el.dataset.kind,
-            label: el.innerText.trim(),
-            x: parseInt(el.style.left),
-            y: parseInt(el.style.top),
-            width: el.offsetWidth,
-            height: el.offsetHeight
-        }));
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving…";
+    saveStatus.textContent = "";
 
     fetch("/save_layout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(items)
     })
-    .then(r => r.json())
-    .then(res => {
-        alert("Layout saved successfully!");
-        location.reload();
+    .then(r => {
+        if (!r.ok && r.status !== 400 && r.status !== 500) throw new Error("HTTP " + r.status);
+        return r.json();
     })
-    .catch(err => console.error(err));
+    .then(res => {
+        if (res.status === "success") {
+            saveStatus.textContent = "Saved!";
+            saveStatus.style.color = "#198754";
+        } else {
+            saveStatus.textContent = "Error: " + (res.message || "Unknown error");
+            saveStatus.style.color = "#dc3545";
+        }
+    })
+    .catch(err => {
+        saveStatus.textContent = "Error: " + err.message;
+        saveStatus.style.color = "#dc3545";
+    })
+    .finally(() => {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Layout";
+        setTimeout(() => { saveStatus.textContent = ""; }, 4000);
+    });
 });
 
-/* Enable drag/resize/delete for preloaded items */
+/* ---- Wire up preloaded items ---- */
 document.querySelectorAll(".table-item, .wall-item").forEach(el => {
     enableDrag(el);
     enableResize(el, el.querySelector(".resize-handle"));

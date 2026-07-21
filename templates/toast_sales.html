@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid px-4 mt-4">
   <h2>Toast Sales Data (Dummy)</h2>
   {% if sales_data %}
     <pre>{{ sales_data | tojson(indent=2) }}</pre>

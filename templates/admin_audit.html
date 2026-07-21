@@ -1,0 +1,541 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+/* ── Row styles ─────────────────────────────────────── */
+.audit-visit {
+  opacity: 0.4;
+  font-size: 0.8rem;
+}
+.audit-visit:hover { opacity: 0.7; }
+
+.audit-change {
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.audit-change:hover { background: rgba(255,255,255,0.04) !important; }
+.audit-create { border-left-color: #28a745; }
+.audit-update { border-left-color: #0d6efd; }
+.audit-delete { border-left-color: #dc3545; }
+.audit-auth   { border-left-color: #fd7e14; }
+.audit-system { border-left-color: #6f42c1; }
+
+.change-pill {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.pill-create { background: rgba(40,167,69,0.15);  color: #28a745; border: 1px solid rgba(40,167,69,0.35); }
+.pill-update { background: rgba(13,110,253,0.12); color: #0d6efd; border: 1px solid rgba(13,110,253,0.3); }
+.pill-delete { background: rgba(220,53,69,0.12);  color: #dc3545; border: 1px solid rgba(220,53,69,0.3); }
+.pill-auth   { background: rgba(253,126,20,0.12); color: #fd7e14; border: 1px solid rgba(253,126,20,0.3); }
+.pill-system { background: rgba(111,66,193,0.12); color: #6f42c1; border: 1px solid rgba(111,66,193,0.3); }
+.pill-visit  { background: rgba(108,117,125,0.08);color: #6c757d; border: 1px solid rgba(108,117,125,0.2); }
+
+/* ── Detail modal ───────────────────────────────────── */
+.detail-meta {
+  background: rgba(128,128,128,0.08);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+}
+.detail-meta .meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+}
+.detail-meta .meta-label {
+  min-width: 56px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+.change-table th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+  font-weight: 600;
+  border-bottom-width: 1px !important;
+}
+.change-table td {
+  font-size: 0.88rem;
+  vertical-align: top;
+  padding: 6px 10px !important;
+}
+.diff-before {
+  color: #dc3545;
+  text-decoration: line-through;
+  opacity: 0.75;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+.diff-after {
+  color: #28a745;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+.diff-arrow {
+  opacity: 0.4;
+  margin: 0 4px;
+}
+.click-hint {
+  font-size: 0.7rem;
+  opacity: 0.45;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+</style>
+
+<div class="container-fluid px-4 mt-4">
+
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1"><i class="fas fa-clipboard-list me-2" style="color:var(--accent);"></i>Audit Log</h2>
+      <p class="text-muted mb-0">{{ total }} total entries &mdash; page {{ page }} of {{ pages or 1 }}</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <div class="d-none d-md-flex gap-2 align-items-center me-2" style="font-size:0.75rem;">
+        <span class="change-pill pill-create">Create</span>
+        <span class="change-pill pill-update">Update</span>
+        <span class="change-pill pill-delete">Delete</span>
+        <span class="change-pill pill-auth">Auth</span>
+        <span class="change-pill pill-visit">Visit</span>
+      </div>
+      <a href="{{ url_for('home') }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Back
+      </a>
+      <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#clearModal">
+        <i class="fas fa-trash me-1"></i> Clear Old
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <form method="GET" class="card card-body mb-4 p-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-2">
+        <label class="form-label small mb-1">Category</label>
+        <select name="category" class="form-select form-select-sm">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat }}" {% if filter_category == cat %}selected{% endif %}>{{ cat | capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-2">
+        <label class="form-label small mb-1">Type</label>
+        <select name="change_type" class="form-select form-select-sm">
+          <option value="">All Types</option>
+          <option value="changes" {% if filter_change_type == 'changes' %}selected{% endif %}>Changes only</option>
+          <option value="visits"  {% if filter_change_type == 'visits'  %}selected{% endif %}>Page visits only</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-2">
+        <label class="form-label small mb-1">User</label>
+        <input type="text" name="username" class="form-control form-control-sm"
+               placeholder="Username…" value="{{ filter_username }}">
+      </div>
+      <div class="col-6 col-md-1">
+        <label class="form-label small mb-1">From</label>
+        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ filter_date_from }}">
+      </div>
+      <div class="col-6 col-md-1">
+        <label class="form-label small mb-1">To</label>
+        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ filter_date_to }}">
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label small mb-1">Search action / details / path</label>
+        <input type="text" name="search" class="form-control form-control-sm"
+               placeholder="Search…" value="{{ filter_search }}">
+      </div>
+      <div class="col-12 col-md-1">
+        <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
+      </div>
+    </div>
+  </form>
+
+  {% if logs %}
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-3" style="width:140px">Timestamp</th>
+              <th style="width:70px">Type</th>
+              <th style="width:90px">User</th>
+              <th style="width:75px">Role</th>
+              <th style="width:85px">Category</th>
+              <th>Action &amp; Details</th>
+              <th style="width:110px" class="d-none d-xl-table-cell">IP</th>
+              <th style="width:170px" class="d-none d-xl-table-cell">Path</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            {% set a = log.action | lower %}
+            {% set is_visit = (log.category == 'page_visit') %}
+            {% if is_visit %}
+              {% set change_cls = 'audit-visit' %}
+              {% set pill_cls   = 'pill-visit' %}
+              {% set pill_label = 'Visit' %}
+            {% elif log.category == 'auth' %}
+              {% set change_cls = 'audit-change audit-auth' %}
+              {% set pill_cls   = 'pill-auth' %}
+              {% set pill_label = 'Auth' %}
+            {% elif log.category == 'system' %}
+              {% set change_cls = 'audit-change audit-system' %}
+              {% set pill_cls   = 'pill-system' %}
+              {% set pill_label = 'System' %}
+            {% elif 'created' in a or 'approved' in a or 'blocked' in a or 'added' in a or 'generated' in a or 'imported' in a %}
+              {% set change_cls = 'audit-change audit-create' %}
+              {% set pill_cls   = 'pill-create' %}
+              {% set pill_label = 'Created' %}
+            {% elif 'deleted' in a or 'denied' in a or 'cleared' in a or 'unblocked' in a or 'removed' in a %}
+              {% set change_cls = 'audit-change audit-delete' %}
+              {% set pill_cls   = 'pill-delete' %}
+              {% set pill_label = 'Deleted' %}
+            {% else %}
+              {% set change_cls = 'audit-change audit-update' %}
+              {% set pill_cls   = 'pill-update' %}
+              {% set pill_label = 'Updated' %}
+            {% endif %}
+
+            <tr class="{{ change_cls }}"
+              {% if not is_visit %}
+                data-audit-action="{{ log.action | e }}"
+                data-audit-details="{{ log.details or '' | e }}"
+                data-audit-category="{{ log.category }}"
+                data-audit-pill-cls="{{ pill_cls }}"
+                data-audit-pill-label="{{ pill_label }}"
+                data-audit-username="{{ log.username or '' }}"
+                data-audit-role="{{ log.role or '' }}"
+                data-audit-timestamp="{{ log.timestamp.strftime('%B %d, %Y at %H:%M:%S UTC') }}"
+                data-audit-ip="{{ log.ip_address or '' }}"
+                data-audit-method="{{ log.method or '' }}"
+                data-audit-path="{{ log.path or '' }}"
+                onclick="showAuditDetail(this)"
+                title="Click to see full detail"
+              {% endif %}>
+              <td class="ps-3 font-monospace" style="font-size:0.75rem;white-space:nowrap;">
+                {{ log.timestamp.strftime('%m/%d %H:%M:%S') }}
+              </td>
+              <td>
+                <span class="change-pill {{ pill_cls }}">{{ pill_label }}</span>
+                {% if not is_visit %}
+                  <div class="click-hint mt-1"><i class="fas fa-expand-alt"></i> details</div>
+                {% endif %}
+              </td>
+              <td class="small fw-semibold">{{ log.username or '—' }}</td>
+              <td>
+                {% if log.role == 'admin' %}
+                  <span class="badge" style="background:rgba(245,180,92,0.15);color:var(--accent);border:1px solid rgba(245,180,92,0.3);font-size:0.65rem;">admin</span>
+                {% elif log.role == 'member' %}
+                  <span class="badge bg-secondary" style="font-size:0.65rem;">member</span>
+                {% else %}
+                  <span class="text-muted small">—</span>
+                {% endif %}
+              </td>
+              <td>
+                {% set cat_colors = {
+                  'auth':        'bg-warning text-dark',
+                  'member':      'bg-primary',
+                  'order':       'bg-success',
+                  'invoice':     'bg-info text-dark',
+                  'event':       'bg-secondary',
+                  'reservation': 'bg-secondary',
+                  'settings':    'bg-dark',
+                  'report':      'bg-secondary',
+                  'system':      'bg-danger',
+                  'page_visit':  'bg-light text-muted border',
+                } %}
+                <span class="badge {{ cat_colors.get(log.category, 'bg-secondary') }}" style="font-size:0.65rem;">{{ log.category }}</span>
+              </td>
+              <td>
+                <div class="small {% if not is_visit %}fw-semibold{% endif %}">{{ log.action }}</div>
+                {% if log.details %}
+                  <div class="text-muted text-truncate" style="font-size:0.75rem;max-width:340px;">{{ log.details }}</div>
+                {% endif %}
+              </td>
+              <td class="small font-monospace text-muted d-none d-xl-table-cell">{{ log.ip_address or '—' }}</td>
+              <td class="d-none d-xl-table-cell" style="font-size:0.75rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                  title="{{ (log.method or '') + ' ' + (log.path or '') }}">
+                {% if log.method and log.path %}
+                  <span class="badge bg-light text-dark border me-1" style="font-size:0.6rem;">{{ log.method }}</span>{{ log.path }}
+                {% else %}—{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  {% if pages > 1 %}
+  <nav class="mt-3">
+    <ul class="pagination pagination-sm justify-content-center flex-wrap">
+      {% if page > 1 %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page-1 }}&category={{ filter_category }}&change_type={{ filter_change_type }}&username={{ filter_username }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}&search={{ filter_search }}">&laquo; Prev</a>
+        </li>
+      {% endif %}
+      {% for p in range(1, pages + 1) %}
+        {% if p == page %}
+          <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+        {% elif p <= 3 or p >= pages - 2 or (p >= page - 2 and p <= page + 2) %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ p }}&category={{ filter_category }}&change_type={{ filter_change_type }}&username={{ filter_username }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}&search={{ filter_search }}">{{ p }}</a>
+          </li>
+        {% elif p == 4 or p == pages - 3 %}
+          <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+        {% endif %}
+      {% endfor %}
+      {% if page < pages %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page+1 }}&category={{ filter_category }}&change_type={{ filter_change_type }}&username={{ filter_username }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}&search={{ filter_search }}">Next &raquo;</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="card p-5 text-center text-muted">
+    <i class="fas fa-clipboard fa-3x mb-3 opacity-25"></i>
+    <h5>No audit entries found</h5>
+    <p class="mb-0">Try adjusting your filters.</p>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- ── Detail popup modal ─────────────────────────────────── -->
+<div class="modal fade" id="auditDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header pb-2" id="detailModalHeader">
+        <div>
+          <span id="detailPill" class="change-pill me-2"></span>
+          <span id="detailAction" class="fw-semibold fs-6"></span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-3">
+
+        <!-- Meta strip -->
+        <div class="detail-meta mb-4">
+          <div class="meta-row">
+            <span class="meta-label">When</span>
+            <span id="detailTimestamp" class="fw-semibold"></span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">By</span>
+            <span id="detailUser"></span>
+          </div>
+          <div class="meta-row" id="detailPathRow">
+            <span class="meta-label">Path</span>
+            <span id="detailPath" class="font-monospace small"></span>
+          </div>
+          <div class="meta-row" id="detailIpRow">
+            <span class="meta-label">IP</span>
+            <span id="detailIp" class="font-monospace small"></span>
+          </div>
+        </div>
+
+        <!-- What changed -->
+        <div id="detailChangesSection">
+          <div class="fw-semibold small text-uppercase mb-2" style="letter-spacing:0.07em;opacity:0.6;">
+            <i class="fas fa-list-check me-1"></i> What Changed
+          </div>
+          <div id="detailChangesBody"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Clear modal ─────────────────────────────────────────── -->
+<div class="modal fade" id="clearModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('clear_audit_log') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-trash me-2 text-danger"></i>Clear Audit Log</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>Delete audit entries older than:</p>
+          <select name="days" class="form-select">
+            <option value="30">30 days</option>
+            <option value="60">60 days</option>
+            <option value="90">90 days</option>
+            <option value="180">180 days</option>
+            <option value="365">1 year</option>
+          </select>
+          <div class="alert alert-warning mt-3 mb-0 small">
+            <i class="fas fa-exclamation-triangle me-1"></i>This action cannot be undone.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger"><i class="fas fa-trash me-1"></i> Delete Old Entries</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function showAuditDetail(row) {
+  const d = row.dataset;
+
+  // Header
+  const pill = document.getElementById('detailPill');
+  pill.className = 'change-pill me-2 ' + d.auditPillCls;
+  pill.textContent = d.auditPillLabel;
+  document.getElementById('detailAction').textContent = d.auditAction;
+
+  // Meta
+  document.getElementById('detailTimestamp').textContent = d.auditTimestamp;
+
+  const userEl = document.getElementById('detailUser');
+  let userHtml = '<strong>' + esc(d.auditUsername || '—') + '</strong>';
+  if (d.auditRole) {
+    const roleColor = d.auditRole === 'admin' ? 'warning' : 'secondary';
+    userHtml += ' &nbsp;<span class="badge bg-' + roleColor + (d.auditRole === 'admin' ? ' text-dark' : '') + '">' + esc(d.auditRole) + '</span>';
+  }
+  userEl.innerHTML = userHtml;
+
+  const pathEl   = document.getElementById('detailPath');
+  const pathRow  = document.getElementById('detailPathRow');
+  if (d.auditPath) {
+    const methodBadge = d.auditMethod
+      ? '<span class="badge bg-light text-dark border me-1" style="font-size:0.65rem;">' + esc(d.auditMethod) + '</span>'
+      : '';
+    pathEl.innerHTML = methodBadge + esc(d.auditPath);
+    pathRow.style.display = '';
+  } else {
+    pathRow.style.display = 'none';
+  }
+
+  const ipEl  = document.getElementById('detailIp');
+  const ipRow = document.getElementById('detailIpRow');
+  if (d.auditIp) {
+    ipEl.textContent = d.auditIp;
+    ipRow.style.display = '';
+  } else {
+    ipRow.style.display = 'none';
+  }
+
+  // Changes body
+  const body = document.getElementById('detailChangesBody');
+  body.innerHTML = renderDetails(d.auditDetails, d.auditCategory);
+
+  const modal = new bootstrap.Modal(document.getElementById('auditDetailModal'));
+  modal.show();
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function renderDetails(raw, category) {
+  if (!raw || !raw.trim()) {
+    return '<p class="text-muted small mb-0">No additional details recorded.</p>';
+  }
+
+  // ── Settings changes: "key: 'old' → 'new' | key2: ..." ──
+  if (raw.includes(' → ') && raw.includes("'")) {
+    const parts = raw.split(' | ').filter(Boolean);
+    let html = '<table class="table change-table table-sm mb-0"><thead><tr>'
+      + '<th class="ps-2">Setting</th><th>Before</th><th>After</th>'
+      + '</tr></thead><tbody>';
+    for (const part of parts) {
+      // format: "key: 'oldval' → 'newval'"
+      const colonIdx = part.indexOf(':');
+      if (colonIdx === -1) {
+        html += '<tr><td colspan="3" class="ps-2">' + esc(part) + '</td></tr>';
+        continue;
+      }
+      const key   = part.slice(0, colonIdx).trim();
+      const rest  = part.slice(colonIdx + 1).trim();
+      const arrowIdx = rest.indexOf(' → ');
+      if (arrowIdx === -1) {
+        html += '<tr><td class="ps-2">' + esc(key) + '</td><td colspan="2">' + esc(rest) + '</td></tr>';
+        continue;
+      }
+      const before = rest.slice(0, arrowIdx).replace(/^'|'$/g,'');
+      const after  = rest.slice(arrowIdx + 3).replace(/^'|'$/g,'');
+      html += '<tr>'
+        + '<td class="ps-2 text-muted small">' + esc(key) + '</td>'
+        + '<td><span class="diff-before">' + esc(before || '(empty)') + '</span></td>'
+        + '<td><span class="diff-after">' + esc(after || '(empty)') + '</span></td>'
+        + '</tr>';
+    }
+    html += '</tbody></table>';
+    return html;
+  }
+
+  // ── Inline member updates: "field=val, field2=val2" ──
+  if (raw.includes('=') && !raw.includes(': ')) {
+    const parts = raw.split(/,\s*/).filter(Boolean);
+    let html = '<table class="table change-table table-sm mb-0"><thead><tr>'
+      + '<th class="ps-2">Field</th><th>New Value</th>'
+      + '</tr></thead><tbody>';
+    for (const part of parts) {
+      const eqIdx = part.indexOf('=');
+      if (eqIdx === -1) {
+        html += '<tr><td colspan="2" class="ps-2">' + esc(part) + '</td></tr>';
+      } else {
+        html += '<tr><td class="ps-2 text-muted small">' + esc(part.slice(0, eqIdx).trim()) + '</td>'
+          + '<td class="fw-semibold">' + esc(part.slice(eqIdx+1).trim()) + '</td></tr>';
+      }
+    }
+    html += '</tbody></table>';
+    return html;
+  }
+
+  // ── Middle-dot separated key: value pairs ──
+  if (raw.includes(' · ')) {
+    const parts = raw.split(' · ').filter(Boolean);
+    let html = '<table class="table change-table table-sm mb-0"><thead><tr>'
+      + '<th class="ps-2">Field</th><th>Value</th>'
+      + '</tr></thead><tbody>';
+    for (const part of parts) {
+      const colonIdx = part.indexOf(':');
+      if (colonIdx === -1) {
+        html += '<tr><td colspan="2" class="ps-2">' + esc(part) + '</td></tr>';
+      } else {
+        html += '<tr><td class="ps-2 text-muted small">' + esc(part.slice(0, colonIdx).trim()) + '</td>'
+          + '<td class="fw-semibold">' + esc(part.slice(colonIdx+1).trim()) + '</td></tr>';
+      }
+    }
+    html += '</tbody></table>';
+    return html;
+  }
+
+  // ── Fallback: plain text in a clean box ──
+  return '<div class="p-3 rounded" style="background:rgba(128,128,128,0.08);font-size:0.88rem;white-space:pre-wrap;">'
+    + esc(raw) + '</div>';
+}
+</script>
+
+{% endblock %}

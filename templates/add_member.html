@@ -1,8 +1,7 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block content %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<div class="container mt-4">
+<div class="container-fluid px-4 mt-4">
   <h2>Add New Member</h2>
 
   <form method="POST" action="{{ url_for('add_member_page') }}" class="mt-4" style="max-width: 500px;">
@@ -35,8 +34,11 @@
     <div class="mb-3">
       <label class="form-label">Membership Type:</label>
       <select name="membership_type" class="form-select" required>
-        <option value="single" selected>Single</option>
-        <option value="corporate">Corporate</option>
+        {% for t in member_types %}
+          <option value="{{ t.name }}" {% if loop.first %}selected{% endif %}>
+            {{ t.display_name }}{% if t.min_spend %} — ${{ "{:,.0f}".format(t.min_spend) }} min spend{% endif %}
+          </option>
+        {% endfor %}
       </select>
     </div>
 

@@ -1,0 +1,603 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container-fluid px-4 mt-4">
+
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1"><i class="fas fa-cog me-2" style="color:var(--accent);"></i>Settings</h2>
+      <p class="text-muted mb-0">Configure membership types, club info, reservations, and billing</p>
+    </div>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+  </div>
+
+  <!-- ── Club Information ──────────────────────────────────── -->
+  <form method="POST" action="{{ url_for('admin_settings') }}">
+    <div class="card mb-4">
+      <div class="card-header fw-semibold"><i class="fas fa-building me-2"></i>Club Information</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Club Name</label>
+            <input type="text" name="club_name" class="form-control" value="{{ settings.club_name }}">
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">Tagline</label>
+            <input type="text" name="club_tagline" class="form-control" placeholder="Shown on member-facing pages"
+                   value="{{ settings.club_tagline }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Address</label>
+            <input type="text" name="club_address" class="form-control" placeholder="123 Main St, City, State"
+                   value="{{ settings.club_address }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Phone</label>
+            <input type="text" name="club_phone" class="form-control" placeholder="(555) 000-0000"
+                   value="{{ settings.club_phone }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Contact Email</label>
+            <input type="email" name="club_email" class="form-control" placeholder="admin@club.com"
+                   value="{{ settings.club_email }}">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Billing & Minimum Spend ───────────────────────────── -->
+    <div class="card mb-4">
+      <div class="card-header fw-semibold"><i class="fas fa-dollar-sign me-2"></i>Billing &amp; Minimum Spend</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Minimum Spend Period</label>
+            <select name="minimum_spend_period" class="form-select">
+              <option value="annual"    {% if settings.minimum_spend_period == 'annual'    %}selected{% endif %}>Annual</option>
+              <option value="quarterly" {% if settings.minimum_spend_period == 'quarterly' %}selected{% endif %}>Quarterly</option>
+              <option value="monthly"   {% if settings.minimum_spend_period == 'monthly'   %}selected{% endif %}>Monthly</option>
+            </select>
+            <div class="form-text">Used for minimum spend progress bars on member profiles.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Fiscal Year Start Month</label>
+            <select name="fiscal_year_start_month" class="form-select">
+              {% set months = ['January','February','March','April','May','June','July','August','September','October','November','December'] %}
+              {% for i, m in enumerate(months, 1) %}
+                <option value="{{ i }}" {% if settings.fiscal_year_start_month == i|string %}selected{% endif %}>{{ m }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">When the spend/billing year resets.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Grace Period (days)</label>
+            <input type="number" name="grace_period_days" class="form-control" min="0"
+                   value="{{ settings.grace_period_days }}"
+                   placeholder="0">
+            <div class="form-text">Days after year-end before a member is flagged for not meeting minimum.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Late Fee (%)</label>
+            <input type="number" name="late_fee_percentage" class="form-control" min="0" step="0.01"
+                   value="{{ settings.late_fee_percentage }}"
+                   placeholder="0">
+            <div class="form-text">Applied to overdue balances (informational only).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Reservations ──────────────────────────────────────── -->
+    <div class="card mb-4">
+      <div class="card-header fw-semibold"><i class="fas fa-calendar-alt me-2"></i>Reservations</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Max Guests per Reservation</label>
+            <input type="number" name="max_guests_per_reservation" class="form-control" min="1"
+                   value="{{ settings.max_guests_per_reservation }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Max Advance Booking (days)</label>
+            <input type="number" name="max_advance_booking_days" class="form-control" min="1"
+                   value="{{ settings.max_advance_booking_days }}">
+            <div class="form-text">How far in advance members can book.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Minimum Notice (hours)</label>
+            <input type="number" name="min_advance_booking_hours" class="form-control" min="0"
+                   value="{{ settings.min_advance_booking_hours }}">
+            <div class="form-text">Minimum hours before a reservation time.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Max Reservations per Month</label>
+            <input type="number" name="max_reservations_per_month" class="form-control" min="0"
+                   value="{{ settings.max_reservations_per_month }}">
+            <div class="form-text">0 = unlimited.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Applications ──────────────────────────────────────── -->
+    <div class="card mb-4">
+      <div class="card-header fw-semibold"><i class="fas fa-file-lines me-2"></i>Member Applications</div>
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-4">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="applications_open" id="applicationsOpen"
+                     {% if settings.applications_open == 'true' %}checked{% endif %}>
+              <label class="form-check-label" for="applicationsOpen">
+                <strong>Accept new member applications</strong>
+              </label>
+            </div>
+            <div class="form-text ms-4">When off, the application form is hidden from the public.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Notifications ─────────────────────────────────────── -->
+    <div class="card mb-4">
+      <div class="card-header fw-semibold"><i class="fas fa-bell me-2"></i>Notifications</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Notification Email</label>
+            <input type="email" name="notify_email" class="form-control"
+                   placeholder="alerts@yourclub.com"
+                   value="{{ settings.notify_email }}">
+            <div class="form-text">Where admin alerts are sent (if enabled below).</div>
+          </div>
+          <div class="col-md-3 d-flex flex-column justify-content-center gap-2 mt-2 mt-md-0">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="notify_on_new_application"
+                     id="notifyApp"
+                     {% if settings.notify_on_new_application == 'true' %}checked{% endif %}>
+              <label class="form-check-label" for="notifyApp">Email on new application</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="notify_on_invoice_created"
+                     id="notifyInv"
+                     {% if settings.notify_on_invoice_created == 'true' %}checked{% endif %}>
+              <label class="form-check-label" for="notifyInv">Email on invoice created</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end mb-5">
+      <button type="submit" class="btn btn-primary px-5">
+        <i class="fas fa-save me-2"></i>Save All Settings
+      </button>
+    </div>
+  </form>
+
+  <!-- ── Membership Types ─────────────────────────────────────── -->
+  <div class="card mb-5">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-id-badge me-2"></i>Membership Types</span>
+      <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addTypeModal">
+        <i class="fas fa-plus me-1"></i> Add Type
+      </button>
+    </div>
+    <div class="card-body p-0">
+      {% if types %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Display Name</th>
+              <th>Slug (internal)</th>
+              <th class="text-end">Min Spend</th>
+              <th class="text-end">Monthly Dues</th>
+              <th class="text-center">Members</th>
+              <th class="text-center">Active</th>
+              <th>Description</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in types %}
+            <tr>
+              <td class="fw-semibold">{{ t.display_name }}</td>
+              <td><code>{{ t.name }}</code></td>
+              <td class="text-end">${{ "{:,.2f}".format(t.min_spend or 0) }}</td>
+              <td class="text-end">${{ "{:,.2f}".format(t.monthly_dues or 0) }}</td>
+              <td class="text-center">
+                <span class="badge bg-secondary">{{ type_counts.get(t.id, 0) }}</span>
+              </td>
+              <td class="text-center">
+                {% if t.is_active %}
+                  <span class="badge bg-success">Yes</span>
+                {% else %}
+                  <span class="badge bg-danger">No</span>
+                {% endif %}
+              </td>
+              <td class="text-muted small">{{ t.description or '—' }}</td>
+              <td class="text-center">
+                <button class="btn btn-outline-primary btn-sm me-1"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editTypeModal{{ t.id }}">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <form method="POST"
+                      action="{{ url_for('delete_membership_type', type_id=t.id) }}"
+                      style="display:inline"
+                      onsubmit="return confirmDelete('{{ t.display_name }}', {{ type_counts.get(t.id, 0) }})">
+                  <button type="submit" class="btn btn-outline-danger btn-sm"
+                          {% if type_counts.get(t.id, 0) > 0 %}disabled title="{{ type_counts.get(t.id) }} member(s) assigned"{% endif %}>
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+
+            <!-- Edit modal for this type -->
+            <div class="modal fade" id="editTypeModal{{ t.id }}" tabindex="-1">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form method="POST" action="{{ url_for('edit_membership_type', type_id=t.id) }}">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Edit &mdash; {{ t.display_name }}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Display Name <span class="text-danger">*</span></label>
+                        <input type="text" name="display_name" class="form-control" value="{{ t.display_name }}" required>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Internal Slug</label>
+                        <input type="text" class="form-control" value="{{ t.name }}" disabled>
+                        <div class="form-text">Cannot be changed — it identifies existing members.</div>
+                      </div>
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Minimum Annual Spend ($)</label>
+                          <input type="number" name="min_spend" class="form-control" step="0.01" min="0"
+                                 value="{{ t.min_spend or 0 }}">
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Monthly Dues ($)</label>
+                          <input type="number" name="monthly_dues" class="form-control" step="0.01" min="0"
+                                 value="{{ t.monthly_dues or 0 }}">
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Display Order</label>
+                        <input type="number" name="sort_order" class="form-control" min="0"
+                               value="{{ t.sort_order or 0 }}">
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea name="description" class="form-control" rows="2">{{ t.description or '' }}</textarea>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_active" id="active{{ t.id }}"
+                               {% if t.is_active %}checked{% endif %}>
+                        <label class="form-check-label" for="active{{ t.id }}">
+                          Active (available for new members)
+                        </label>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save Changes
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="p-4 text-center text-muted">No membership types yet. Add one to get started.</div>
+      {% endif %}
+    </div>
+    <div class="card-footer text-muted small">
+      <i class="fas fa-info-circle me-1"></i>
+      <strong>Min Spend</strong> drives the balance progress bar on each member's profile.
+      Deactivating a type hides it from new-member dropdowns but does not affect existing members.
+    </div>
+  </div>
+
+  <!-- ── Staff Roles ──────────────────────────────────────────── -->
+  <div class="card mb-5">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-user-tag me-2"></i>Staff Roles &amp; Permissions</span>
+      <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addRoleModal">
+        <i class="fas fa-plus me-1"></i> Add Role
+      </button>
+    </div>
+    <div class="card-body p-0">
+      {% if staff_roles %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Role</th>
+              <th class="text-center">Permissions</th>
+              <th class="text-center">Users</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sr in staff_roles %}
+            {% set role_perms = (sr.permissions | fromjson) if sr.permissions else [] %}
+            <tr>
+              <td>
+                <span class="badge bg-{{ sr.color }} me-2">{{ sr.display_name }}</span>
+                <code class="text-muted small">{{ sr.name }}</code>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-secondary">{{ role_perms | length }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-{{ 'primary' if sr.users else 'light text-muted' }}">
+                  {{ sr.users | length }}
+                </span>
+              </td>
+              <td class="text-center">
+                <button class="btn btn-outline-primary btn-sm me-1"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editRoleModal{{ sr.id }}">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <form method="POST" action="{{ url_for('delete_staff_role', role_id=sr.id) }}"
+                      style="display:inline"
+                      onsubmit="return confirm('Delete role \'{{ sr.display_name }}\'?')">
+                  <button type="submit" class="btn btn-outline-danger btn-sm"
+                          {% if sr.users %}disabled title="{{ sr.users | length }} user(s) assigned"{% endif %}>
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+
+            <!-- Edit Role Modal -->
+            <div class="modal fade" id="editRoleModal{{ sr.id }}" tabindex="-1">
+              <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                  <form method="POST" action="{{ url_for('edit_staff_role', role_id=sr.id) }}">
+                    <div class="modal-header">
+                      <h5 class="modal-title"><i class="fas fa-pen me-2"></i>Edit Role — {{ sr.display_name }}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Display Name <span class="text-danger">*</span></label>
+                          <input type="text" name="display_name" class="form-control"
+                                 value="{{ sr.display_name }}" required>
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label fw-semibold">Badge Color</label>
+                          <select name="color" class="form-select">
+                            {% for c in ['primary','secondary','success','danger','warning','info','dark'] %}
+                            <option value="{{ c }}" {% if sr.color == c %}selected{% endif %}>{{ c | capitalize }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+                      <h6 class="fw-semibold mb-3">Permissions</h6>
+                      <div class="row g-4">
+                        {% for category, perms in permissions.items() %}
+                        <div class="col-md-6 col-lg-4">
+                          <div class="card h-100">
+                            <div class="card-header py-2 small fw-semibold">{{ category }}</div>
+                            <div class="card-body py-2">
+                              {% for slug, label in perms.items() %}
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       name="permissions" value="{{ slug }}"
+                                       id="e{{ sr.id }}_{{ slug }}"
+                                       {% if slug in role_perms %}checked{% endif %}>
+                                <label class="form-check-label small" for="e{{ sr.id }}_{{ slug }}">
+                                  {{ label }}
+                                </label>
+                              </div>
+                              {% endfor %}
+                            </div>
+                            <div class="card-footer py-1 d-flex gap-2">
+                              <button type="button" class="btn btn-link btn-sm p-0 text-muted"
+                                      onclick="setAll(this, true)">all</button>
+                              <span class="text-muted">|</span>
+                              <button type="button" class="btn btn-link btn-sm p-0 text-muted"
+                                      onclick="setAll(this, false)">none</button>
+                            </div>
+                          </div>
+                        </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save Role
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="p-4 text-center text-muted">No staff roles yet. Create one to start assigning permissions.</div>
+      {% endif %}
+    </div>
+    <div class="card-footer text-muted small">
+      <i class="fas fa-info-circle me-1"></i>
+      Admins always have full access regardless of roles. Roles only restrict <strong>staff</strong> users.
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Role Modal -->
+<div class="modal fade" id="addRoleModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('add_staff_role') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-plus me-2"></i>New Staff Role</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3 mb-4">
+            <div class="col-md-5">
+              <label class="form-label fw-semibold">Display Name <span class="text-danger">*</span></label>
+              <input type="text" name="display_name" id="roleDisplayName" class="form-control"
+                     placeholder="e.g. Front Desk, Manager" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Internal Slug <span class="text-danger">*</span></label>
+              <input type="text" name="name" id="roleSlug" class="form-control"
+                     placeholder="front_desk (auto-filled)" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">Badge Color</label>
+              <select name="color" class="form-select">
+                {% for c in ['primary','secondary','success','danger','warning','info','dark'] %}
+                <option value="{{ c }}">{{ c | capitalize }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <h6 class="fw-semibold mb-3">Permissions</h6>
+          <div class="row g-4">
+            {% for category, perms in permissions.items() %}
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100">
+                <div class="card-header py-2 small fw-semibold">{{ category }}</div>
+                <div class="card-body py-2">
+                  {% for slug, label in perms.items() %}
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox"
+                           name="permissions" value="{{ slug }}"
+                           id="new_{{ slug }}">
+                    <label class="form-check-label small" for="new_{{ slug }}">
+                      {{ label }}
+                    </label>
+                  </div>
+                  {% endfor %}
+                </div>
+                <div class="card-footer py-1 d-flex gap-2">
+                  <button type="button" class="btn btn-link btn-sm p-0 text-muted"
+                          onclick="setAll(this, true)">all</button>
+                  <span class="text-muted">|</span>
+                  <button type="button" class="btn btn-link btn-sm p-0 text-muted"
+                          onclick="setAll(this, false)">none</button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> Create Role
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Type Modal -->
+<div class="modal fade" id="addTypeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('add_membership_type') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-plus me-2"></i>New Membership Type</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Display Name <span class="text-danger">*</span></label>
+            <input type="text" name="display_name" id="addDisplayName" class="form-control"
+                   placeholder="e.g. Gold, Family, VIP" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Internal Slug <span class="text-danger">*</span></label>
+            <input type="text" name="name" id="newSlug" class="form-control"
+                   placeholder="e.g. gold (auto-filled)" required>
+            <div class="form-text">Lowercase letters and underscores only. Cannot be changed later.</div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Minimum Annual Spend ($)</label>
+              <input type="number" name="min_spend" class="form-control" step="0.01" min="0" value="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Monthly Dues ($)</label>
+              <input type="number" name="monthly_dues" class="form-control" step="0.01" min="0" value="0">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Display Order</label>
+            <input type="number" name="sort_order" class="form-control" min="0" value="0">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description</label>
+            <textarea name="description" class="form-control" rows="2"
+                      placeholder="Optional notes about this tier"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> Create Type
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('addDisplayName').addEventListener('input', function() {
+  const slug = document.getElementById('newSlug');
+  if (!slug._userEdited) {
+    slug.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  }
+});
+document.getElementById('newSlug').addEventListener('input', function() {
+  this._userEdited = true;
+});
+
+document.getElementById('roleDisplayName').addEventListener('input', function() {
+  const slug = document.getElementById('roleSlug');
+  if (!slug._userEdited) {
+    slug.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  }
+});
+document.getElementById('roleSlug').addEventListener('input', function() {
+  this._userEdited = true;
+});
+
+function confirmDelete(name, count) {
+  if (count > 0) return false;
+  return confirm('Delete membership type "' + name + '"? This cannot be undone.');
+}
+
+function setAll(btn, checked) {
+  const card = btn.closest('.card');
+  card.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = checked);
+}
+</script>
+
+{% endblock %}

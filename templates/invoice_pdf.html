@@ -1,34 +1,453 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Invoice</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        .header { margin-bottom: 20px; }
-        .line-item { border-bottom: 1px solid #ccc; padding: 5px 0; }
-    </style>
+  <meta charset="utf-8">
+  <title>Room 120 — Invoice #{{ invoice.id }}</title>
+  <style>
+    @page {
+      size: letter;
+      margin: 0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 10pt;
+      color: #1c1810;
+      background: #ffffff;
+    }
+
+    /* ── HEADER BAND ─────────────────────────── */
+    .header-band {
+      background-color: #1c1810;
+      padding: 36px 52px 28px 52px;
+    }
+
+    .header-inner {
+      width: 100%;
+    }
+
+    .brand-name {
+      font-size: 24pt;
+      font-weight: bold;
+      letter-spacing: 7px;
+      text-transform: uppercase;
+      color: #c9a55a;
+    }
+
+    .brand-sub {
+      font-size: 8pt;
+      letter-spacing: 3.5px;
+      text-transform: uppercase;
+      color: #7a7060;
+      margin-top: 3px;
+    }
+
+    .inv-label {
+      font-size: 9pt;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #7a7060;
+      text-align: right;
+    }
+
+    .inv-number {
+      font-size: 22pt;
+      font-weight: bold;
+      color: #ffffff;
+      text-align: right;
+      letter-spacing: 1px;
+    }
+
+    .inv-date {
+      font-size: 9pt;
+      color: #7a7060;
+      text-align: right;
+      margin-top: 2px;
+    }
+
+    /* ── GOLD RULE ───────────────────────────── */
+    .gold-rule {
+      background-color: #c9a55a;
+      height: 3px;
+      font-size: 1px;
+      line-height: 1px;
+    }
+
+    .thin-rule {
+      background-color: #e0d8cc;
+      height: 1px;
+      font-size: 1px;
+      line-height: 1px;
+    }
+
+    /* ── CONTENT AREA ────────────────────────── */
+    .content {
+      padding: 36px 52px 0 52px;
+    }
+
+    /* ── BILL TO / INVOICE DETAILS ───────────── */
+    .meta-section {
+      width: 100%;
+      margin-bottom: 36px;
+    }
+
+    .section-label {
+      font-size: 7pt;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: #9a9080;
+      font-weight: bold;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .member-name {
+      font-size: 14pt;
+      font-weight: bold;
+      color: #1c1810;
+      margin-bottom: 3px;
+    }
+
+    .member-detail {
+      font-size: 9pt;
+      color: #5a5040;
+      line-height: 1.6;
+    }
+
+    .member-badge {
+      display: inline-block;
+      background-color: #f0e8d8;
+      color: #8a6020;
+      font-size: 7pt;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: bold;
+      padding: 2px 7px;
+      margin-top: 5px;
+    }
+
+    .inv-detail-label {
+      font-size: 8pt;
+      color: #9a9080;
+      text-align: right;
+      padding: 2px 0;
+    }
+
+    .inv-detail-value {
+      font-size: 9.5pt;
+      font-weight: bold;
+      color: #1c1810;
+      text-align: right;
+      padding: 2px 0;
+    }
+
+    /* ── LINE ITEMS TABLE ────────────────────── */
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 0;
+    }
+
+    .items-table thead tr {
+      background-color: #1c1810;
+    }
+
+    .items-table thead th {
+      padding: 11px 16px;
+      font-size: 7.5pt;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: bold;
+      color: #c9a55a;
+    }
+
+    .items-table thead th.col-desc { text-align: left; }
+    .items-table thead th.col-qty  { text-align: center; width: 60px; }
+    .items-table thead th.col-amt  { text-align: right; width: 110px; }
+
+    .items-table tbody tr.row-odd  { background-color: #ffffff; }
+    .items-table tbody tr.row-even { background-color: #faf7f2; }
+
+    .items-table tbody td {
+      padding: 11px 16px;
+      font-size: 10pt;
+      color: #1c1810;
+      border-bottom: 1px solid #ece7df;
+    }
+
+    .items-table tbody td.col-desc { text-align: left; }
+    .items-table tbody td.col-amt  { text-align: right; font-weight: bold; }
+
+    /* ── TOTALS ──────────────────────────────── */
+    .totals-wrapper {
+      width: 100%;
+      padding: 0 52px;
+    }
+
+    .totals-table {
+      width: 300px;
+      border-collapse: collapse;
+      float: right;
+      margin-top: 0;
+    }
+
+    .totals-table td {
+      padding: 7px 16px;
+      font-size: 10pt;
+    }
+
+    .totals-table .t-label {
+      text-align: left;
+      color: #6a6050;
+    }
+
+    .totals-table .t-value {
+      text-align: right;
+      color: #1c1810;
+    }
+
+    .totals-table .t-sub {
+      font-size: 8.5pt;
+      color: #9a9080;
+    }
+
+    .totals-table tr.total-row {
+      background-color: #1c1810;
+    }
+
+    .totals-table tr.total-row td {
+      padding: 13px 16px;
+      font-size: 12pt;
+      font-weight: bold;
+    }
+
+    .totals-table tr.total-row .t-label {
+      color: #f0e8d8;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 9pt;
+    }
+
+    .totals-table tr.total-row .t-value {
+      color: #c9a55a;
+      font-size: 14pt;
+    }
+
+    .totals-table tr.accent-top td {
+      border-top: 2px solid #c9a55a;
+    }
+
+    /* ── NOTES ───────────────────────────────── */
+    .notes-section {
+      margin: 32px 52px 0 52px;
+      background-color: #faf7f2;
+      border-left: 3px solid #c9a55a;
+      padding: 14px 18px;
+    }
+
+    .notes-section .section-label {
+      margin-bottom: 5px;
+    }
+
+    .notes-text {
+      font-size: 9.5pt;
+      color: #3c3020;
+      line-height: 1.6;
+    }
+
+    /* ── FOOTER ──────────────────────────────── */
+    .footer {
+      margin-top: 44px;
+      background-color: #1c1810;
+      padding: 18px 52px;
+    }
+
+    .footer-inner {
+      width: 100%;
+    }
+
+    .footer-brand {
+      font-size: 8.5pt;
+      font-weight: bold;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #c9a55a;
+    }
+
+    .footer-tagline {
+      font-size: 7.5pt;
+      color: #7a7060;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .footer-right {
+      text-align: right;
+      font-size: 7.5pt;
+      color: #6a6050;
+    }
+
+    .paid-stamp {
+      display: inline-block;
+      border: 2px solid #3dd68c;
+      color: #3dd68c;
+      font-size: 8pt;
+      font-weight: bold;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h2>Room 120 Invoice</h2>
-        <p><strong>Member:</strong> {{ invoice.member.first_name }} {{ invoice.member.last_name }}</p>
-        <p><strong>Date:</strong> {{ invoice.date_created.strftime('%Y-%m-%d') }}</p>
-    </div>
 
-    <h4>Line Items</h4>
+  <!-- ── HEADER ────────────────────────────── -->
+  <div class="header-band">
+    <table class="header-inner" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="55%">
+          <div class="brand-name">Room 120</div>
+          <div class="brand-sub">Private Members Club</div>
+        </td>
+        <td width="45%">
+          <div class="inv-label">Invoice</div>
+          <div class="inv-number">#{{ '%04d'|format(invoice.id) }}</div>
+          <div class="inv-date">{{ invoice.date_created.strftime('%B %d, %Y') }}</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="gold-rule">&nbsp;</div>
+
+  <!-- ── BILL TO / DETAILS ─────────────────── -->
+  <div class="content">
+    {% set subtotal = namespace(val=0) %}
     {% for item in invoice.line_items %}
-        <div class="line-item">
-            {{ item.description }} - ${{ '%.2f'|format(item.amount) }}
-        </div>
+      {% set subtotal.val = subtotal.val + item.amount %}
     {% endfor %}
+    {% set tax = invoice.tax_amount or 0 %}
+    {% set total = invoice.total_amount or 0 %}
+    {% set gratuity = total - tax - subtotal.val %}
+    {% if gratuity < 0.01 %}{% set gratuity = 0 %}{% endif %}
 
-    <p><strong>Tax:</strong> ${{ '%.2f'|format(invoice.tax_amount) }}</p>
-    <p><strong>Total:</strong> ${{ '%.2f'|format(invoice.total_amount) }}</p>
+    <table class="meta-section" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="55%" style="vertical-align:top; padding-right:24px;">
+          <span class="section-label">Bill To</span>
+          <div class="member-name">{{ invoice.member.first_name }} {{ invoice.member.last_name }}</div>
+          {% if invoice.member.email %}
+          <div class="member-detail">{{ invoice.member.email }}</div>
+          {% endif %}
+          {% if invoice.member.phone %}
+          <div class="member-detail">{{ invoice.member.phone }}</div>
+          {% endif %}
+          {% if invoice.member.member_number %}
+          <div class="member-detail">Member #{{ invoice.member.member_number }}</div>
+          {% endif %}
+          {% if invoice.member.membership_type %}
+          <div style="margin-top:8px;">
+            <span class="member-badge">{{ invoice.member.membership_type|capitalize }} Membership</span>
+          </div>
+          {% endif %}
+        </td>
+        <td width="45%" style="vertical-align:top; text-align:right;">
+          <span class="section-label" style="text-align:right; display:block;">Invoice Details</span>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td class="inv-detail-label">Invoice Number</td>
+            </tr>
+            <tr>
+              <td class="inv-detail-value">#{{ '%04d'|format(invoice.id) }}</td>
+            </tr>
+            <tr><td style="padding:3px 0;"></td></tr>
+            <tr>
+              <td class="inv-detail-label">Date Issued</td>
+            </tr>
+            <tr>
+              <td class="inv-detail-value">{{ invoice.date_created.strftime('%B %d, %Y') }}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
 
-    {% if invoice.notes %}
-        <h4>Notes</h4>
-        <p>{{ invoice.notes }}</p>
-    {% endif %}
+  <div class="thin-rule" style="margin: 0 52px;">&nbsp;</div>
+  <div style="height:1px; background:#c9a55a; margin: 0 52px 24px 52px;">&nbsp;</div>
+
+  <!-- ── LINE ITEMS ─────────────────────────── -->
+  <div style="padding: 0 52px;">
+    <table class="items-table" cellpadding="0" cellspacing="0">
+      <thead>
+        <tr>
+          <th class="col-desc">Description</th>
+          <th class="col-amt">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in invoice.line_items %}
+        <tr class="{{ 'row-odd' if loop.index is odd else 'row-even' }}">
+          <td class="col-desc">{{ item.description }}</td>
+          <td class="col-amt">${{ '%.2f'|format(item.amount) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── TOTALS ─────────────────────────────── -->
+  <div style="padding: 0 52px; overflow: hidden;">
+    <table class="totals-table" cellpadding="0" cellspacing="0" align="right">
+      <tr>
+        <td class="t-label">Subtotal</td>
+        <td class="t-value">${{ '%.2f'|format(subtotal.val) }}</td>
+      </tr>
+      {% if tax > 0 %}
+      <tr>
+        <td class="t-label t-sub">Tax (8.75%)</td>
+        <td class="t-value t-sub">${{ '%.2f'|format(tax) }}</td>
+      </tr>
+      {% endif %}
+      {% if gratuity > 0 %}
+      <tr>
+        <td class="t-label t-sub">Gratuity (20%)</td>
+        <td class="t-value t-sub">${{ '%.2f'|format(gratuity) }}</td>
+      </tr>
+      {% endif %}
+      <tr class="accent-top total-row">
+        <td class="t-label">Total Due</td>
+        <td class="t-value">${{ '%.2f'|format(total) }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── NOTES ──────────────────────────────── -->
+  {% if invoice.notes %}
+  <div class="notes-section">
+    <span class="section-label">Notes</span>
+    <div class="notes-text">{{ invoice.notes }}</div>
+  </div>
+  {% endif %}
+
+  <!-- ── FOOTER ─────────────────────────────── -->
+  <div class="footer">
+    <table class="footer-inner" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="60%">
+          <div class="footer-brand">Room 120</div>
+          <div class="footer-tagline">Thank you for your membership.</div>
+        </td>
+        <td width="40%" style="text-align:right; vertical-align:middle;">
+          <div class="footer-right">
+            Invoice #{{ '%04d'|format(invoice.id) }}&nbsp;&nbsp;·&nbsp;&nbsp;{{ invoice.date_created.strftime('%Y') }}
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
 </body>
 </html>

@@ -1,125 +1,174 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block content %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<div class="container mt-4">
-  <div class="text-center mb-4">
-    <h2>Welcome, {{ current_user.first_name }} {{ current_user.last_name }}</h2>
-    
+<div class="container-fluid px-4 mt-4">
+
+  <div class="text-center mb-5">
+    <p class="text-muted mb-1" style="font-size:0.78rem;letter-spacing:0.2em;text-transform:uppercase;">Welcome back</p>
+    <h2 class="page-title">{{ current_user.first_name }} {{ current_user.last_name }}</h2>
+    <div class="accent-bar"></div>
+
     {% if current_user.role == 'admin' %}
-      <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
-        <p class="text-muted mb-0">Access Level: Admin</p>
+      <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
+        <span class="badge" style="background:rgba(245,180,92,0.12);color:var(--accent);border:1px solid rgba(245,180,92,0.25);font-size:0.7rem;letter-spacing:0.12em;">Administrator</span>
         <a href="{{ url_for('toggle_view') }}" class="btn btn-outline-info btn-sm">
           {% if view_as_member %}
-            Return to Admin View
+            <i class="fas fa-shield-halved me-1"></i> Return to Admin View
           {% else %}
-            View as Member
+            <i class="fas fa-user me-1"></i> View as Member
           {% endif %}
         </a>
       </div>
+    {% elif current_user.role == 'staff' %}
+      <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap mt-2">
+        {% if current_user.staff_role %}
+          <span class="badge bg-{{ current_user.staff_role.color }}">{{ current_user.staff_role.display_name }}</span>
+        {% else %}
+          <span class="badge bg-secondary">Staff</span>
+        {% endif %}
+      </div>
     {% elif current_user.role == 'member' %}
-      <p class="text-muted">Manage your Room 120 membership all from one place!</p>
+      <p class="text-muted mt-1" style="font-size:0.85rem;">Your Room 120 membership, all in one place.</p>
     {% endif %}
   </div>
 
-  {% if current_user.role == 'admin' and not view_as_member %}
-  <div class="row g-4 justify-content-center">
-    <!-- Admin-specific cards -->
-    <div class="col-md-3">
+  {% if (current_user.role == 'admin' and not view_as_member) or current_user.role == 'staff' %}
+  <div class="row g-3 justify-content-center">
+    {% if authorized('manage_admins') %}
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('manage_admins') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>Manage Admins</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-user-shield me-2" style="color:var(--accent);"></i>Admins</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
+    {% endif %}
+    {% if authorized('view_members') %}
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('manage_members') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>Manage Members</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-users me-2" style="color:var(--accent);"></i>Members</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
+    {% endif %}
+    {% if authorized('view_reservations') %}
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('admin_reservations') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>All Reservations</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-calendar me-2" style="color:var(--accent);"></i>Reservations</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
+    {% endif %}
+    {% if authorized('view_events') %}
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('events') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>Events</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-champagne-glasses me-2" style="color:var(--accent);"></i>Events</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
+    {% endif %}
+    {% if authorized('view_private_events') %}
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('admin_private_events') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-star me-2" style="color:var(--accent);"></i>Private Events</h5></div>
+      </a>
+    </div>
+    {% endif %}
+    {% if authorized('view_reservations') or authorized('view_events') or authorized('view_private_events') %}
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('admin_calendar') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-calendar-days me-2" style="color:var(--accent);"></i>Calendar</h5></div>
+      </a>
+    </div>
+    {% endif %}
+    {% if authorized('view_members') %}
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('members_table') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>Members Table View</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-table me-2" style="color:var(--accent);"></i>Members Table</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
+    {% endif %}
+    {% if authorized('view_seating') %}
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('seating_map') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>Seating Map</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-map me-2" style="color:var(--accent);"></i>Seating Map</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
-      <a href="{{ url_for('dashboard') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>Analytics</h5>
-        </div>
+    {% endif %}
+    {% if authorized('view_analytics') %}
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('admin_analytics') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-chart-line me-2" style="color:var(--accent);"></i>Analytics</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
+    {% endif %}
+    {% if authorized('view_applications') %}
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('admin_applications') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>View Applications</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-file-lines me-2" style="color:var(--accent);"></i>Applications</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
+    {% endif %}
+    {% if authorized('add_invoice') %}
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('create_invoice') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>Create Invoice</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-file-invoice-dollar me-2" style="color:var(--accent);"></i>Create Invoice</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
+    {% endif %}
+    {% if authorized('edit_seating') %}
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('seating_layout') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>Seating Table Editor</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-chair me-2" style="color:var(--accent);"></i>Seating Editor</h5></div>
       </a>
     </div>
+    {% endif %}
+    {% if authorized('view_reports') %}
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('admin_reports') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-chart-line me-2" style="color:var(--accent);"></i>Reports</h5></div>
+      </a>
+    </div>
+    {% endif %}
+    {% if authorized('view_settings') %}
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('admin_settings') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-cog me-2" style="color:var(--accent);"></i>Settings</h5></div>
+      </a>
+    </div>
+    {% endif %}
+    {% if authorized('view_audit') %}
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('admin_audit') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-clipboard-list me-2" style="color:var(--accent);"></i>Audit Log</h5></div>
+      </a>
+    </div>
+    {% endif %}
   </div>
-  {% elif current_user.role == 'member' or (current_user.role == 'admin' and view_as_member) %}
-  <div class="row g-4 justify-content-center">
-    <!-- Member-specific cards -->
-    <div class="col-md-3">
+
+  {% elif current_user.role == 'member' or (current_user.role in ('admin', 'staff') and view_as_member) %}
+  <div class="row g-3 justify-content-center">
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('view_member', user_id=session['user_id']) }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>My Profile</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-id-card me-2" style="color:var(--accent);"></i>My Profile</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('reservations') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>Make Reservation</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-calendar-plus me-2" style="color:var(--accent);"></i>Reserve</h5></div>
       </a>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
       <a href="{{ url_for('events') }}" class="text-decoration-none">
-        <div class="portal-card-box text-center p-4 shadow-sm hover-card">
-          <h5>View Events</h5>
-        </div>
+        <div class="portal-card-box"><h5><i class="fas fa-champagne-glasses me-2" style="color:var(--accent);"></i>Events</h5></div>
+      </a>
+    </div>
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('private_event_request') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-star me-2" style="color:var(--accent);"></i>Private Event</h5></div>
+      </a>
+    </div>
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('my_private_events') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-list me-2" style="color:var(--accent);"></i>My Requests</h5></div>
       </a>
     </div>
   </div>
   {% endif %}
+
 </div>
 {% endblock %}

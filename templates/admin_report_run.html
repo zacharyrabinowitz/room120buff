@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a href="{{ url_for('admin_reports') }}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <h2 class="mb-0">{{ report.name }}</h2>
+        <span class="badge bg-secondary">{{ results.source_label }}</span>
+      </div>
+      {% if report.description %}
+        <p class="text-muted mb-0 ms-5">{{ report.description }}</p>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('export_report', report_id=report.id) }}" class="btn btn-outline-success">
+        <i class="fas fa-download me-1"></i> Export CSV
+      </a>
+      <a href="{{ url_for('run_report', report_id=report.id) }}" class="btn btn-outline-primary">
+        <i class="fas fa-sync-alt me-1"></i> Refresh
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary bar -->
+  <div class="d-flex flex-wrap gap-3 mb-4">
+    <div class="card px-4 py-2 text-center">
+      <div class="fw-bold fs-4">{{ results.count }}</div>
+      <div class="text-muted small">Records</div>
+    </div>
+    {% if config.date_from or config.date_to %}
+    <div class="card px-4 py-2 text-center">
+      <div class="fw-bold">
+        {{ config.date_from or '—' }} &rarr; {{ config.date_to or 'now' }}
+      </div>
+      <div class="text-muted small">Date Range</div>
+    </div>
+    {% endif %}
+    {% for i, total in enumerate(results.totals) %}
+      {% if total %}
+      <div class="card px-4 py-2 text-center">
+        <div class="fw-bold">{{ total }}</div>
+        <div class="text-muted small">{{ results.headers[i] }} Total</div>
+      </div>
+      {% endif %}
+    {% endfor %}
+    <div class="card px-4 py-2 text-center">
+      <div class="text-muted small">Last run</div>
+      <div class="fw-bold small">
+        {% if report.last_run_at %}{{ report.last_run_at.strftime('%b %d %Y %H:%M') }}{% else %}—{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Table -->
+  {% if results.rows %}
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-3 text-muted" style="width:40px">#</th>
+              {% for h in results.headers %}
+              <th>{{ h }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in results.rows %}
+            <tr>
+              <td class="ps-3 text-muted small">{{ loop.index }}</td>
+              {% for i, cell in enumerate(row) %}
+              <td class="{{ 'text-end font-monospace' if results.col_types[i] in ('currency','number') else '' }}">
+                {{ cell }}
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+          {% if results.totals | select | list %}
+          <tfoot class="table-light fw-semibold">
+            <tr>
+              <td class="ps-3 text-muted small">Total</td>
+              {% for total in results.totals %}
+              <td class="{{ 'text-end font-monospace' if total else '' }}">{{ total or '' }}</td>
+              {% endfor %}
+            </tr>
+          </tfoot>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card p-5 text-center text-muted">
+    <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+    <h5>No records found</h5>
+    <p class="mb-0">Try adjusting your filters or date range.</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

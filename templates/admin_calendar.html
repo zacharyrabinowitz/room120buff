@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+    <div>
+      <h2 class="mb-1"><i class="fas fa-calendar-days me-2" style="color:var(--accent);"></i>Calendar</h2>
+      <p class="text-muted mb-0" style="font-size:0.85rem;">Reservations, club events, and private bookings</p>
+    </div>
+    <a href="{{ url_for('home') }}" class="btn btn-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+  </div>
+
+  <!-- Legend -->
+  <div class="d-flex gap-3 flex-wrap mb-3" style="font-size:0.8rem;">
+    {% if authorized('view_reservations') %}
+    <span class="d-flex align-items-center gap-1">
+      <span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#5c9bf5;flex-shrink:0;"></span>
+      Reservations
+    </span>
+    {% endif %}
+    {% if authorized('view_events') %}
+    <span class="d-flex align-items-center gap-1">
+      <span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#f5b45c;flex-shrink:0;"></span>
+      Club Events
+    </span>
+    {% endif %}
+    {% if authorized('view_private_events') %}
+    <span class="d-flex align-items-center gap-1">
+      <span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#22c55e;flex-shrink:0;"></span>
+      Private Events (Approved)
+    </span>
+    <span class="d-flex align-items-center gap-1">
+      <span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#f59e0b;flex-shrink:0;"></span>
+      Private Events (Pending)
+    </span>
+    {% endif %}
+    {% if authorized('view_reservations') %}
+    <span class="d-flex align-items-center gap-1">
+      <span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:#ef4444;flex-shrink:0;"></span>
+      Blocked
+    </span>
+    {% endif %}
+  </div>
+
+  <!-- Calendar container -->
+  <div class="card">
+    <div class="card-body p-3">
+      <div id="calendar"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Event detail modal -->
+<div class="modal fade" id="calEventModal" tabindex="-1" aria-labelledby="calEventModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" id="calModalHeader">
+        <h5 class="modal-title" id="calEventModalLabel"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="calModalBody"></div>
+      <div class="modal-footer">
+        <span id="calModalActions"></span>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FullCalendar -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
+
+<style>
+/* ── Light-mode fine-tuning ─────────────────────────────── */
+.fc .fc-button-primary {
+  background-color: var(--accent, #f5b45c);
+  border-color: var(--accent, #f5b45c);
+  color: #1a1a1a;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+.fc .fc-button-primary:hover,
+.fc .fc-button-primary:focus {
+  background-color: #e0a040;
+  border-color: #e0a040;
+  color: #1a1a1a;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #c8902e;
+  border-color: #c8902e;
+  color: #fff;
+}
+.fc .fc-toolbar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+}
+.fc .fc-daygrid-day-number,
+.fc .fc-col-header-cell-cushion {
+  font-size: 0.8rem;
+}
+.fc-event {
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+/* ── Dark-mode overrides ─────────────────────────────────── */
+[data-theme="dark"] .fc-theme-standard .fc-scrollgrid,
+[data-theme="dark"] .fc-theme-standard td,
+[data-theme="dark"] .fc-theme-standard th {
+  border-color: #2e2e2e;
+}
+[data-theme="dark"] .fc-col-header-cell {
+  background: #1a1a1a;
+}
+[data-theme="dark"] .fc-col-header-cell-cushion {
+  color: #999;
+}
+[data-theme="dark"] .fc-daygrid-day-number {
+  color: #ccc;
+}
+[data-theme="dark"] .fc-day-other .fc-daygrid-day-number {
+  color: #555;
+}
+[data-theme="dark"] .fc-day-today {
+  background-color: rgba(245, 180, 92, 0.07) !important;
+}
+[data-theme="dark"] .fc-toolbar-title {
+  color: #eee;
+}
+[data-theme="dark"] .fc-list-day-cushion {
+  background: #1e1e1e !important;
+  color: #ddd;
+}
+[data-theme="dark"] .fc-list-event:hover td {
+  background: #2a2a2a !important;
+}
+[data-theme="dark"] .fc-list-empty {
+  background: #111;
+  color: #888;
+}
+[data-theme="dark"] .fc-list-event td {
+  border-color: #2a2a2a;
+  color: #ccc;
+}
+[data-theme="dark"] .fc-list-event-time {
+  color: #888;
+}
+[data-theme="dark"] .fc-popover {
+  background: #1e1e1e;
+  border-color: #333;
+}
+[data-theme="dark"] .fc-popover-header {
+  background: #2a2a2a;
+  color: #eee;
+}
+[data-theme="dark"] .fc-more-popover .fc-popover-body {
+  background: #1e1e1e;
+}
+[data-theme="dark"] .fc-timegrid-slot-label-cushion,
+[data-theme="dark"] .fc-timegrid-axis-cushion {
+  color: #888;
+}
+[data-theme="dark"] .fc-timegrid-now-indicator-line {
+  border-color: var(--accent, #f5b45c);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const calendarEl = document.getElementById('calendar');
+
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+      left:   'prev,next today',
+      center: 'title',
+      right:  'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+    },
+    buttonText: {
+      today:    'Today',
+      month:    'Month',
+      week:     'Week',
+      day:      'Day',
+      list:     'List',
+    },
+    height:        'auto',
+    nowIndicator:  true,
+    eventMaxStack: 4,
+    dayMaxEvents:  true,
+
+    events: {
+      url:     '/admin/calendar/events',
+      failure: function () {
+        console.warn('Failed to load calendar events');
+      },
+    },
+
+    loading: function (isLoading) {
+      /* optionally show/hide a spinner */
+    },
+
+    eventClick: function (info) {
+      info.jsEvent.preventDefault();
+      showModal(info.event);
+    },
+
+    eventDidMount: function (info) {
+      info.el.title = info.event.title;
+    },
+  });
+
+  calendar.render();
+
+  /* ── Modal ─────────────────────────────────────────────── */
+  function showModal(event) {
+    const props   = event.extendedProps;
+    const modal   = new bootstrap.Modal(document.getElementById('calEventModal'));
+    const header  = document.getElementById('calModalHeader');
+    const titleEl = document.getElementById('calEventModalLabel');
+    const bodyEl  = document.getElementById('calModalBody');
+    const actEl   = document.getElementById('calModalActions');
+
+    const colorMap = {
+      reservation:   '#5c9bf5',
+      event:         '#f5b45c',
+      private_event: props.status === 'approved' ? '#22c55e' : '#f59e0b',
+      blocked:       '#ef4444',
+    };
+    const accentColor = colorMap[props.type] || '#888';
+
+    header.style.borderTop = `4px solid ${accentColor}`;
+    titleEl.textContent    = event.title;
+
+    let html = '';
+    actEl.innerHTML = '';
+
+    if (props.type === 'reservation') {
+      const startStr = event.start ? formatDateTime(event.start) : '—';
+      html = `
+        <dl class="row mb-0 small">
+          <dt class="col-4 text-muted">Member</dt>
+          <dd class="col-8">${esc(props.member)}</dd>
+          <dt class="col-4 text-muted">Time</dt>
+          <dd class="col-8">${startStr}</dd>
+          <dt class="col-4 text-muted">Guests</dt>
+          <dd class="col-8">${props.guests}</dd>
+          ${ props.notes ? `<dt class="col-4 text-muted">Notes</dt><dd class="col-8">${esc(props.notes)}</dd>` : '' }
+        </dl>`;
+      if (props.member_id) {
+        actEl.innerHTML = `<a href="/member/${props.member_id}" class="btn btn-outline-primary btn-sm me-2">View Profile</a>`;
+      }
+
+    } else if (props.type === 'event') {
+      const startStr = event.start ? formatDateTime(event.start) : '—';
+      html = `
+        <dl class="row mb-0 small">
+          <dt class="col-4 text-muted">Date & Time</dt>
+          <dd class="col-8">${startStr}</dd>
+          ${ props.description ? `<dt class="col-4 text-muted">Details</dt><dd class="col-8">${esc(props.description)}</dd>` : '' }
+        </dl>`;
+
+    } else if (props.type === 'private_event') {
+      const startStr = event.start ? formatDateTime(event.start) : '—';
+      const endStr   = event.end   ? formatTime(event.end)       : null;
+      const badge    = props.status === 'approved'
+        ? '<span class="badge bg-success">Approved</span>'
+        : '<span class="badge bg-warning text-dark">Pending</span>';
+      html = `
+        <dl class="row mb-0 small">
+          <dt class="col-4 text-muted">Status</dt>
+          <dd class="col-8">${badge}</dd>
+          <dt class="col-4 text-muted">Member</dt>
+          <dd class="col-8">${esc(props.member)}</dd>
+          <dt class="col-4 text-muted">Type</dt>
+          <dd class="col-8">${esc(props.event_type)}</dd>
+          <dt class="col-4 text-muted">Starts</dt>
+          <dd class="col-8">${startStr}${ endStr ? ' &ndash; ' + endStr : '' }</dd>
+          ${ props.estimated_guests ? `<dt class="col-4 text-muted">Est. Guests</dt><dd class="col-8">${props.estimated_guests}</dd>` : '' }
+          ${ props.description     ? `<dt class="col-4 text-muted">Description</dt><dd class="col-8">${esc(props.description)}</dd>` : '' }
+          ${ props.special_requests ? `<dt class="col-4 text-muted">Special Requests</dt><dd class="col-8">${esc(props.special_requests)}</dd>` : '' }
+        </dl>`;
+      if (props.member_id) {
+        actEl.innerHTML = `<a href="/member/${props.member_id}" class="btn btn-outline-primary btn-sm me-2">View Profile</a>`;
+      }
+      actEl.innerHTML += `<a href="/admin/private-events" class="btn btn-outline-secondary btn-sm me-2">Manage Requests</a>`;
+
+    } else if (props.type === 'blocked') {
+      const dateStr = event.start ? event.start.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) : '—';
+      html = `<p class="mb-0 small text-muted">This date is blocked — no member reservations can be made on <strong>${dateStr}</strong>.</p>`;
+    }
+
+    bodyEl.innerHTML = html;
+    modal.show();
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function formatDateTime(d) {
+    if (!d) return '—';
+    return d.toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true,
+    });
+  }
+
+  function formatTime(d) {
+    if (!d) return '';
+    return d.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+});
+</script>
+{% endblock %}

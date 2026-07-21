@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block content %}
-<div class="container mt-5">
+<div class="container-fluid px-4 mt-4">
   <h2 class="mb-4">Upload Invoices</h2>
   <p>Upload a CSV file containing customer data from Toast to automatically create members and process their invoices.</p>
   <form method="POST" action="{{ url_for('upload_invoices') }}" enctype="multipart/form-data">
