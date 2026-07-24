@@ -615,6 +615,17 @@ def log_audit(category, action, details=None):
         app.logger.error(f"Audit log write failed: {exc}")
 
 
+@app.route('/favicon.ico')
+def favicon():
+    resp = send_from_directory(
+        os.path.join(app.root_path, 'static', 'assets'),
+        'room120_logo.png',
+        mimetype='image/png',
+    )
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return resp
+
+
 # Capture every authenticated GET (page visit) automatically
 _SKIP_AUDIT_PATHS = {'/static', '/favicon.ico'}
 _SKIP_AUDIT_ENDPOINTS = {'static'}
