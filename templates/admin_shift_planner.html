@@ -65,15 +65,65 @@
     <div class="card-header fw-semibold" style="font-size:.85rem;">How It Works</div>
     <div class="card-body" style="font-size:.85rem;">
       <ol class="mb-0">
-        <li>Upload your roster export PDF (7shifts / Toast format).</li>
+        <li>Upload your roster export PDF or CSV (7shifts / Toast format).</li>
         <li>The system reads each employee's position and shift times.</li>
         <li>Bartenders are auto-split into Main Bar / Lower Bar by shift length.</li>
         <li>Break rotations are generated for any role with 2+ late-shift staff.</li>
         <li>You can edit every assignment, add or remove rows, and rename sections.</li>
-        <li>Download the final plan as a clean formatted PDF.</li>
+        <li>Download the final plan as a clean formatted PDF — it's saved to history automatically.</li>
       </ol>
     </div>
   </div>
 
+  <!-- Previous Shift Plans -->
+  {% if history %}
+  <div class="card mt-4">
+    <div class="card-header fw-semibold">
+      <i class="fas fa-history me-2" style="color:var(--accent);"></i>Previous Shift Plans
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" style="font-size:.85rem;">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Event / Performer</th>
+              <th>Venue</th>
+              <th>Saved</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in history %}
+            <tr>
+              <td class="fw-medium">{{ h.date or '—' }}</td>
+              <td>{{ h.event_name or '—' }}</td>
+              <td class="text-muted">{{ h.venue or '—' }}</td>
+              <td class="text-muted">{{ h.saved_at[:16].replace('T',' ') if h.saved_at else '—' }}</td>
+              <td class="d-flex gap-1">
+                <a href="{{ url_for('shift_planner_load_history', filename=h.filename) }}"
+                   class="btn btn-outline-secondary btn-xs py-0 px-2"
+                   title="Load this plan into the editor">
+                  <i class="fas fa-folder-open me-1"></i>Load
+                </a>
+                <form method="POST"
+                      action="{{ url_for('shift_planner_delete_history', filename=h.filename) }}"
+                      onsubmit="return confirm('Delete this shift plan? This cannot be undone.')">
+                  <button type="submit" class="btn btn-outline-danger btn-xs py-0 px-2"
+                          title="Delete this plan">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
 </div>
+<style>.btn-xs { font-size:.75rem; line-height:1.4; }</style>
 {% endblock %}

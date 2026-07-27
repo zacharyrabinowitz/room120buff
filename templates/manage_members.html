@@ -13,9 +13,11 @@
       <a href="{{ url_for('import_members') }}" class="btn btn-secondary btn-sm">
         <i class="fas fa-upload me-1"></i> Import
       </a>
+      {% if authorized('export_members') %}
       <a href="{{ url_for('export_members') }}" class="btn btn-secondary btn-sm">
         <i class="fas fa-download me-1"></i> Export
       </a>
+      {% endif %}
       <a href="{{ url_for('admin_sales_report') }}" class="btn btn-warning btn-sm">
         <i class="fas fa-chart-bar me-1"></i> Sales Report
       </a>

@@ -666,15 +666,16 @@ app.jinja_env.globals['authorized'] = authorized
 
 PERMISSIONS = {
     'Members': {
-        'view_members':         'View members list & table',
+        'view_members':         'View members list & search',
         'view_member_profile':  'View individual member profiles',
         'add_member':           'Add new members',
         'edit_member':          'Edit member details',
         'delete_member':        'Delete a member',
         'bulk_delete_members':  'Bulk delete members',
         'toggle_member_active': 'Activate / deactivate members',
-        'manage_admins':        'Manage admin & staff accounts',
         'import_members':       'Import members via CSV',
+        'export_members':       'Export members to CSV',
+        'manage_admins':        'Manage admin & staff accounts',
     },
     'Orders': {
         'view_orders':       'View member orders',
@@ -684,33 +685,38 @@ PERMISSIONS = {
         'toggle_order_paid': 'Mark orders paid / unpaid',
     },
     'Invoices': {
-        'view_invoices':      'View invoices',
-        'add_invoice':        'Create invoices manually',
-        'edit_invoice':       'Edit invoices',
-        'delete_invoice':     'Delete invoices',
-        'toggle_invoice_paid':'Mark invoices paid / unpaid',
-        'generate_invoice':   'Generate invoice from orders',
-        'upload_invoice':     'Upload invoice files',
+        'view_invoices':       'View invoices',
+        'add_invoice':         'Create invoices manually',
+        'edit_invoice':        'Edit invoices',
+        'delete_invoice':      'Delete invoices',
+        'toggle_invoice_paid': 'Mark invoices paid / unpaid',
+        'generate_invoice':    'Generate invoice from orders',
+        'upload_invoice':      'Upload invoice PDF files',
     },
     'Reservations': {
-        'view_reservations': 'View all reservations',
-        'edit_reservation':  'Edit reservations',
-        'delete_reservation':'Delete reservations',
-        'block_dates':       'Block / unblock dates',
+        'view_reservations':  'View all reservations',
+        'add_reservation':    'Create reservations for members',
+        'edit_reservation':   'Edit reservations',
+        'delete_reservation': 'Delete reservations',
+        'block_dates':        'Block / unblock reservation dates',
     },
     'Events': {
-        'view_events':           'View events',
+        'view_events':           'View events list',
         'add_event':             'Add events',
         'edit_event':            'Edit events',
         'delete_event':          'Delete events',
         'view_private_events':   'View private event requests',
-        'manage_private_events': 'Approve / deny private event requests',
+        'approve_private_event': 'Approve private event requests',
+        'deny_private_event':    'Deny / reject private event requests',
+        'edit_private_event':    'Edit private event details (guest count, notes)',
+        'delete_private_event':  'Delete private event requests',
+        'manage_private_events': 'Approve / deny private events (legacy — use above)',
     },
     'Applications': {
-        'view_applications':  'View member applications',
-        'approve_application':'Approve applications',
-        'deny_application':   'Deny / reject applications',
-        'delete_application': 'Delete applications',
+        'view_applications':   'View member applications',
+        'approve_application': 'Approve applications',
+        'deny_application':    'Deny / reject applications',
+        'delete_application':  'Delete applications',
     },
     'Notes': {
         'view_notes':  'View member notes',
@@ -719,17 +725,22 @@ PERMISSIONS = {
         'delete_note': 'Delete notes',
     },
     'Reports & Analytics': {
-        'view_analytics':   'View analytics dashboard',
-        'view_sales_report':'View sales report',
-        'view_reports':     'View & run saved reports',
-        'create_report':    'Create / save reports',
-        'edit_report':      'Edit saved reports',
-        'delete_report':    'Delete saved reports',
-        'export_report':    'Export reports to CSV',
+        'view_analytics':    'View analytics dashboard',
+        'view_sales_report': 'View sales report',
+        'view_reports':      'View saved reports',
+        'create_report':     'Create / save new reports',
+        'edit_report':       'Edit saved reports',
+        'delete_report':     'Delete saved reports',
+        'export_report':     'Export reports to CSV',
     },
     'Seating': {
-        'view_seating': 'View seating map',
-        'edit_seating': 'Edit seating layout & assignments',
+        'view_seating':   'View seating map',
+        'edit_seating':   'Edit seating layout & assignments',
+        'delete_seating': 'Remove seating assignments',
+    },
+    'Shift Planner': {
+        'view_shift_planner': 'View & use the shift planner',
+        'edit_shift_planner': 'Edit shift plans & download PDFs',
     },
     'Settings & System': {
         'view_settings':           'View settings page',
@@ -738,6 +749,8 @@ PERMISSIONS = {
         'manage_roles':            'Manage staff roles & permissions',
         'view_audit':              'View audit log',
         'clear_audit':             'Clear audit log entries',
+        'export_backup':           'Export full database backup',
+        'import_backup':           'Restore database from backup',
     },
 }
 app.jinja_env.globals['PERMISSIONS'] = PERMISSIONS
@@ -2080,7 +2093,7 @@ def register():
 
 @app.route('/admin/export-backup')
 def export_backup():
-    if session.get('role') != 'admin':
+    if not authorized('export_backup'):
         return redirect(url_for('home'))
 
     def _sv(v):
@@ -2144,7 +2157,7 @@ def export_backup():
 
 @app.route('/admin/import-backup', methods=['POST'])
 def import_backup():
-    if session.get('role') != 'admin':
+    if not authorized('import_backup'):
         return redirect(url_for('home'))
 
     f = request.files.get('backup_file')
@@ -2603,7 +2616,7 @@ def import_members_old():
 
 @app.route('/export-members')
 def export_members():
-    if not authorized('view_members'):
+    if not authorized('export_members'):
         return redirect(url_for('home'))
 
     members = User.query.filter_by(role='member').all()
@@ -3503,10 +3516,14 @@ def admin_private_events():
 
 @app.route('/admin/private-event/<int:req_id>/review', methods=['POST'])
 def review_private_event(req_id):
-    if not authorized('manage_private_events'):
+    pe     = PrivateEventRequest.query.get_or_404(req_id)
+    action = request.form.get('action')   # 'approve' or 'deny'
+
+    if action == 'approve' and not authorized('approve_private_event', 'manage_private_events'):
         return redirect(url_for('home'))
-    pe = PrivateEventRequest.query.get_or_404(req_id)
-    action      = request.form.get('action')   # 'approve' or 'deny'
+    if action == 'deny' and not authorized('deny_private_event', 'manage_private_events'):
+        return redirect(url_for('home'))
+
     admin_notes = request.form.get('admin_notes', '').strip() or None
 
     if action not in ('approve', 'deny'):
@@ -3533,7 +3550,7 @@ def review_private_event(req_id):
 
 @app.route('/admin/private-event/<int:req_id>/guests', methods=['POST'])
 def update_private_event_guests(req_id):
-    if not authorized('manage_private_events'):
+    if not authorized('edit_private_event', 'manage_private_events'):
         return redirect(url_for('home'))
     pe = PrivateEventRequest.query.get_or_404(req_id)
     pe.actual_guests = request.form.get('actual_guests', type=int)
@@ -4946,16 +4963,60 @@ def _generate_break_rotation(names, start_hour=19, start_min=0):
     return rows
 
 
+SHIFT_HISTORY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shift_history')
+os.makedirs(SHIFT_HISTORY_DIR, exist_ok=True)
+
+
+def _save_shift_history(plan):
+    """Persist a finalized plan to shift_history/. Keeps 50 most recent."""
+    ts    = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    slug  = re.sub(r'[^\w]', '_', plan.get('date', 'unknown'))[:20]
+    fname = f'{ts}_{slug}.json'
+    path  = os.path.join(SHIFT_HISTORY_DIR, fname)
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump({'saved_at': datetime.utcnow().isoformat(), 'plan': plan}, f, indent=2)
+    files = sorted(os.listdir(SHIFT_HISTORY_DIR))
+    for old in files[:-50]:
+        try:
+            os.remove(os.path.join(SHIFT_HISTORY_DIR, old))
+        except OSError:
+            pass
+    return fname
+
+
+def _load_shift_history():
+    """Return list of {filename, saved_at, event_name, date} newest-first."""
+    entries = []
+    for fname in sorted(os.listdir(SHIFT_HISTORY_DIR), reverse=True):
+        if not fname.endswith('.json'):
+            continue
+        try:
+            with open(os.path.join(SHIFT_HISTORY_DIR, fname), encoding='utf-8') as f:
+                data = json.load(f)
+            plan = data.get('plan', {})
+            entries.append({
+                'filename':   fname,
+                'saved_at':   data.get('saved_at', ''),
+                'event_name': plan.get('event_name', ''),
+                'venue':      plan.get('venue', ''),
+                'date':       plan.get('date', ''),
+            })
+        except Exception:
+            pass
+    return entries
+
+
 @app.route('/admin/shift-planner', methods=['GET'])
 def shift_planner():
-    if not authorized('admin'):
+    if not authorized('view_shift_planner'):
         return redirect(url_for('home'))
-    return render_template('admin_shift_planner.html')
+    history = _load_shift_history()
+    return render_template('admin_shift_planner.html', history=history)
 
 
 @app.route('/admin/shift-planner/upload', methods=['POST'])
 def shift_planner_upload():
-    if not authorized('admin'):
+    if not authorized('edit_shift_planner'):
         return redirect(url_for('home'))
 
     file = request.files.get('roster_pdf')
@@ -5018,7 +5079,7 @@ def shift_planner_upload():
 
 @app.route('/admin/shift-planner/edit', methods=['GET'])
 def shift_planner_edit():
-    if not authorized('admin'):
+    if not authorized('view_shift_planner'):
         return redirect(url_for('home'))
 
     plan = session.get('shift_plan')
@@ -5031,7 +5092,7 @@ def shift_planner_edit():
 
 @app.route('/admin/shift-planner/download', methods=['POST'])
 def shift_planner_download():
-    if not authorized('admin'):
+    if not authorized('edit_shift_planner'):
         return redirect(url_for('home'))
 
     try:
@@ -5043,6 +5104,8 @@ def shift_planner_download():
         pisa.CreatePDF(html.encode('utf-8'), dest=buf, encoding='utf-8')
         buf.seek(0)
 
+        _save_shift_history(plan)
+
         slug = re.sub(r'[^\w]', '_', plan.get('date', 'shift'))
         return send_file(buf, mimetype='application/pdf',
                          as_attachment=True, download_name=f'shift_plan_{slug}.pdf')
@@ -5051,6 +5114,35 @@ def shift_planner_download():
         logger.error(f'Shift plan PDF error: {e}')
         flash(f'Error generating PDF: {e}', 'danger')
         return redirect(url_for('shift_planner_edit'))
+
+
+@app.route('/admin/shift-planner/history/<filename>/delete', methods=['POST'])
+def shift_planner_delete_history(filename):
+    if not authorized('edit_shift_planner'):
+        return redirect(url_for('home'))
+    safe = os.path.basename(filename)
+    path = os.path.join(SHIFT_HISTORY_DIR, safe)
+    if os.path.isfile(path):
+        os.remove(path)
+        flash('Shift plan deleted.', 'success')
+    else:
+        flash('Plan not found.', 'danger')
+    return redirect(url_for('shift_planner'))
+
+
+@app.route('/admin/shift-planner/history/<filename>')
+def shift_planner_load_history(filename):
+    if not authorized('view_shift_planner'):
+        return redirect(url_for('home'))
+    safe = os.path.basename(filename)
+    path = os.path.join(SHIFT_HISTORY_DIR, safe)
+    if not os.path.isfile(path):
+        flash('Shift plan not found.', 'danger')
+        return redirect(url_for('shift_planner'))
+    with open(path, encoding='utf-8') as f:
+        data = json.load(f)
+    session['shift_plan'] = data.get('plan', {})
+    return redirect(url_for('shift_planner_edit'))
 
 
 # =====================================================
