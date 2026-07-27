@@ -21811,3 +21811,286 @@ WHERE user.username = ?
 2026-07-24 16:20:23 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:20:23] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
 2026-07-24 16:42:24 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:42:24] "GET /home HTTP/1.1" 200 -
 2026-07-24 16:42:24 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:42:24] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-24 16:56:18 - root - INFO - Logging configured successfully
+2026-07-24 16:56:18 - root - INFO - Log level: INFO
+2026-07-24 16:56:18 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-24 16:56:18 - __main__ - INFO - Toast API routes registered successfully
+2026-07-24 16:56:19 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-24 16:56:19 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-24 16:56:19 - werkzeug - INFO -  * Restarting with stat
+2026-07-24 16:56:21 - root - INFO - Logging configured successfully
+2026-07-24 16:56:21 - root - INFO - Log level: INFO
+2026-07-24 16:56:21 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-24 16:56:21 - __main__ - INFO - Toast API routes registered successfully
+2026-07-24 16:56:21 - werkzeug - WARNING -  * Debugger is active!
+2026-07-24 16:56:21 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-24 16:56:21 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:21] "GET /home HTTP/1.1" 200 -
+2026-07-24 16:56:21 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:21] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-24 16:56:21 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:21] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-24 16:56:31 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:31] "[32mGET /home HTTP/1.1[0m" 302 -
+2026-07-24 16:56:31 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:31] "GET /login HTTP/1.1" 200 -
+2026-07-24 16:56:31 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:31] "[36mGET /static/assets/room120_logo.png HTTP/1.1[0m" 304 -
+2026-07-24 16:56:31 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:31] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-24 16:56:37 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:37] "GET /home HTTP/1.1" 200 -
+2026-07-24 16:56:37 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:37] "GET /static/css/style_member.css HTTP/1.1" 200 -
+2026-07-24 16:56:37 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:37] "GET /static/assets/room120_hero.jpg HTTP/1.1" 200 -
+2026-07-24 16:56:37 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 16:56:37] "GET /favicon.ico HTTP/1.1" 200 -
+2026-07-24 17:52:45 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 17:52:45] "[32mGET /home HTTP/1.1[0m" 302 -
+2026-07-24 17:52:45 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 17:52:45] "GET /login HTTP/1.1" 200 -
+2026-07-24 17:52:45 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 17:52:45] "[36mGET /static/assets/room120_logo.png HTTP/1.1[0m" 304 -
+2026-07-24 17:52:46 - werkzeug - INFO - 127.0.0.1 - - [24/Jul/2026 17:52:46] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 14:56:22 - root - INFO - Logging configured successfully
+2026-07-27 14:56:22 - root - INFO - Log level: INFO
+2026-07-27 14:56:22 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 14:56:22 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 14:56:22 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-27 14:56:22 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-27 14:56:22 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 14:56:28 - root - INFO - Logging configured successfully
+2026-07-27 14:56:28 - root - INFO - Log level: INFO
+2026-07-27 14:56:28 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 14:56:28 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 14:56:29 - werkzeug - WARNING -  * Debugger is active!
+2026-07-27 14:56:29 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-27 14:57:24 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:24] "GET /login HTTP/1.1" 200 -
+2026-07-27 14:57:25 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:25] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 14:57:25 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:25] "[36mGET /static/assets/room120_logo.png HTTP/1.1[0m" 304 -
+2026-07-27 14:57:30 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:30] "[32mPOST /login HTTP/1.1[0m" 302 -
+2026-07-27 14:57:30 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:30] "GET /home HTTP/1.1" 200 -
+2026-07-27 14:57:30 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:30] "GET /static/css/style_member.css HTTP/1.1" 200 -
+2026-07-27 14:57:30 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:30] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 14:57:34 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:34] "GET /admin/settings HTTP/1.1" 200 -
+2026-07-27 14:57:34 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:34] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 14:57:34 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:34] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 14:57:37 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:37] "GET /import_members HTTP/1.1" 200 -
+2026-07-27 14:57:37 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:37] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 14:57:37 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:37] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 14:57:40 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 14:57:40] "GET /admin/export-backup HTTP/1.1" 200 -
+2026-07-27 14:57:48 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-27 14:57:49 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 14:57:53 - root - INFO - Logging configured successfully
+2026-07-27 14:57:53 - root - INFO - Log level: INFO
+2026-07-27 14:57:53 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 14:57:53 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 14:57:54 - werkzeug - WARNING -  * Debugger is active!
+2026-07-27 14:57:54 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-27 14:58:06 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-27 14:58:06 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 14:58:09 - root - INFO - Logging configured successfully
+2026-07-27 14:58:09 - root - INFO - Log level: INFO
+2026-07-27 14:58:09 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 14:58:10 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 14:58:10 - werkzeug - WARNING -  * Debugger is active!
+2026-07-27 14:58:10 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-27 14:58:15 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-27 14:58:15 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 14:58:18 - root - INFO - Logging configured successfully
+2026-07-27 14:58:18 - root - INFO - Log level: INFO
+2026-07-27 14:58:18 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 14:58:19 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 14:58:19 - werkzeug - WARNING -  * Debugger is active!
+2026-07-27 14:58:19 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-27 15:00:32 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:00:32] "[32mPOST /import_members HTTP/1.1[0m" 302 -
+2026-07-27 15:00:32 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:00:32] "GET /manage-members HTTP/1.1" 200 -
+2026-07-27 15:00:33 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:00:33] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:00:33 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:00:33] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:00:50 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:00:50] "[35m[1mPOST /bulk_delete_members HTTP/1.1[0m" 500 -
+2026-07-27 15:00:50 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:00:50] "GET /bulk_delete_members?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2026-07-27 15:00:50 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:00:50] "GET /bulk_delete_members?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2026-07-27 15:00:50 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:00:50] "GET /bulk_delete_members?__debugger__=yes&cmd=resource&f=console.png&s=j0EJ0j2F3ws0nQsE5X1F HTTP/1.1" 200 -
+2026-07-27 15:00:50 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:00:50] "GET /bulk_delete_members?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2026-07-27 15:02:08 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:02:08] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:02:09 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:02:09] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:02:09 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:02:09] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:02:55 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:02:55] "GET /import_members HTTP/1.1" 200 -
+2026-07-27 15:02:55 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:02:55] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:02:55 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:02:55] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:04:47 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:04:47] "GET /import_members HTTP/1.1" 200 -
+2026-07-27 15:04:47 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:04:47] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:04:47 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:04:47] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:04:48 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:04:48] "GET /favicon.ico HTTP/1.1" 200 -
+2026-07-27 15:05:03 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:05:03] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:05:04 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:05:04] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:05:04 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:05:04] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:06:15 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-27 15:06:19 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 15:06:24 - root - INFO - Logging configured successfully
+2026-07-27 15:06:24 - root - INFO - Log level: INFO
+2026-07-27 15:06:24 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 15:06:24 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 15:06:24 - werkzeug - WARNING -  * Debugger is active!
+2026-07-27 15:06:24 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-27 15:06:34 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-27 15:06:35 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 15:06:37 - root - INFO - Logging configured successfully
+2026-07-27 15:06:37 - root - INFO - Log level: INFO
+2026-07-27 15:06:37 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 15:06:37 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 15:06:37 - werkzeug - WARNING -  * Debugger is active!
+2026-07-27 15:06:37 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-27 15:06:54 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-27 15:06:54 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 15:06:57 - root - INFO - Logging configured successfully
+2026-07-27 15:06:57 - root - INFO - Log level: INFO
+2026-07-27 15:06:57 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 15:06:57 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 15:06:57 - werkzeug - WARNING -  * Debugger is active!
+2026-07-27 15:06:57 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-27 15:07:01 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-27 15:07:02 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 15:07:06 - root - INFO - Logging configured successfully
+2026-07-27 15:07:06 - root - INFO - Log level: INFO
+2026-07-27 15:07:06 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 15:07:06 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 15:07:07 - werkzeug - WARNING -  * Debugger is active!
+2026-07-27 15:07:07 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-27 15:07:31 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-27 15:07:33 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 15:07:36 - root - INFO - Logging configured successfully
+2026-07-27 15:07:36 - root - INFO - Log level: INFO
+2026-07-27 15:07:36 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 15:07:36 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 15:10:28 - root - INFO - Logging configured successfully
+2026-07-27 15:10:28 - root - INFO - Log level: INFO
+2026-07-27 15:10:28 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 15:10:28 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 15:13:46 - root - INFO - Logging configured successfully
+2026-07-27 15:13:46 - root - INFO - Log level: INFO
+2026-07-27 15:13:46 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 15:13:46 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 15:13:48 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-27 15:13:48 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-27 15:13:48 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-27 15:13:48 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-27 15:13:48 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-27 15:13:48 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-27 15:13:48 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 15:13:50 - root - INFO - Logging configured successfully
+2026-07-27 15:13:50 - root - INFO - Log level: INFO
+2026-07-27 15:13:50 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 15:13:50 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 15:13:51 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-27 15:13:51 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-27 15:13:51 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-27 15:13:51 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-27 15:13:51 - werkzeug - WARNING -  * Debugger is active!
+2026-07-27 15:13:51 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-27 15:13:51 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:13:51] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:13:51 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:13:51] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:13:51 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:13:51] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:13:52 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:13:52] "GET /favicon.ico HTTP/1.1" 200 -
+2026-07-27 15:13:53 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:13:53] "GET /import_members HTTP/1.1" 200 -
+2026-07-27 15:13:53 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:13:53] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:14:04 - __main__ - INFO - Import: wiped 467 existing member records before re-import
+2026-07-27 15:14:31 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:14:31] "[32mPOST /import_members HTTP/1.1[0m" 302 -
+2026-07-27 15:14:31 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:14:31] "GET /manage-members HTTP/1.1" 200 -
+2026-07-27 15:14:31 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:14:31] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:14:36 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:14:36] "GET /member/238 HTTP/1.1" 200 -
+2026-07-27 15:14:36 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:14:36] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:14:41 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:14:41] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:14:41 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:14:41] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:14:44 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:14:44] "GET /manage-members HTTP/1.1" 200 -
+2026-07-27 15:14:44 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:14:44] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:15:42 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:15:42] "POST /admin/send-setup-link/298 HTTP/1.1" 200 -
+2026-07-27 15:15:49 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-27 15:15:50 - werkzeug - INFO -  * Restarting with stat
+2026-07-27 15:15:54 - root - INFO - Logging configured successfully
+2026-07-27 15:15:54 - root - INFO - Log level: INFO
+2026-07-27 15:15:54 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-27 15:15:54 - __main__ - INFO - Toast API routes registered successfully
+2026-07-27 15:15:54 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-27 15:15:54 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-27 15:15:54 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-27 15:15:54 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-27 15:15:54 - werkzeug - WARNING -  * Debugger is active!
+2026-07-27 15:15:54 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-27 15:16:31 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:31] "GET /manage-members?search=events HTTP/1.1" 200 -
+2026-07-27 15:16:31 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:31] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:16:35 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:35] "POST /admin/send-setup-link/306 HTTP/1.1" 200 -
+2026-07-27 15:16:36 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:36] "GET /member/306 HTTP/1.1" 200 -
+2026-07-27 15:16:37 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:37] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:16:43 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:43] "GET /order/edit/45 HTTP/1.1" 200 -
+2026-07-27 15:16:43 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:43] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:16:51 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:51] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:16:51 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:51] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:16:53 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:53] "GET /manage-members HTTP/1.1" 200 -
+2026-07-27 15:16:53 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:53] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:16:56 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:56] "GET /manage-members?search=events HTTP/1.1" 200 -
+2026-07-27 15:16:57 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:16:57] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:17:00 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:00] "GET /member/306 HTTP/1.1" 200 -
+2026-07-27 15:17:00 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:00] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:17:12 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:12] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:17:12 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:12] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:17:15 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:15] "GET /admin/reports HTTP/1.1" 200 -
+2026-07-27 15:17:15 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:15] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:17:15 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:15] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:17:19 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:19] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:17:19 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:19] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:17:19 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:19] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:17:20 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:20] "GET /admin/analytics HTTP/1.1" 200 -
+2026-07-27 15:17:20 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:20] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:17:20 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:20] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:17:36 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:36] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:17:36 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:36] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:17:36 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:36] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:17:40 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:40] "GET /admin/reports HTTP/1.1" 200 -
+2026-07-27 15:17:40 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:40] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:17:40 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:17:40] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:18:00 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:18:00] "[32mPOST /admin/reports/save HTTP/1.1[0m" 302 -
+2026-07-27 15:18:01 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:18:01] "GET /admin/reports/3/run HTTP/1.1" 200 -
+2026-07-27 15:18:01 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:18:01] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:18:01 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:18:01] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:18:24 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:18:24] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:18:24 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:18:24] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:18:24 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:18:24] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:18:27 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:18:27] "GET /import_members HTTP/1.1" 200 -
+2026-07-27 15:18:27 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:18:27] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:18:27 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:18:27] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:18:34 - __main__ - INFO - Import: wiped 235 existing member records before re-import
+2026-07-27 15:19:00 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:00] "[32mPOST /import_members HTTP/1.1[0m" 302 -
+2026-07-27 15:19:00 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:00] "GET /manage-members HTTP/1.1" 200 -
+2026-07-27 15:19:01 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:01] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:01 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:01] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-27 15:19:06 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:06] "GET /member/238 HTTP/1.1" 200 -
+2026-07-27 15:19:06 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:06] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:09 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:09] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:19:09 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:09] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:10 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:10] "GET /manage-members HTTP/1.1" 200 -
+2026-07-27 15:19:10 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:10] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:12 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:12] "GET /member/239 HTTP/1.1" 200 -
+2026-07-27 15:19:12 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:12] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:19 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:19] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:19:19 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:19] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:20 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:20] "GET /manage-members HTTP/1.1" 200 -
+2026-07-27 15:19:20 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:20] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:24 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:24] "GET /manage-members?search=events HTTP/1.1" 200 -
+2026-07-27 15:19:24 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:24] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:25 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:25] "GET /member/306 HTTP/1.1" 200 -
+2026-07-27 15:19:26 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:26] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:31 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:31] "[32mPOST /generate_invoice/45 HTTP/1.1[0m" 302 -
+2026-07-27 15:19:31 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:31] "GET /member/306 HTTP/1.1" 200 -
+2026-07-27 15:19:31 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:31] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:35 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:35] "[32mPOST /toggle_invoice_paid/1 HTTP/1.1[0m" 302 -
+2026-07-27 15:19:35 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:35] "GET /member/306 HTTP/1.1" 200 -
+2026-07-27 15:19:36 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:36] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:39 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:39] "[32mPOST /toggle_invoice_paid/1 HTTP/1.1[0m" 302 -
+2026-07-27 15:19:39 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:39] "GET /member/306 HTTP/1.1" 200 -
+2026-07-27 15:19:40 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:40] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:43 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:43] "[32mGET /toggle_order_paid/45 HTTP/1.1[0m" 302 -
+2026-07-27 15:19:43 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:43] "GET /member/306 HTTP/1.1" 200 -
+2026-07-27 15:19:43 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:43] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:48 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:48] "[32mGET /toggle_order_paid/45 HTTP/1.1[0m" 302 -
+2026-07-27 15:19:48 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:48] "GET /member/306 HTTP/1.1" 200 -
+2026-07-27 15:19:48 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:48] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-27 15:19:51 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:19:51] "GET /download_invoice/1 HTTP/1.1" 200 -
+2026-07-27 15:20:06 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:20:06] "GET /home HTTP/1.1" 200 -
+2026-07-27 15:20:06 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 15:20:06] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -

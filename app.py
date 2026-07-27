@@ -18,15 +18,13 @@ from calendar import monthcalendar
 from sqlalchemy import text
 import calendar
 import csv
+import re
 import random
 import string
 import secrets
-import smtplib
 import os
 import json
 import io
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from io import BytesIO
 import base64
 import logging
@@ -524,32 +522,6 @@ BACKUP_ADMIN_USERNAME = "backupadmin"
 BACKUP_ADMIN_PASSWORD = "room120secure"
 
 
-def send_email(to_addr, subject, html_body):
-    """Send email via SMTP env vars. Returns (success, error_str|None)."""
-    host      = os.environ.get('MAIL_SERVER', '').strip()
-    port      = int(os.environ.get('MAIL_PORT', 587))
-    username  = os.environ.get('MAIL_USERNAME', '').strip()
-    password  = os.environ.get('MAIL_PASSWORD', '').strip()
-    from_addr = os.environ.get('MAIL_FROM', username).strip() or username
-
-    if not host or not username:
-        return False, 'Email not configured — add MAIL_SERVER and MAIL_USERNAME to .env'
-
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = subject
-    msg['From']    = from_addr
-    msg['To']      = to_addr
-    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
-
-    try:
-        with smtplib.SMTP(host, port, timeout=10) as smtp:
-            smtp.ehlo()
-            smtp.starttls()
-            smtp.login(username, password)
-            smtp.sendmail(from_addr, to_addr, msg.as_string())
-        return True, None
-    except Exception as exc:
-        return False, str(exc)
 
 
 # ----------------------
@@ -829,40 +801,11 @@ def send_setup_link(user_id):
 
     setup_url = url_for('setup_account', token=token, _external=True)
 
-    html_body = f"""
-    <div style="font-family:Inter,sans-serif;max-width:520px;margin:auto;color:#222;">
-      <div style="background:#1a1a1a;padding:24px 32px;border-radius:8px 8px 0 0;text-align:center;">
-        <h2 style="color:#f5b45c;font-family:Georgia,serif;margin:0;">Room 120</h2>
-      </div>
-      <div style="background:#fff;padding:32px;border-radius:0 0 8px 8px;border:1px solid #eee;">
-        <p style="margin-top:0;">Hi {member.first_name},</p>
-        <p>You've been added to <strong>Room 120</strong>. Click the button below to set up
-           your account — it only takes a minute.</p>
-        <p style="text-align:center;margin:32px 0;">
-          <a href="{setup_url}"
-             style="background:#f5b45c;color:#1a1a1a;padding:14px 28px;border-radius:6px;
-                    text-decoration:none;font-weight:600;font-size:15px;display:inline-block;">
-            Set Up My Account
-          </a>
-        </p>
-        <p style="color:#888;font-size:13px;">
-          This link expires in 48 hours and can only be used once.<br>
-          If you didn't expect this email, you can safely ignore it.
-        </p>
-        <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
-        <p style="color:#aaa;font-size:12px;margin:0;">Room 120 · Members Portal</p>
-      </div>
-    </div>
-    """
-
-    email_sent, email_err = send_email(member.email, 'Set up your Room 120 account', html_body)
     log_audit('member', f'Setup link generated for {member.first_name} {member.last_name}',
-              f'email_sent={email_sent}')
+              f'token_expires={expires_at.isoformat()}')
 
     return jsonify({
         'success':     True,
-        'email_sent':  email_sent,
-        'email_error': email_err,
         'setup_url':   setup_url,
         'member_name': f'{member.first_name} {member.last_name}',
     })
@@ -1966,27 +1909,81 @@ def toggle_member(user_id):
         log_audit('member', f'Member {status}: {member.first_name} {member.last_name}', f'Username: {member.username}')
     return redirect(url_for('view_member', user_id=user_id))
 
+def _delete_members_by_ids(member_ids):
+    """
+    Hard-delete member users and every dependent record, bypassing FK constraints
+    that SQLAlchemy cascade doesn't cover (Toast tables, seating, setup tokens, etc.).
+    Returns the number of users actually deleted.
+    """
+    if not member_ids:
+        return 0
+
+    ids_str = ','.join(str(int(i)) for i in member_ids)
+
+    with db.engine.connect() as conn:
+        conn.execute(text("PRAGMA foreign_keys = OFF"))
+
+        # Dependent records that need manual cleanup
+        conn.execute(text(f"DELETE FROM setup_token WHERE user_id IN ({ids_str})"))
+        conn.execute(text(f"""
+            DELETE FROM toast_transaction_items
+            WHERE transaction_id IN (
+                SELECT id FROM toast_transactions WHERE member_id IN ({ids_str})
+            )
+        """))
+        conn.execute(text(f"DELETE FROM toast_transactions WHERE member_id IN ({ids_str})"))
+        conn.execute(text(f"DELETE FROM toast_member_spending WHERE member_id IN ({ids_str})"))
+        conn.execute(text(f"UPDATE seating_reservation SET member_id = NULL WHERE member_id IN ({ids_str})"))
+        conn.execute(text(f"UPDATE admin_action_log SET admin_id = NULL WHERE admin_id IN ({ids_str})"))
+        conn.execute(text(f"UPDATE private_event_request SET reviewed_by_id = NULL WHERE reviewed_by_id IN ({ids_str})"))
+        conn.execute(text(f"DELETE FROM private_event_request WHERE member_id IN ({ids_str})"))
+        conn.execute(text(f"""
+            DELETE FROM order_item
+            WHERE order_id IN (SELECT id FROM "order" WHERE user_id IN ({ids_str}))
+        """))
+        conn.execute(text(f'DELETE FROM "order" WHERE user_id IN ({ids_str})'))
+        conn.execute(text(f"""
+            DELETE FROM invoice_line_item
+            WHERE invoice_id IN (SELECT id FROM invoice WHERE member_id IN ({ids_str}))
+        """))
+        conn.execute(text(f"DELETE FROM invoice WHERE member_id IN ({ids_str})"))
+        conn.execute(text(f"DELETE FROM note WHERE member_id IN ({ids_str}) OR author_id IN ({ids_str})"))
+        conn.execute(text(f"DELETE FROM reservation WHERE user_id IN ({ids_str})"))
+        conn.execute(text(f'DELETE FROM "user" WHERE id IN ({ids_str}) AND role = \'member\''))
+
+        conn.execute(text("PRAGMA foreign_keys = ON"))
+        conn.commit()
+
+    # Keep SQLAlchemy's identity map in sync
+    db.session.expire_all()
+    return len(member_ids)
+
+
 @app.route('/bulk_delete_members', methods=['POST'])
 def bulk_delete_members():
     if not authorized('bulk_delete_members'):
         return redirect(url_for('home'))
 
     selected_ids = request.form.getlist('selected_members')
-
     if not selected_ids:
         flash('No members selected.', 'warning')
         return redirect(url_for('manage_members'))
 
-    names = []
-    for member_id in selected_ids:
-        member = User.query.get(member_id)
-        if member and member.role == 'member':
-            names.append(f'{member.first_name} {member.last_name}')
-            db.session.delete(member)
+    try:
+        id_ints = [int(i) for i in selected_ids]
+        members = User.query.filter(User.id.in_(id_ints), User.role == 'member').all()
+        if not members:
+            flash('No eligible member accounts found in selection.', 'warning')
+            return redirect(url_for('manage_members'))
 
-    db.session.commit()
-    log_audit('member', f'Bulk deleted {len(names)} member(s)', ', '.join(names))
-    flash(f'{len(selected_ids)} member(s) deleted successfully.', 'success')
+        names = [f'{m.first_name} {m.last_name}' for m in members]
+        count = _delete_members_by_ids([m.id for m in members])
+        log_audit('member', f'Bulk deleted {count} member(s)', ', '.join(names))
+        flash(f'{count} member(s) deleted successfully.', 'success')
+    except Exception as e:
+        logger.error(f'Bulk delete error: {e}')
+        flash(f'Error deleting members: {e}', 'danger')
+
     return redirect(url_for('manage_members'))
 
 
@@ -2178,83 +2175,155 @@ def import_backup():
 
 @app.route('/import_members', methods=['GET', 'POST'])
 def import_members():
-    """Import members from CSV file."""
     if not authorized('import_members'):
         return redirect(url_for('home'))
-   
+
     if request.method == 'POST':
-        # Check if file was uploaded
         if 'file' not in request.files:
             flash('No file selected', 'danger')
             return redirect('/import_members')
-        
+
         file = request.files['file']
-        if file.filename == '':
+        if not file or file.filename == '':
             flash('No file selected', 'danger')
             return redirect('/import_members')
-        
+
         if not file.filename.endswith('.csv'):
             flash('Please upload a CSV file', 'danger')
             return redirect('/import_members')
-        
+
         try:
-            # Read CSV file
-            csv_content = file.read().decode('utf-8')
-            
-            # Import and process
-            from member_import import parse_csv_file, process_import_data, validate_import_data, generate_password
-            
-            rows = parse_csv_file(csv_content)
-            members = process_import_data(rows)
-            valid_members, errors = validate_import_data(members)
-            
-            # Import into database
-            imported_count = 0
-            for name, data in valid_members.items():
+            from io import StringIO
+
+            csv_content = file.read().decode('utf-8-sig')  # handle Excel BOM
+            reader = csv.DictReader(StringIO(csv_content))
+
+            # Wipe all existing members before importing the fresh list
+            existing_member_ids = [u.id for u in User.query.filter_by(role='member').all()]
+            wiped = _delete_members_by_ids(existing_member_ids)
+            logger.info(f'Import: wiped {wiped} existing member records before re-import')
+
+            import_date     = date.today()
+            import_date_str = import_date.strftime('%B %d, %Y')
+            bal_item_name   = f'Outstanding balance as of {import_date_str}'
+
+            created, updated, skipped = 0, 0, 0
+            errors = []
+            affected_users = []
+
+            def parse_balance(val):
+                cleaned = re.sub(r'[^\d.\-]', '', str(val or ''))
                 try:
-                    # Check if member exists
-                    existing = User.query.filter_by(email=data['email']).first()
-                    
-                    if existing:
-                        # Update existing member
-                        existing.first_name = data['name']
-                        existing.amount_owed = data['amount_owed']
-                        existing.tax_owed = data.get('tax_owed', 0)
-                        existing.gratuity_owed = data.get('gratuity_owed', 0)
-                    else:
-                        # Create new member
-                        password = generate_password(name)
-                        user = User(
-                            username=data['email'].split('@')[0],
-                            email=data['email'],
-                            first_name=data['name'],
-                            role='member',
-                            active=True,
-                            amount_owed=data['amount_owed'],
-                            amount_spent=data.get('amount_spent', 0),
-                            tax_owed=data.get('tax_owed', 0),
-                            gratuity_owed=data.get('gratuity_owed', 0),
-                        )
-                        user.set_password(password)
-                        db.session.add(user)
-                    
-                    imported_count += 1
-                except Exception as e:
-                    logger.error(f"Error importing {name}: {str(e)}")
+                    return round(float(cleaned), 2) if cleaned else 0.0
+                except ValueError:
+                    return 0.0
+
+            def safe_username(first, last):
+                base  = re.sub(r'[^a-z0-9]', '', (first + last).lower()) or 'member'
+                uname = base
+                i     = 2
+                while User.query.filter_by(username=uname).first():
+                    uname = f'{base}{i}'
+                    i    += 1
+                return uname
+
+            for row_num, row in enumerate(reader, start=2):
+                name_raw = (row.get('Name') or '').strip()
+                if not name_raw:
+                    skipped += 1
                     continue
-            
+
+                parts      = name_raw.split()
+                first_name = parts[0]
+                last_name  = ' '.join(parts[1:]) if len(parts) > 1 else ''
+                email      = (row.get('Email') or '').strip() or None
+                phone      = (row.get('Phone') or '').strip() or None
+                member_num = (row.get('Customer Number') or '').strip() or None
+                balance    = parse_balance(row.get('Outstanding Balance', ''))
+
+                # Derive membership type from member number prefix
+                prefix = (member_num or '').lower()[:1]
+                if prefix == 'c':
+                    membership_type = 'corporate'
+                elif prefix == 's':
+                    membership_type = 'single'
+                else:
+                    membership_type = 'single'
+
+                try:
+                    sp = db.session.begin_nested()
+
+                    user = User(
+                        username        = safe_username(first_name, last_name),
+                        first_name      = first_name,
+                        last_name       = last_name,
+                        email           = email,
+                        phone           = phone,
+                        member_number   = member_num,
+                        membership_type = membership_type,
+                        role            = 'member',
+                        active          = True,
+                    )
+                    user.set_password(secrets.token_urlsafe(12))
+                    db.session.add(user)
+                    created += 1
+
+                    db.session.flush()
+
+                    if balance != 0.0:
+                        order = Order(
+                            user_id        = user.id,
+                            date           = import_date,
+                            time           = None,
+                            subtotal       = balance,
+                            tax            = 0.0,
+                            gratuity       = 0.0,
+                            total          = balance,
+                            paid_by_credit = False,
+                            paid           = False,
+                            notes          = 'Imported outstanding balance',
+                        )
+                        db.session.add(order)
+                        db.session.flush()
+                        db.session.add(OrderItem(
+                            order_id  = order.id,
+                            item_name = bal_item_name,
+                            price     = balance,
+                        ))
+
+                    sp.commit()
+                    affected_users.append(user)
+
+                except Exception as row_err:
+                    sp.rollback()
+                    errors.append(f'Row {row_num} ({name_raw}): {row_err}')
+                    continue
+
+            # Recalculate balances for all affected members
+            db.session.flush()
+            for u in affected_users:
+                recalculate_balances(u)
+
             db.session.commit()
-            log_audit('member', f'CSV import: {imported_count} members imported', f'File: {file.filename} · Errors: {len(errors)}')
-            flash(f'✓ Successfully imported {imported_count} members', 'success')
-            if errors:
-                flash(f'⚠ {len(errors)} members skipped due to errors', 'warning')
-            return redirect('/admin/sales-report')
-        
+            log_audit('member',
+                      f'CSV import: {created} created, {updated} updated',
+                      f'File: {file.filename} · Skipped: {skipped} · Errors: {len(errors)}')
+
+            flash(f'✓ Replaced all members — {created} imported from CSV', 'success')
+            if skipped:
+                flash(f'{skipped} blank-name rows skipped', 'info')
+            for msg in errors[:5]:
+                flash(f'⚠ {msg}', 'warning')
+            if len(errors) > 5:
+                flash(f'… and {len(errors) - 5} more errors (check server logs)', 'warning')
+            return redirect(url_for('manage_members'))
+
         except Exception as e:
-            logger.error(f"Import error: {str(e)}")
-            flash(f'Error importing file: {str(e)}', 'danger')
+            db.session.rollback()
+            logger.error(f'Import error: {e}')
+            flash(f'Error importing file: {e}', 'danger')
             return redirect('/import_members')
-    
+
     return render_template('admin_import_members.html')
 
 
@@ -4707,9 +4776,111 @@ with app.app_context():
     seed_membership_types()
     seed_club_settings()
 
+# =====================================================
+# SCHEDULED DAILY BACKUP (midnight EST)
+# =====================================================
+
+def _run_scheduled_backup():
+    """Write a full JSON backup to the backups/ folder. Keeps the last 30 files."""
+    backup_dir = os.path.join(os.path.dirname(__file__), 'backups')
+    os.makedirs(backup_dir, exist_ok=True)
+
+    def _sv(v):
+        if v is None:
+            return None
+        t = type(v).__name__
+        if t in ('datetime', 'date'):
+            return v.isoformat()
+        if t == 'time':
+            return v.strftime('%H:%M:%S')
+        return v
+
+    def _dump(model_cls):
+        return [
+            {col.name: _sv(getattr(obj, col.name)) for col in model_cls.__table__.columns}
+            for obj in model_cls.query.all()
+        ]
+
+    with app.app_context():
+        backup = {
+            '_meta': {
+                'version': 1,
+                'exported_at': datetime.utcnow().isoformat(),
+                'app': 'room120',
+                'source': 'scheduled_backup',
+            },
+            MembershipType.__tablename__:       _dump(MembershipType),
+            StaffRole.__tablename__:            _dump(StaffRole),
+            ClubSetting.__tablename__:          _dump(ClubSetting),
+            SavedReport.__tablename__:          _dump(SavedReport),
+            BlockedDate.__tablename__:          _dump(BlockedDate),
+            Event.__tablename__:                _dump(Event),
+            User.__tablename__:                 _dump(User),
+            Application.__tablename__:          _dump(Application),
+            PrivateEventRequest.__tablename__:  _dump(PrivateEventRequest),
+            Note.__tablename__:                 _dump(Note),
+            Reservation.__tablename__:          _dump(Reservation),
+            AdminActionLog.__tablename__:       _dump(AdminActionLog),
+            AuditLog.__tablename__:             _dump(AuditLog),
+            Order.__tablename__:                _dump(Order),
+            OrderItem.__tablename__:            _dump(OrderItem),
+            Invoice.__tablename__:              _dump(Invoice),
+            InvoiceLineItem.__tablename__:      _dump(InvoiceLineItem),
+            Table.__tablename__:                _dump(Table),
+            LayoutItem.__tablename__:           _dump(LayoutItem),
+            SeatingItem.__tablename__:          _dump(SeatingItem),
+            SeatingReservation.__tablename__:   _dump(SeatingReservation),
+            ToastTransaction.__tablename__:     _dump(ToastTransaction),
+            ToastTransactionItem.__tablename__: _dump(ToastTransactionItem),
+            ToastMemberSpending.__tablename__:  _dump(ToastMemberSpending),
+            ToastSyncLog.__tablename__:         _dump(ToastSyncLog),
+            SetupToken.__tablename__:           _dump(SetupToken),
+        }
+
+        fname = f'room120_backup_{datetime.utcnow().strftime("%Y%m%d_%H%M%S")}.json'
+        fpath = os.path.join(backup_dir, fname)
+        with open(fpath, 'w', encoding='utf-8') as f:
+            json.dump(backup, f, indent=2, default=str)
+
+        logger.info(f'Scheduled backup saved: {fname}')
+
+        # Prune: keep the 30 most recent backup files
+        backups = sorted(
+            [os.path.join(backup_dir, x) for x in os.listdir(backup_dir) if x.endswith('.json')],
+            key=os.path.getmtime, reverse=True
+        )
+        for old in backups[30:]:
+            try:
+                os.remove(old)
+            except OSError:
+                pass
+
+
+def _start_scheduler():
+    from apscheduler.schedulers.background import BackgroundScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    import pytz
+
+    scheduler = BackgroundScheduler(timezone=pytz.utc)
+    # midnight EST = 05:00 UTC (EST is UTC-5; during EDT it's 04:00 UTC)
+    # Use America/New_York so it auto-adjusts for daylight saving
+    est = pytz.timezone('America/New_York')
+    scheduler.add_job(
+        _run_scheduled_backup,
+        CronTrigger(hour=0, minute=0, timezone=est),
+        id='daily_backup',
+        replace_existing=True,
+    )
+    scheduler.start()
+    logger.info('Daily backup scheduler started (fires at midnight EST)')
+    return scheduler
+
+
 if __name__ == "__main__":
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.config['DEBUG'] = True
+
+    _start_scheduler()
 
     port = int(os.environ.get("PORT", 5002))
     app.run(host="0.0.0.0", port=port, debug=True)

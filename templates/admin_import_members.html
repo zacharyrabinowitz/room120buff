@@ -93,9 +93,9 @@
               <input type="file" class="form-control" id="file" name="file" 
                      accept=".csv" required>
               <small class="text-muted">
-                Format: Name, Customer Number, Last Transaction Date, Outstanding Balance
+                Format: <code>Name, Customer Number, Account Number, Email, Phone, Outstanding Balance</code>
                 <br>
-                Example: JW Danforth, C2001, 2026-05-19 03:24, $35,559.36
+                Example: <code>JW Danforth, C2001, 8627..., jrudich@jwdanforth.com, 7167992355, $35,812.72</code>
               </small>
             </div>
             
@@ -112,34 +112,28 @@
           <strong>How It Works</strong>
         </div>
         <div class="card-body">
-          <h5>Toast CSV Format</h5>
-          <p>Your CSV file should have exactly these 4 columns:</p>
+          <h5>Expected CSV Columns</h5>
           <ul>
-            <li><code>Name</code> - Member/customer name (required)</li>
-            <li><code>Customer Number</code> - Toast customer ID (optional)</li>
-            <li><code>Last Transaction Date</code> - Date of last visit (optional)</li>
-            <li><code>Outstanding Balance</code> - Amount owed (format: $X,XXX.XX)</li>
+            <li><code>Name</code> — Full name. First word → first name; the rest → last name. <strong>(required)</strong></li>
+            <li><code>Customer Number</code> — Member ID (e.g. C2001, s310). Used to detect duplicates.</li>
+            <li><code>Account Number</code> — Ignored.</li>
+            <li><code>Email</code> — Used as login email and duplicate key.</li>
+            <li><code>Phone</code> — Stored on the member profile.</li>
+            <li><code>Outstanding Balance</code> — Dollar amount (e.g. <code>$35,812.72</code> or <code>-$74.59</code>).</li>
           </ul>
 
           <h5 class="mt-3">What Happens During Import</h5>
           <ol>
-            <li>New members are created with their name and outstanding balance</li>
-            <li>A default password is generated - they must change it on first login</li>
-            <li>Existing members are updated with their balance data</li>
-            <li>Each member gets a unique email based on their customer number or name</li>
-            <li>All members are set to active status</li>
+            <li>Members matched by email or Customer Number are <strong>updated</strong> — name, phone, member number.</li>
+            <li>Unrecognised rows create <strong>new member accounts</strong> with a random temporary password.</li>
+            <li>Username is set to <em>firstlast</em> (lowercase, no spaces, numbers disambiguate duplicates).</li>
+            <li>Any non-zero Outstanding Balance creates an <strong>Order</strong> with a single line item:<br>
+                <em>"Outstanding balance as of [date]"</em> — $0 tax, $0 gratuity — so you can generate invoices later.</li>
+            <li>Re-importing the same file is safe: the outstanding-balance order is updated in place.</li>
           </ol>
 
-          <h5 class="mt-3">After Import</h5>
-          <ul>
-            <li>Members can log in to view their profile</li>
-            <li>Their balance shows in the "Balance" tab on their profile page</li>
-            <li>Admins can view all member balances on the Sales Dashboard</li>
-            <li>All data is read-only (no changes are sent back to Toast)</li>
-          </ul>
-
           <div class="alert alert-info mt-3 small">
-            <strong><i class="fas fa-lightbulb me-1"></i> Tip:</strong> After import, go to the <a href="{{ url_for('admin_sales_report') }}">Sales Dashboard</a> to see all member balances loaded.
+            <strong><i class="fas fa-lightbulb me-1"></i> Tip:</strong> After import, visit <a href="{{ url_for('manage_members') }}">Manage Members</a> to see all imported accounts.
           </div>
         </div>
       </div>
@@ -150,14 +144,14 @@
           <strong>Sample CSV Format</strong>
         </div>
         <div class="card-body">
-          <p><strong>Your Toast Export Should Look Like This:</strong></p>
-          <pre>Name,Customer Number,Last Transaction Date,Outstanding Balance
-JW Danforth,C2001,2026-05-19 03:24,"$35,559.36"
-Events Draft Room,,2022-06-08 17:23,"$23,959.94"
-Phil Rapini,s310,2026-05-19 03:20,"$15,669.96"
-SABRES PSE,C2119,2026-03-28 00:41,"$14,035.47"
-Adam Martin,C9002,2026-05-20 15:19,"$5,322.97"</pre>
-          <p class="text-muted small mt-2">Note: The quotes around dollar amounts are fine - the importer handles them.</p>
+          <p><strong>Expected Format:</strong></p>
+          <pre>Name,Customer Number,Account Number,Email,Phone,Outstanding Balance
+JW Danforth,C2001,8627838832955552,jrudich@jwdanforth.com,7167992355,"$35,812.72"
+Events Draft Room,,8627948341877609,draftroom@events.com,7163140303,"$23,959.94"
+Phil Rapini,s310,8627799252628907,philrapini@gmail.com,7164322555,"$15,415.41"
+SABRES PSE,C2119,8627325047453391,dominic.verni@topshelfmgmnt.com,7163140303,"$14,035.47"
+David Pfalzgraf RuppBaase,C2085,8627529657878223,pfalzgraf@rupppfalzgraf.com,7163140303,-$74.59</pre>
+          <p class="text-muted small mt-2">Quoted dollar amounts and negative balances (credits) are handled automatically.</p>
         </div>
       </div>
 
@@ -169,10 +163,10 @@ Adam Martin,C9002,2026-05-20 15:19,"$5,322.97"</pre>
         <div class="card-body">
           <h6>Common Issues:</h6>
           <ul class="small">
-            <li><strong>File not accepted:</strong> Make sure it's a .csv file (not Excel)</li>
-            <li><strong>Import fails:</strong> Check that your CSV has exactly 4 columns with the right headers</li>
-            <li><strong>Missing columns:</strong> Toast exports might have extra columns - that's OK, we only use the 4 above</li>
-            <li><strong>Balance issues:</strong> Make sure balance format is like "$1,234.56" (dollar sign, commas, 2 decimals)</li>
+            <li><strong>File not accepted:</strong> Save as .csv from Excel first (File → Save As → CSV UTF-8)</li>
+            <li><strong>Wrong column headers:</strong> Headers must be exactly <code>Name</code>, <code>Customer Number</code>, <code>Account Number</code>, <code>Email</code>, <code>Phone</code>, <code>Outstanding Balance</code></li>
+            <li><strong>Duplicate members:</strong> Matched by email first, then Customer Number — safe to re-import</li>
+            <li><strong>$0 balance rows:</strong> Member is created/updated but no order is generated (nothing to invoice)</li>
           </ul>
         </div>
       </div>
