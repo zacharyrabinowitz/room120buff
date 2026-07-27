@@ -5068,6 +5068,7 @@ def shift_planner_upload():
             'break_sections': break_sections,
             'all_employees': {pos: [e['name'] for e in lst] for pos, lst in employees.items()},
         }
+        session['shift_plan_file'] = None  # new upload — no existing history file
 
         return redirect(url_for('shift_planner_edit'))
 
@@ -5104,8 +5105,6 @@ def shift_planner_download():
         pisa.CreatePDF(html.encode('utf-8'), dest=buf, encoding='utf-8')
         buf.seek(0)
 
-        _save_shift_history(plan)
-
         slug = re.sub(r'[^\w]', '_', plan.get('date', 'shift'))
         return send_file(buf, mimetype='application/pdf',
                          as_attachment=True, download_name=f'shift_plan_{slug}.pdf')
@@ -5114,6 +5113,32 @@ def shift_planner_download():
         logger.error(f'Shift plan PDF error: {e}')
         flash(f'Error generating PDF: {e}', 'danger')
         return redirect(url_for('shift_planner_edit'))
+
+
+@app.route('/admin/shift-planner/save', methods=['POST'])
+def shift_planner_save():
+    if not authorized('edit_shift_planner'):
+        return redirect(url_for('home'))
+    try:
+        plan = json.loads(request.form.get('plan_data', '{}'))
+        session['shift_plan'] = plan
+
+        existing_file = session.get('shift_plan_file')
+        if existing_file:
+            # Overwrite the existing history file
+            path = os.path.join(SHIFT_HISTORY_DIR, os.path.basename(existing_file))
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump({'saved_at': datetime.utcnow().isoformat(), 'plan': plan}, f, indent=2)
+        else:
+            # Create a new history file and remember it
+            fname = _save_shift_history(plan)
+            session['shift_plan_file'] = fname
+
+        flash('Shift plan saved.', 'success')
+    except Exception as e:
+        logger.error(f'Shift plan save error: {e}')
+        flash(f'Error saving plan: {e}', 'danger')
+    return redirect(url_for('shift_planner_edit'))
 
 
 @app.route('/admin/shift-planner/history/<filename>/delete', methods=['POST'])
@@ -5142,6 +5167,7 @@ def shift_planner_load_history(filename):
     with open(path, encoding='utf-8') as f:
         data = json.load(f)
     session['shift_plan'] = data.get('plan', {})
+    session['shift_plan_file'] = safe  # track which history file is loaded
     return redirect(url_for('shift_planner_edit'))
 
 
