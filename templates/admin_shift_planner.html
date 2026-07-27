@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container px-4 mt-4" style="max-width:700px;">
+
+  <div class="page-header text-center mb-4">
+    <h2><i class="fas fa-clipboard-list me-2" style="color:var(--accent);"></i>Shift Planner</h2>
+    <div class="accent-bar"></div>
+    <p class="text-muted mt-2" style="font-size:.9rem;">Upload a roster PDF to auto-generate an editable shift plan.</p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ 'success' if cat=='success' else 'danger' if cat=='danger' else 'warning' }} alert-dismissible fade show">
+      {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="card">
+    <div class="card-header fw-semibold">
+      <i class="fas fa-upload me-2" style="color:var(--accent);"></i>Upload Roster &amp; Set Event Details
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('shift_planner_upload') }}" enctype="multipart/form-data">
+
+        <div class="mb-3">
+          <label class="form-label fw-medium">Roster PDF or CSV <span class="text-danger">*</span></label>
+          <input type="file" class="form-control" name="roster_pdf" accept=".pdf,.csv,application/pdf,text/csv,text/plain" required>
+          <div class="form-text">Upload a PDF or CSV export from your scheduling system (7shifts, Toast, etc.).</div>
+        </div>
+
+        <hr class="my-3">
+        <p class="fw-semibold mb-3" style="font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);">Event Details</p>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Location / Venue Name</label>
+            <input type="text" class="form-control" name="location_title" placeholder="The Draft Room" value="The Draft Room">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Date <span class="text-muted fw-normal">(for title)</span></label>
+            <input type="text" class="form-control" name="plan_date" placeholder="8/2/26">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Event / Performer</label>
+            <input type="text" class="form-control" name="event_name" placeholder="Nate Bargatze">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Venue</label>
+            <input type="text" class="form-control" name="venue" placeholder="KeyBank Center">
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-magic me-1"></i> Parse &amp; Build Plan
+          </button>
+          <a href="{{ url_for('home') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-header fw-semibold" style="font-size:.85rem;">How It Works</div>
+    <div class="card-body" style="font-size:.85rem;">
+      <ol class="mb-0">
+        <li>Upload your roster export PDF (7shifts / Toast format).</li>
+        <li>The system reads each employee's position and shift times.</li>
+        <li>Bartenders are auto-split into Main Bar / Lower Bar by shift length.</li>
+        <li>Break rotations are generated for any role with 2+ late-shift staff.</li>
+        <li>You can edit every assignment, add or remove rows, and rename sections.</li>
+        <li>Download the final plan as a clean formatted PDF.</li>
+      </ol>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

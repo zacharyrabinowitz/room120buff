@@ -104,6 +104,12 @@ UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'upload
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 32 MB — covers PDFs and CSVs
+
+@app.errorhandler(413)
+def request_entity_too_large(e):
+    flash('File is too large. Maximum upload size is 32 MB.', 'danger')
+    return redirect(request.referrer or url_for('home'))
 
 
 
@@ -1051,44 +1057,71 @@ def reservations():
     if not session.get('user_id'):
         return redirect(url_for('login'))
 
-    user = User.query.get(session['user_id'])
+    current_user = User.query.get(session['user_id'])
+    is_staff     = current_user.role in ('admin', 'staff')
     blocked_dates = [b.date for b in BlockedDate.query.all()]
     error = None
 
-    # Handle pre-filled values from RSVP
+    # Pre-filled values from RSVP links
     prefill_date = request.args.get('date')
     prefill_time = request.args.get('time')
     prefill_note = request.args.get('note')
 
+    # For admins/staff: list of members to book on behalf of
+    all_members = (
+        User.query.filter_by(role='member', active=True)
+            .order_by(User.last_name, User.first_name).all()
+        if is_staff else []
+    )
+
     if request.method == 'POST':
-        date_str = request.form['date']
-        time_str = request.form['time']
+        date_str   = request.form['date']
+        time_str   = request.form['time']
         guests_str = request.form['guests']
-        notes = request.form.get('notes', '')
+        notes      = request.form.get('notes', '')
+
+        # Determine whose reservation this is
+        if is_staff:
+            for_member_id = request.form.get('for_member_id', '').strip()
+            if for_member_id:
+                target_user = User.query.get(int(for_member_id))
+                if not target_user:
+                    error = "Selected member not found."
+                    return render_template('reservations.html',
+                                           reservations=[], blocked_dates=blocked_dates,
+                                           error=error, all_members=all_members,
+                                           is_staff=is_staff)
+            else:
+                target_user = current_user
+        else:
+            target_user = current_user
 
         try:
             date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
         except ValueError:
             error = "Invalid date format."
-            return render_template('reservations.html', reservations=[], blocked_dates=blocked_dates, error=error)
+            return render_template('reservations.html', reservations=[], blocked_dates=blocked_dates,
+                                   error=error, all_members=all_members, is_staff=is_staff)
 
         try:
             time_obj = datetime.strptime(time_str, '%H:%M').time()
         except ValueError:
             error = "Invalid time format."
-            return render_template('reservations.html', reservations=[], blocked_dates=blocked_dates, error=error)
+            return render_template('reservations.html', reservations=[], blocked_dates=blocked_dates,
+                                   error=error, all_members=all_members, is_staff=is_staff)
 
         try:
             guests_int = int(guests_str)
         except ValueError:
             error = "Guests must be a number."
-            return render_template('reservations.html', reservations=[], blocked_dates=blocked_dates, error=error)
+            return render_template('reservations.html', reservations=[], blocked_dates=blocked_dates,
+                                   error=error, all_members=all_members, is_staff=is_staff)
 
         if date_str in blocked_dates:
             error = "Sorry, this date is blocked for reservations."
         else:
             new_reservation = Reservation(
-                user_id=user.id,
+                user_id=target_user.id,
                 date=date_obj,
                 time=time_obj,
                 guests=guests_int,
@@ -1096,19 +1129,24 @@ def reservations():
             )
             db.session.add(new_reservation)
             db.session.commit()
-            log_audit('reservation', f'Reservation created', f'Date: {date_str} · Time: {time_str} · Guests: {guests_int}')
+            log_audit('reservation', f'Reservation created for {target_user.first_name} {target_user.last_name}',
+                      f'By: {current_user.username} · Date: {date_str} · Time: {time_str} · Guests: {guests_int}')
+            flash(f'Reservation booked for {target_user.first_name} {target_user.last_name}.', 'success')
             return redirect(url_for('reservations'))
 
-    reservations = Reservation.query.filter_by(user_id=user.id).all()
+    my_reservations = Reservation.query.filter_by(user_id=current_user.id).all()
 
     return render_template(
         'reservations.html',
-        reservations=reservations,
+        reservations=my_reservations,
         blocked_dates=blocked_dates,
         error=error,
         prefill_date=prefill_date,
         prefill_time=prefill_time,
-        prefill_note=prefill_note
+        prefill_note=prefill_note,
+        all_members=all_members,
+        is_staff=is_staff,
+        current_user=current_user,
     )
 
 
@@ -4775,6 +4813,245 @@ with app.app_context():
     run_migrations()
     seed_membership_types()
     seed_club_settings()
+
+# =====================================================
+# SHIFT PLANNER
+# =====================================================
+
+def _parse_roster_csv(csv_bytes):
+    """Parse a CSV roster export. Returns {position: [{name, location, shift}]}.
+    Accepts any CSV that has columns containing 'name' and 'position' (case-insensitive).
+    Optional columns: shift/time, location."""
+    import csv as _csv
+    from io import StringIO
+
+    text = csv_bytes.decode('utf-8-sig')
+    reader = _csv.DictReader(StringIO(text))
+
+    # Normalise header names to lowercase for flexible matching
+    headers = [h.lower().strip() for h in (reader.fieldnames or [])]
+
+    def _col(row, *candidates):
+        for c in candidates:
+            for h in headers:
+                if c in h:
+                    return row.get(next((k for k in row if k.lower().strip() == h), ''), '').strip()
+        return ''
+
+    employees = {}
+    for row in reader:
+        name     = _col(row, 'name', 'employee')
+        position = _col(row, 'position', 'role', 'job', 'title')
+        shift    = _col(row, 'shift', 'time', 'schedule', 'hours')
+        location = _col(row, 'location', 'venue', 'site')
+
+        if not name or not position:
+            continue
+        employees.setdefault(position, [])
+        employees[position].append({'name': name, 'location': location, 'shift': shift})
+
+    return employees
+
+
+def _parse_roster_pdf(pdf_bytes):
+    """Parse a roster-export PDF. Returns {position: [{name, location, shift}]}."""
+    import pdfplumber
+
+    known_positions = {
+        'Bartender', 'Cook', 'Host', 'Runner', 'Server',
+        'Room 120 Bartender', 'Manager', 'Barback', 'Supervisor', 'Security',
+    }
+    skip_prefixes = ('EMPLOYEES', 'STATUS', 'LOCATIONS', 'POSITIONS', 'TAGS', 'SHIFT TIME')
+    employees = {}
+    current_pos = None
+
+    with pdfplumber.open(BytesIO(pdf_bytes)) as pdf:
+        for page in pdf.pages:
+            for line in (page.extract_text() or '').split('\n'):
+                line = line.strip()
+                if not line or any(line.startswith(p) for p in skip_prefixes):
+                    continue
+                if line in known_positions:
+                    current_pos = line
+                    employees.setdefault(current_pos, [])
+                    continue
+                if current_pos is None:
+                    continue
+
+                time_m = re.search(r'(\d+:\d+\s*(?:AM|PM)\s*-\s*\d+:\d+\s*(?:AM|PM))', line)
+                shift  = time_m.group(1).strip() if time_m else ''
+                chunk  = (line[:time_m.start()] if time_m else line).rstrip('- ').strip()
+
+                location = ''
+                for loc_str, loc_name in [
+                    ('The Draft Room (79 Perry Street)', 'The Draft Room'),
+                    ('The Draft Room', 'The Draft Room'),
+                    ('Room 120', 'Room 120'),
+                ]:
+                    if loc_str in chunk:
+                        location = loc_name
+                        chunk = chunk.replace(loc_str, '').strip()
+                        break
+
+                name = chunk.replace(current_pos, '').strip('- ').strip()
+                if name and len(name) > 1:
+                    employees[current_pos].append({'name': name, 'location': location, 'shift': shift})
+
+    return employees
+
+
+def _shift_end_hour(shift_str):
+    """Return the shift end time as a 24-hour integer, or 0 if unparseable."""
+    m = re.search(r'-\s*(\d+):(\d+)\s*(AM|PM)', shift_str)
+    if not m:
+        return 0
+    h, mi, period = int(m.group(1)), int(m.group(2)), m.group(3)
+    if period == 'PM' and h != 12:
+        h += 12
+    elif period == 'AM' and h == 12:
+        h = 0
+    return h
+
+
+def _generate_break_rotation(names, start_hour=19, start_min=0):
+    """Round-robin 30-min break slots starting at start_hour:start_min (24h)."""
+    rows = []
+    h, m = start_hour, start_min
+    i = 0
+    while i < len(names):
+        def fmt(hh, mm):
+            label = 'AM' if hh < 12 else 'PM'
+            hh12 = hh % 12 or 12
+            return f'{hh12}:{mm:02d} {label}'
+
+        eh, em = h, m + 30
+        if em >= 60:
+            eh += 1
+            em -= 60
+
+        on_break = [names[i]]
+        if i + 1 < len(names) and len(names) > 3:
+            on_break.append(names[i + 1])
+            i += 2
+        else:
+            i += 1
+
+        on_floor = [n for n in names if n not in on_break]
+        rows.append({
+            'time': f'{fmt(h, m)} – {fmt(eh, em)}',
+            'on_break': ' & '.join(on_break),
+            'on_floor': ', '.join(on_floor),
+        })
+        h, m = eh, em
+    return rows
+
+
+@app.route('/admin/shift-planner', methods=['GET'])
+def shift_planner():
+    if not authorized('admin'):
+        return redirect(url_for('home'))
+    return render_template('admin_shift_planner.html')
+
+
+@app.route('/admin/shift-planner/upload', methods=['POST'])
+def shift_planner_upload():
+    if not authorized('admin'):
+        return redirect(url_for('home'))
+
+    file = request.files.get('roster_pdf')
+    fname = (file.filename or '').lower()
+    if not file or not (fname.endswith('.pdf') or fname.endswith('.csv')):
+        flash('Please upload a PDF or CSV roster file.', 'danger')
+        return redirect(url_for('shift_planner'))
+
+    try:
+        raw = file.read()
+        employees = _parse_roster_csv(raw) if fname.endswith('.csv') else _parse_roster_pdf(raw)
+
+        location_title = request.form.get('location_title', 'The Draft Room').strip()
+        event_name     = request.form.get('event_name', '').strip()
+        venue          = request.form.get('venue', '').strip()
+        plan_date      = request.form.get('plan_date', '').strip()
+
+        # Auto-assign bartenders: early-shift → Main Bar, late-shift → Lower Bar
+        bartenders = employees.get('Bartender', [])
+        late  = [e['name'] for e in bartenders if _shift_end_hour(e['shift']) >= 22]
+        early = [e['name'] for e in bartenders if _shift_end_hour(e['shift']) < 22]
+        if not early or not late:
+            mid = len(bartenders) // 2
+            early = [e['name'] for e in bartenders[:mid]]
+            late  = [e['name'] for e in bartenders[mid:]]
+
+        # Auto-generate break rotations for roles with 2+ late-shift people
+        break_sections = []
+        for pos, label in [('Bartender', 'Bartender'), ('Cook', 'Cook'), ('Server', 'Server')]:
+            late_staff = [e['name'] for e in employees.get(pos, []) if _shift_end_hour(e['shift']) >= 22]
+            if len(late_staff) >= 2:
+                break_sections.append({
+                    'name': f'{label} Break Rotation',
+                    'break_after': '7:00 PM',
+                    'rows': _generate_break_rotation(late_staff),
+                })
+
+        session['shift_plan'] = {
+            'location_title': location_title,
+            'event_name':     event_name,
+            'venue':          venue,
+            'date':           plan_date,
+            'bar': {
+                'main_label':  'Main Bar',
+                'lower_label': 'Lower Bar',
+                'main':  early,
+                'lower': late,
+            },
+            'break_sections': break_sections,
+            'all_employees': {pos: [e['name'] for e in lst] for pos, lst in employees.items()},
+        }
+
+        return redirect(url_for('shift_planner_edit'))
+
+    except Exception as e:
+        logger.error(f'Shift planner parse error: {e}')
+        flash(f'Error parsing PDF: {e}', 'danger')
+        return redirect(url_for('shift_planner'))
+
+
+@app.route('/admin/shift-planner/edit', methods=['GET'])
+def shift_planner_edit():
+    if not authorized('admin'):
+        return redirect(url_for('home'))
+
+    plan = session.get('shift_plan')
+    if not plan:
+        flash('No plan loaded. Upload a roster first.', 'warning')
+        return redirect(url_for('shift_planner'))
+
+    return render_template('admin_shift_planner_edit.html', plan=plan)
+
+
+@app.route('/admin/shift-planner/download', methods=['POST'])
+def shift_planner_download():
+    if not authorized('admin'):
+        return redirect(url_for('home'))
+
+    try:
+        plan = json.loads(request.form.get('plan_data', '{}'))
+        html = render_template('shift_plan_print.html', plan=plan)
+
+        from xhtml2pdf import pisa
+        buf = BytesIO()
+        pisa.CreatePDF(html.encode('utf-8'), dest=buf, encoding='utf-8')
+        buf.seek(0)
+
+        slug = re.sub(r'[^\w]', '_', plan.get('date', 'shift'))
+        return send_file(buf, mimetype='application/pdf',
+                         as_attachment=True, download_name=f'shift_plan_{slug}.pdf')
+
+    except Exception as e:
+        logger.error(f'Shift plan PDF error: {e}')
+        flash(f'Error generating PDF: {e}', 'danger')
+        return redirect(url_for('shift_planner_edit'))
+
 
 # =====================================================
 # SCHEDULED DAILY BACKUP (midnight EST)

@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4" style="max-width:1100px;">
+
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+    <div>
+      <h2><i class="fas fa-clipboard-list me-2" style="color:var(--accent);"></i>Shift Plan Editor</h2>
+      <div class="accent-bar"></div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('shift_planner') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-upload me-1"></i> Upload New Roster
+      </a>
+      <button class="btn btn-primary btn-sm" id="downloadBtn">
+        <i class="fas fa-file-pdf me-1"></i> Download PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Event Details ─────────────────────────────────────────── -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold">
+      <i class="fas fa-calendar-alt me-2" style="color:var(--accent);"></i>Event Details
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label small fw-medium">Location / Title</label>
+          <input type="text" class="form-control form-control-sm" id="ev_location" value="{{ plan.location_title }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-medium">Event / Performer</label>
+          <input type="text" class="form-control form-control-sm" id="ev_name" value="{{ plan.event_name }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-medium">Venue</label>
+          <input type="text" class="form-control form-control-sm" id="ev_venue" value="{{ plan.venue }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-medium">Date</label>
+          <input type="text" class="form-control form-control-sm" id="ev_date" value="{{ plan.date }}">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bar Assignments ──────────────────────────────────────── -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-glass-martini-alt me-2" style="color:var(--accent);"></i>Bar Assignments</span>
+      <button class="btn btn-outline-secondary btn-xs py-0 px-2" id="addBarRowBtn" style="font-size:.75rem;">
+        <i class="fas fa-plus me-1"></i>Add Row
+      </button>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm mb-0" id="barTable">
+          <thead>
+            <tr>
+              <th style="width:50%;">
+                <input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold"
+                       id="bar_main_label" value="{{ plan.bar.main_label }}">
+              </th>
+              <th style="width:50%;">
+                <input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold"
+                       id="bar_lower_label" value="{{ plan.bar.lower_label }}">
+              </th>
+            </tr>
+          </thead>
+          <tbody id="barTbody">
+            {% set mains  = plan.bar.main %}
+            {% set lowers = plan.bar.lower %}
+            {% set max_rows = [mains|length, lowers|length]|max %}
+            {% for i in range(max_rows) %}
+            <tr>
+              <td>
+                <input type="text" class="form-control form-control-sm bar-cell"
+                       value="{{ mains[i] if i < mains|length else '' }}">
+              </td>
+              <td>
+                <input type="text" class="form-control form-control-sm bar-cell"
+                       value="{{ lowers[i] if i < lowers|length else '' }}">
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Break Rotation Sections ──────────────────────────────── -->
+  <div id="breakSections">
+    {% for section in plan.break_sections %}
+    <div class="card mb-4 break-section">
+      <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+        <span>
+          <i class="fas fa-coffee me-2" style="color:var(--accent);"></i>
+          <input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold d-inline-block"
+                 style="width:auto;min-width:220px;" value="{{ section.name }}">
+        </span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">First break after</span>
+          <input type="text" class="form-control form-control-sm"
+                 style="width:110px;" value="{{ section.break_after }}">
+          <button class="btn btn-outline-secondary btn-xs py-0 px-2" style="font-size:.75rem;" onclick="addBreakRow(this)">
+            <i class="fas fa-plus me-1"></i>Row
+          </button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm mb-0 break-table">
+            <thead>
+              <tr>
+                <th style="width:28%;">Time</th>
+                <th style="width:25%;">On Break</th>
+                <th>On Floor</th>
+                <th style="width:36px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in section.rows %}
+              <tr>
+                <td><input type="text" class="form-control form-control-sm" value="{{ row.time }}"></td>
+                <td><input type="text" class="form-control form-control-sm" value="{{ row.on_break }}"></td>
+                <td><input type="text" class="form-control form-control-sm" value="{{ row.on_floor }}"></td>
+                <td>
+                  <button type="button" class="btn btn-outline-danger btn-xs py-0 px-1" onclick="removeRow(this)">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="d-flex gap-2 mb-5">
+    <button class="btn btn-outline-secondary btn-sm" id="addSectionBtn">
+      <i class="fas fa-plus me-1"></i> Add Break Section
+    </button>
+    <button class="btn btn-primary btn-sm" id="downloadBtn2">
+      <i class="fas fa-file-pdf me-1"></i> Download PDF
+    </button>
+  </div>
+
+</div>
+
+<!-- Hidden form for PDF download -->
+<form method="POST" action="{{ url_for('shift_planner_download') }}" id="downloadForm" style="display:none;">
+  <input type="hidden" name="plan_data" id="planDataInput">
+</form>
+
+<script>
+// ── Add bar row ──────────────────────────────────────────────────
+document.getElementById('addBarRowBtn').addEventListener('click', function () {
+  const tbody = document.getElementById('barTbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="form-control form-control-sm bar-cell" value=""></td>
+    <td><input type="text" class="form-control form-control-sm bar-cell" value=""></td>`;
+  tbody.appendChild(tr);
+});
+
+// ── Add break row ────────────────────────────────────────────────
+function addBreakRow(btn) {
+  const tbody = btn.closest('.card').querySelector('tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="form-control form-control-sm" value=""></td>
+    <td><input type="text" class="form-control form-control-sm" value=""></td>
+    <td><input type="text" class="form-control form-control-sm" value=""></td>
+    <td><button type="button" class="btn btn-outline-danger btn-xs py-0 px-1" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>`;
+  tbody.appendChild(tr);
+}
+
+// ── Remove row ────────────────────────────────────────────────────
+function removeRow(btn) { btn.closest('tr').remove(); }
+
+// ── Add break section ─────────────────────────────────────────────
+document.getElementById('addSectionBtn').addEventListener('click', function () {
+  const container = document.getElementById('breakSections');
+  const div = document.createElement('div');
+  div.className = 'card mb-4 break-section';
+  div.innerHTML = `
+    <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+      <span>
+        <i class="fas fa-coffee me-2" style="color:var(--accent);"></i>
+        <input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold d-inline-block"
+               style="width:auto;min-width:220px;" value="New Break Rotation">
+      </span>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small">First break after</span>
+        <input type="text" class="form-control form-control-sm" style="width:110px;" value="7:00 PM">
+        <button class="btn btn-outline-secondary btn-xs py-0 px-2" style="font-size:.75rem;" onclick="addBreakRow(this)">
+          <i class="fas fa-plus me-1"></i>Row
+        </button>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 break-table">
+          <thead>
+            <tr>
+              <th style="width:28%;">Time</th>
+              <th style="width:25%;">On Break</th>
+              <th>On Floor</th>
+              <th style="width:36px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="text" class="form-control form-control-sm" value=""></td>
+              <td><input type="text" class="form-control form-control-sm" value=""></td>
+              <td><input type="text" class="form-control form-control-sm" value=""></td>
+              <td><button type="button" class="btn btn-outline-danger btn-xs py-0 px-1" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  container.appendChild(div);
+});
+
+// ── Collect data & submit ─────────────────────────────────────────
+function collectAndDownload() {
+  const plan = {
+    location_title : document.getElementById('ev_location').value,
+    event_name     : document.getElementById('ev_name').value,
+    venue          : document.getElementById('ev_venue').value,
+    date           : document.getElementById('ev_date').value,
+    bar: {
+      main_label  : document.getElementById('bar_main_label').value,
+      lower_label : document.getElementById('bar_lower_label').value,
+      main        : [],
+      lower       : [],
+    },
+    break_sections : [],
+  };
+
+  // Bar rows — column 0 = main, column 1 = lower
+  document.querySelectorAll('#barTbody tr').forEach(tr => {
+    const cells = tr.querySelectorAll('input.bar-cell');
+    plan.bar.main.push(cells[0] ? cells[0].value.trim() : '');
+    plan.bar.lower.push(cells[1] ? cells[1].value.trim() : '');
+  });
+
+  // Break sections
+  document.querySelectorAll('.break-section').forEach(sec => {
+    const nameInput  = sec.querySelector('.card-header input[type=text]');
+    const afterInput = sec.querySelectorAll('.card-header input[type=text]')[1];
+    const rows = [];
+    sec.querySelectorAll('.break-table tbody tr').forEach(tr => {
+      const inputs = tr.querySelectorAll('input');
+      rows.push({
+        time     : inputs[0] ? inputs[0].value : '',
+        on_break : inputs[1] ? inputs[1].value : '',
+        on_floor : inputs[2] ? inputs[2].value : '',
+      });
+    });
+    plan.break_sections.push({
+      name        : nameInput  ? nameInput.value  : '',
+      break_after : afterInput ? afterInput.value : '',
+      rows        : rows,
+    });
+  });
+
+  document.getElementById('planDataInput').value = JSON.stringify(plan);
+  document.getElementById('downloadForm').submit();
+}
+
+document.getElementById('downloadBtn').addEventListener('click', collectAndDownload);
+document.getElementById('downloadBtn2').addEventListener('click', collectAndDownload);
+</script>
+
+<style>
+.btn-xs { font-size: .75rem; line-height: 1.4; }
+.card-header input[type=text].bg-transparent { background: transparent !important; box-shadow: none; }
+.break-table th { font-size: .8rem; color: var(--text-muted); }
+</style>
+{% endblock %}

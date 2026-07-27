@@ -16,6 +16,23 @@
       <div class="card">
         <div class="card-body">
           <form method="POST">
+
+            {% if is_staff %}
+            <div class="mb-3">
+              <label for="for_member_id" class="form-label fw-semibold">
+                <i class="fas fa-user me-1" style="color:var(--accent);"></i>Book for Member
+              </label>
+              <select name="for_member_id" id="for_member_id" class="form-select">
+                <option value="">— Myself ({{ current_user.first_name }} {{ current_user.last_name }}) —</option>
+                {% for m in all_members %}
+                <option value="{{ m.id }}">{{ m.last_name }}, {{ m.first_name }}{% if m.member_number %} ({{ m.member_number }}){% endif %}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text text-muted">Leave blank to book under your own account.</div>
+            </div>
+            <hr class="my-3">
+            {% endif %}
+
             <div class="mb-3">
               <label for="date" class="form-label">Date</label>
               <input type="date" id="date" name="date" class="form-control" required value="{{ prefill_date or '' }}">
