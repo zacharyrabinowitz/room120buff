@@ -2,17 +2,56 @@
 {% block content %}
 <div class="container-fluid px-4 mt-4">
 
-  <div class="page-header">
-    <h2>{{ member.first_name }} {{ member.last_name }}</h2>
-    <div class="d-flex gap-2 align-items-center mt-1">
-      {% if member.active %}
-        <span class="badge bg-success">Active</span>
-      {% else %}
-        <span class="badge bg-secondary">Inactive</span>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ 'success' if cat=='success' else 'danger' if cat=='danger' else 'warning' }} alert-dismissible fade show mb-3">
+      {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+    <div>
+      <h2>{{ member.first_name }} {{ member.last_name }}</h2>
+      <div class="d-flex gap-2 align-items-center mt-1">
+        {% if member.active %}
+          <span class="badge bg-success">Active</span>
+        {% else %}
+          <span class="badge bg-secondary">Inactive</span>
+        {% endif %}
+        <span class="badge" style="background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-dim);">
+          {{ member.membership_type|capitalize }}
+        </span>
+      </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <a href="{{ url_for('manage_members') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Members
+      </a>
+      {% if can_edit %}
+      <a href="{{ url_for('edit_member', user_id=member.id) }}" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-pen me-1"></i> Edit
+      </a>
       {% endif %}
-      <span class="badge" style="background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-dim);">
-        {{ member.membership_type|capitalize }}
-      </span>
+      {% if can_toggle %}
+      <form action="{{ url_for('toggle_member', user_id=member.id) }}" method="post" class="d-inline">
+        <button type="submit" class="btn btn-sm {{ 'btn-warning' if member.active else 'btn-success' }}">
+          {% if member.active %}
+            <i class="fas fa-user-slash me-1"></i> Deactivate
+          {% else %}
+            <i class="fas fa-user-check me-1"></i> Activate
+          {% endif %}
+        </button>
+      </form>
+      {% endif %}
+      {% if can_delete %}
+      <form action="{{ url_for('delete_member', user_id=member.id) }}" method="post" class="d-inline"
+            onsubmit="return confirm('Permanently delete {{ member.first_name }} {{ member.last_name }}? This cannot be undone.')">
+        <button type="submit" class="btn btn-danger btn-sm">
+          <i class="fas fa-trash me-1"></i> Delete
+        </button>
+      </form>
+      {% endif %}
     </div>
   </div>
 
@@ -49,11 +88,6 @@
         <i class="fas fa-note-sticky me-1"></i>Notes
       </button>
     </li>
-    <li class="nav-item">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#admin">
-        <i class="fas fa-shield-halved me-1"></i>Admin
-      </button>
-    </li>
     {% endif %}
   </ul>
 
@@ -86,13 +120,6 @@
             </div>
           </div>
         </div>
-        {% if is_admin %}
-        <div class="col-12 mt-2">
-          <a href="{{ url_for('edit_member', user_id=member.id) }}" class="btn btn-info btn-sm">
-            <i class="fas fa-pen me-1"></i>Edit Info
-          </a>
-        </div>
-        {% endif %}
       </div>
 
       <!-- Preferences -->
@@ -506,25 +533,6 @@
       </ul>
     </div>
 
-    <!-- Admin Actions Tab -->
-    <div class="tab-pane fade" id="admin">
-      <div class="d-flex flex-column gap-3" style="max-width:300px;">
-        <form action="{{ url_for('toggle_member', user_id=member.id) }}" method="post">
-          <button class="btn btn-warning w-100">
-            {% if member.active %}
-              <i class="fas fa-user-slash me-2"></i>Deactivate Member
-            {% else %}
-              <i class="fas fa-user-check me-2"></i>Reactivate Member
-            {% endif %}
-          </button>
-        </form>
-        <form action="{{ url_for('delete_member', user_id=member.id) }}" method="post">
-          <button class="btn btn-danger w-100">
-            <i class="fas fa-trash me-2"></i>Delete Member
-          </button>
-        </form>
-      </div>
-    </div>
     {% endif %}
 
   </div>

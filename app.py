@@ -1831,13 +1831,19 @@ def manage_admins():
 def edit_admin(user_id):
     if not authorized('manage_admins'):
         return redirect(url_for('home'))
-    admin = User.query.get(user_id)
+    admin = User.query.get_or_404(user_id)
     if request.method == 'POST':
-        admin.first_name = request.form['first_name']
-        admin.last_name = request.form['last_name']
-        admin.password = request.form['password']
+        admin.first_name = request.form['first_name'].strip()
+        admin.last_name  = request.form.get('last_name', '').strip()
+        admin.username   = request.form['username'].strip()
+        admin.email      = request.form.get('email', '').strip() or None
+        new_password = request.form.get('password', '').strip()
+        if new_password:
+            admin.password = generate_password_hash(new_password)
         db.session.commit()
-        log_audit('member', f'Admin updated: {admin.first_name} {admin.last_name}', f'Username: {admin.username}')
+        log_audit('member', f'User updated: {admin.first_name} {admin.last_name}',
+                  f'Role: {admin.role} · Username: {admin.username}')
+        flash(f'{admin.first_name} {admin.last_name} updated successfully.', 'success')
         return redirect(url_for('manage_admins'))
     return render_template('edit_admin.html', admin=admin)
 
@@ -1954,10 +1960,11 @@ def toggle_member(user_id):
     
     member = User.query.get(user_id)
     if member and member.role == 'member':
-        member.active = not member.active
+        member.active = not bool(member.active)
         db.session.commit()
         status = 'activated' if member.active else 'deactivated'
         log_audit('member', f'Member {status}: {member.first_name} {member.last_name}', f'Username: {member.username}')
+        flash(f'{member.first_name} {member.last_name} has been {status}.', 'success')
     return redirect(url_for('view_member', user_id=user_id))
 
 def _delete_members_by_ids(member_ids):
@@ -3175,26 +3182,30 @@ def toggle_order_paid(order_id):
 
 @app.route('/edit_member/<int:user_id>', methods=['GET', 'POST'])
 def edit_member(user_id):
+    if not authorized('edit_member'):
+        return redirect(url_for('home'))
     user = User.query.get_or_404(user_id)
 
     if request.method == 'POST':
-        user.first_name = request.form['first_name']
-        user.last_name = request.form['last_name']
-        user.username = request.form['username']
-        user.email = request.form['email']
-        user.phone = request.form['phone']
-        user.member_number = request.form['member_number']
+        user.first_name    = request.form['first_name']
+        user.last_name     = request.form['last_name']
+        user.username      = request.form['username']
+        user.email         = request.form.get('email', '').strip() or None
+        user.phone         = request.form.get('phone', '').strip() or None
+        user.member_number = request.form.get('member_number', '').strip() or None
         user.membership_type = request.form['membership_type']
+        user.active        = 'active' in request.form
 
-        new_password = request.form.get('password')
+        new_password = request.form.get('password', '').strip()
         pwd_changed = bool(new_password)
         if new_password:
             user.password = generate_password_hash(new_password)
 
         db.session.commit()
-        mname = ' '.join(filter(None, [user.first_name, user.last_name]))
+        mname = f'{user.first_name} {user.last_name}'
         log_audit('member', f'Member updated: {mname}',
-                  f'Type: {user.membership_type}' + (' · Password changed' if pwd_changed else ''))
+                  f'Type: {user.membership_type} · Active: {user.active}'
+                  + (' · Password changed' if pwd_changed else ''))
         flash('Member updated successfully.', 'success')
         return redirect(url_for('view_member', user_id=user.id))
 
@@ -3261,6 +3272,9 @@ def view_member(user_id):
     invoices = Invoice.query.filter_by(member_id=member.id).order_by(Invoice.date_created.desc()).all()
 
     is_admin = session.get('role') == 'admin'
+    can_edit   = authorized('edit_member')
+    can_toggle = authorized('toggle_member_active')
+    can_delete = authorized('delete_member')
 
     return render_template(
         'member_profile.html',
@@ -3269,7 +3283,10 @@ def view_member(user_id):
         reservations=reservations,
         orders=orders,
         invoices=invoices,
-        is_admin=is_admin
+        is_admin=is_admin,
+        can_edit=can_edit,
+        can_toggle=can_toggle,
+        can_delete=can_delete,
     )
 
 
@@ -5107,7 +5124,7 @@ def shift_planner_download():
 
         slug = re.sub(r'[^\w]', '_', plan.get('date', 'shift'))
         return send_file(buf, mimetype='application/pdf',
-                         as_attachment=True, download_name=f'shift_plan_{slug}.pdf')
+                         as_attachment=True, download_name=f'TDR Shift Plan{slug}.pdf')
 
     except Exception as e:
         logger.error(f'Shift plan PDF error: {e}')

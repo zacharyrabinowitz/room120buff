@@ -1,92 +1,146 @@
-﻿{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
+<div class="container-fluid px-4 mt-4" style="max-width:760px;">
 
-<div class="container-fluid px-4 mt-4">
-  <h2>Edit Member</h2>
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+    <div>
+      <h2><i class="fas fa-pen me-2" style="color:var(--accent);"></i>Edit Member</h2>
+      <div class="accent-bar"></div>
+      <p class="text-muted mt-1 mb-0" style="font-size:.85rem;">{{ member.first_name }} {{ member.last_name }}</p>
+    </div>
+    <a href="{{ url_for('view_member', user_id=member.id) }}" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i> Back to Profile
+    </a>
+  </div>
 
-  <form method="POST" class="mt-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ 'success' if cat=='success' else 'danger' if cat=='danger' else 'warning' }} alert-dismissible fade show">
+      {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  {% endwith %}
 
-    <!-- First Name -->
-    <div class="mb-3">
-      <label class="form-label">First Name:</label>
-      <input type="text" class="form-control" name="first_name" value="{{ member.first_name }}" required>
+  <form method="POST">
+
+    <!-- ── Basic Info ── -->
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">
+        <i class="fas fa-user me-2" style="color:var(--accent);"></i>Basic Information
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-medium">First Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="first_name"
+                   value="{{ member.first_name }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Last Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="last_name"
+                   value="{{ member.last_name }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Username <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="username"
+                   value="{{ member.username }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Member Number</label>
+            <input type="text" class="form-control" name="member_number"
+                   value="{{ member.member_number or '' }}" placeholder="e.g. C2001, s310">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Email</label>
+            <input type="email" class="form-control" name="email"
+                   value="{{ member.email or '' }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Phone</label>
+            <input type="text" class="form-control" name="phone"
+                   value="{{ member.phone or '' }}" placeholder="(555) 000-0000">
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Last Name -->
-    <div class="mb-3">
-      <label class="form-label">Last Name:</label>
-      <input type="text" class="form-control" name="last_name" value="{{ member.last_name }}" required>
+    <!-- ── Membership ── -->
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">
+        <i class="fas fa-id-card me-2" style="color:var(--accent);"></i>Membership
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-medium">Membership Type <span class="text-danger">*</span></label>
+            <select name="membership_type" class="form-select" required>
+              {% for t in member_types %}
+              <option value="{{ t.name }}" {% if member.membership_type == t.name %}selected{% endif %}>
+                {{ t.display_name }}{% if t.min_spend %} — ${{ "{:,.0f}".format(t.min_spend) }} min spend{% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6 d-flex align-items-end">
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" name="active" id="activeCheck"
+                     {% if member.active %}checked{% endif %}>
+              <label class="form-check-label fw-medium" for="activeCheck">
+                Active Member
+              </label>
+              <div class="form-text">Uncheck to deactivate without deleting.</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Username -->
-    <div class="mb-3">
-      <label class="form-label">Username:</label>
-      <input type="text" class="form-control" name="username" value="{{ member.username }}" required>
+    <!-- ── Password ── -->
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">
+        <i class="fas fa-lock me-2" style="color:var(--accent);"></i>Password
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-medium">New Password</label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="editPassword" name="password"
+                     placeholder="Leave blank to keep current">
+              <button type="button" class="btn btn-outline-secondary" tabindex="-1"
+                      onclick="togglePwd()">
+                <i class="fas fa-eye" id="pwdEye"></i>
+              </button>
+            </div>
+            <div class="form-text">Only fill this in if you want to change the password.</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Email -->
-    <div class="mb-3">
-      <label class="form-label">Email:</label>
-      <input type="email" class="form-control" name="email" value="{{ member.email }}">
+    <div class="d-flex gap-2 mb-5">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save me-1"></i> Save Changes
+      </button>
+      <a href="{{ url_for('view_member', user_id=member.id) }}" class="btn btn-outline-secondary">
+        Cancel
+      </a>
     </div>
-    
-    <!-- Phone -->
-    <div class="mb-3">
-      <label class="form-label">Phone:</label>
-      <input type="text" class="form-control" name="phone" value="{{ member.phone }}">
-    </div>  
-
-    <!-- Member Number -->
-    <div class="mb-3">
-      <label class="form-label">Member Number:</label>
-      <input type="text" class="form-control" name="member_number" value="{{ member.member_number }}">
-    </div>
-
-    <!-- Membership Type -->
-    <div class="mb-3">
-      <label class="form-label">Membership Type:</label>
-      <select name="membership_type" class="form-select" required>
-        {% for t in member_types %}
-          <option value="{{ t.name }}" {% if member.membership_type == t.name %}selected{% endif %}>
-            {{ t.display_name }}{% if t.min_spend %} — ${{ "{:,.0f}".format(t.min_spend) }} min spend{% endif %}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <!-- New Password -->
-    <div class="mb-3 position-relative">
-      <label class="form-label">
-        New Password <small>(Leave blank to keep current password)</small>
-      </label>
-      <input type="password" class="form-control" id="editPassword" name="password" placeholder="Enter new password if changing">
-      <span class="position-absolute top-50 end-0 translate-middle-y me-3" style="cursor: pointer;"
-            onclick="togglePassword('editPassword', 'editPasswordEye')">
-        <i id="editPasswordEye" class="fas fa-eye"></i>
-      </span>
-    </div>
-
-    <!-- Buttons -->
-    <button type="submit" class="btn btn-success">Save Changes</button>
-    <a href="{{ url_for('view_member', user_id=member.id) }}" class="btn btn-secondary ms-2">Back to Profile</a>
-
   </form>
+
 </div>
 
 <script>
-function togglePassword(inputId, iconId) {
-  const passwordInput = document.getElementById(inputId);
-  const eyeIcon = document.getElementById(iconId);
-  if (passwordInput.type === 'password') {
-    passwordInput.type = 'text';
-    eyeIcon.classList.remove('fa-eye');
-    eyeIcon.classList.add('fa-eye-slash');
+function togglePwd() {
+  const inp = document.getElementById('editPassword');
+  const eye = document.getElementById('pwdEye');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    eye.classList.replace('fa-eye', 'fa-eye-slash');
   } else {
-    passwordInput.type = 'password';
-    eyeIcon.classList.remove('fa-eye-slash');
-    eyeIcon.classList.add('fa-eye');
+    inp.type = 'password';
+    eye.classList.replace('fa-eye-slash', 'fa-eye');
   }
 }
 </script>
-
 {% endblock %}
