@@ -22919,3 +22919,1131 @@ WHERE user.username = ?
 2026-07-27 17:56:43 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 17:56:43] "GET /manage-admins HTTP/1.1" 200 -
 2026-07-27 17:56:43 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 17:56:43] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
 2026-07-27 17:56:43 - werkzeug - INFO - 127.0.0.1 - - [27/Jul/2026 17:56:43] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 15:47:26 - root - INFO - Logging configured successfully
+2026-07-28 15:47:26 - root - INFO - Log level: INFO
+2026-07-28 15:47:26 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:47:26 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 15:47:31 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 15:47:31 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 15:47:31 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 15:47:31 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 15:47:31 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 15:47:31 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 15:47:31 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 15:47:38 - root - INFO - Logging configured successfully
+2026-07-28 15:47:38 - root - INFO - Log level: INFO
+2026-07-28 15:47:38 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:47:38 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 15:47:39 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 15:47:39 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 15:47:39 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 15:47:39 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 15:47:39 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 15:47:39 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 15:47:39 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:39] "[32mGET /manage-admins HTTP/1.1[0m" 302 -
+2026-07-28 15:47:39 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:39] "[32mGET /manage-admins HTTP/1.1[0m" 302 -
+2026-07-28 15:47:39 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:39] "[32mGET /home HTTP/1.1[0m" 302 -
+2026-07-28 15:47:39 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:39] "GET /login HTTP/1.1" 200 -
+2026-07-28 15:47:40 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:40] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 15:47:40 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:40] "[36mGET /static/assets/room120_logo.png HTTP/1.1[0m" 304 -
+2026-07-28 15:47:42 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:42] "[32mPOST /login HTTP/1.1[0m" 302 -
+2026-07-28 15:47:43 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:43] "GET /home HTTP/1.1" 200 -
+2026-07-28 15:47:43 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:43] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 15:47:43 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:43] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 15:47:47 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:47] "GET /admin/reports HTTP/1.1" 200 -
+2026-07-28 15:47:48 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:48] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 15:47:48 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:48] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 15:47:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:54] "GET /import_members HTTP/1.1" 200 -
+2026-07-28 15:47:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:54] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 15:47:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:54] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 15:47:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:59] "GET /home HTTP/1.1" 200 -
+2026-07-28 15:47:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:47:59] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 15:49:11 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 15:49:12 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 15:49:16 - root - INFO - Logging configured successfully
+2026-07-28 15:49:16 - root - INFO - Log level: INFO
+2026-07-28 15:49:16 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:49:17 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 15:49:17 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 15:49:17 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 15:49:17 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 15:49:17 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 15:49:17 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 15:49:17 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 15:49:22 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 15:49:23 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 15:49:26 - root - INFO - Logging configured successfully
+2026-07-28 15:49:26 - root - INFO - Log level: INFO
+2026-07-28 15:49:26 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:49:26 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 15:49:26 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 15:49:26 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 15:49:26 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 15:49:26 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 15:49:26 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 15:49:26 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 15:50:49 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 15:50:50 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 15:50:54 - root - INFO - Logging configured successfully
+2026-07-28 15:50:54 - root - INFO - Log level: INFO
+2026-07-28 15:50:54 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:50:54 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 15:50:55 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 15:50:55 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 15:50:55 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 15:50:55 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 15:50:55 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 15:50:55 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 15:51:15 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 15:51:16 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 15:51:19 - root - INFO - Logging configured successfully
+2026-07-28 15:51:19 - root - INFO - Log level: INFO
+2026-07-28 15:51:19 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:51:19 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 15:51:19 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 15:51:19 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 15:51:19 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 15:51:19 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 15:51:19 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 15:51:19 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 15:51:41 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 15:51:41 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 15:51:44 - root - INFO - Logging configured successfully
+2026-07-28 15:51:44 - root - INFO - Log level: INFO
+2026-07-28 15:51:44 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:51:44 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 15:51:45 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 15:51:45 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 15:51:45 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 15:51:45 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 15:51:45 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 15:51:45 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 15:54:53 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 15:54:54 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 15:55:01 - root - INFO - Logging configured successfully
+2026-07-28 15:55:01 - root - INFO - Log level: INFO
+2026-07-28 15:55:01 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:55:01 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 15:55:02 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 15:55:03 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 15:55:03 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 15:55:03 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 15:55:03 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 15:55:03 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 15:55:15 - root - INFO - Logging configured successfully
+2026-07-28 15:55:15 - root - INFO - Log level: INFO
+2026-07-28 15:55:15 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:55:15 - app - INFO - Toast API routes registered successfully
+2026-07-28 15:56:05 - root - INFO - Logging configured successfully
+2026-07-28 15:56:05 - root - INFO - Log level: INFO
+2026-07-28 15:56:05 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:56:05 - app - INFO - Toast API routes registered successfully
+2026-07-28 15:56:44 - root - INFO - Logging configured successfully
+2026-07-28 15:56:44 - root - INFO - Log level: INFO
+2026-07-28 15:56:44 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:56:44 - app - INFO - Toast API routes registered successfully
+2026-07-28 15:57:09 - root - INFO - Logging configured successfully
+2026-07-28 15:57:09 - root - INFO - Log level: INFO
+2026-07-28 15:57:09 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:57:09 - app - INFO - Toast API routes registered successfully
+2026-07-28 15:58:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:58:28] "GET /home HTTP/1.1" 200 -
+2026-07-28 15:58:29 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:58:29] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 15:58:29 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:58:29] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 15:58:30 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:58:30] "GET /favicon.ico HTTP/1.1" 200 -
+2026-07-28 15:58:31 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:58:31] "[35m[1mGET /admin/sales-dashboard HTTP/1.1[0m" 500 -
+2026-07-28 15:58:31 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:58:31] "GET /admin/sales-dashboard?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2026-07-28 15:58:31 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:58:31] "GET /admin/sales-dashboard?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2026-07-28 15:58:31 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:58:31] "GET /admin/sales-dashboard?__debugger__=yes&cmd=resource&f=console.png&s=cQQrgdQsGajHq4DofOYq HTTP/1.1" 200 -
+2026-07-28 15:58:31 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:58:31] "GET /admin/sales-dashboard?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2026-07-28 15:59:01 - root - INFO - Logging configured successfully
+2026-07-28 15:59:01 - root - INFO - Log level: INFO
+2026-07-28 15:59:01 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 15:59:01 - app - INFO - Toast API routes registered successfully
+2026-07-28 15:59:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:59:59] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 15:59:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:59:59] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 15:59:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 15:59:59] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:00:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:00:54] "[32mPOST /admin/sales-upload HTTP/1.1[0m" 302 -
+2026-07-28 16:00:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:00:54] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 16:00:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:00:54] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:00:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:00:54] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:03:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:03:01] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 16:03:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:03:01] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:03:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:03:01] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:03:09 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:03:09] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 16:03:09 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:03:09] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:03:09 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:03:09] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:06:32 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 16:06:37 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:06:44 - root - INFO - Logging configured successfully
+2026-07-28 16:06:44 - root - INFO - Log level: INFO
+2026-07-28 16:06:44 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:06:44 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:06:44 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:06:44 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:06:44 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:06:44 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:06:45 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:06:45 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:08:48 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 16:08:50 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:08:55 - root - INFO - Logging configured successfully
+2026-07-28 16:08:55 - root - INFO - Log level: INFO
+2026-07-28 16:08:55 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:08:56 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:08:56 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:08:56 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:08:56 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:08:57 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:08:57 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:08:57 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:09:21 - root - INFO - Logging configured successfully
+2026-07-28 16:09:21 - root - INFO - Log level: INFO
+2026-07-28 16:09:21 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:09:21 - app - INFO - Toast API routes registered successfully
+2026-07-28 16:09:38 - root - INFO - Logging configured successfully
+2026-07-28 16:09:38 - root - INFO - Log level: INFO
+2026-07-28 16:09:38 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:09:38 - app - INFO - Toast API routes registered successfully
+2026-07-28 16:12:52 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:12:52] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 16:12:53 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:12:53] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:12:53 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:12:53] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:13:23 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:13:23] "[32mPOST /admin/sales-upload HTTP/1.1[0m" 302 -
+2026-07-28 16:13:23 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:13:23] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 16:13:23 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:13:23] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:13:24 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:13:24] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:13:41 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:13:41] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 16:13:41 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:13:41] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:13:41 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:13:41] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:13:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:13:44] "GET /admin/sales-report-builder?start=&end=&chart_type=line&metrics=net_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips HTTP/1.1" 200 -
+2026-07-28 16:13:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:13:44] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:13:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:13:44] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:14:02 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:14:02] "GET /admin/sales-report-builder?start=2026-07-20&end=2026-07-26&chart_type=bar&metrics=net_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips HTTP/1.1" 200 -
+2026-07-28 16:14:02 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:14:02] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:14:02 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:14:02] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:14:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:14:14] "GET /admin/sales-report-builder?start=2026-07-20&end=2026-07-26&chart_type=bar&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges HTTP/1.1" 200 -
+2026-07-28 16:14:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:14:14] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:14:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:14:14] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:14:19 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:14:19] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 16:14:19 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:14:19] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:14:19 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:14:19] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:16:09 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:16:09] "GET /home HTTP/1.1" 200 -
+2026-07-28 16:16:09 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:16:09] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:16:09 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:16:09] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:16:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:16:10] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 16:16:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:16:10] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:16:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:16:10] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:19:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:19:12] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 16:19:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:19:12] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:19:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:19:12] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:19:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:19:28] "GET /manage-admins HTTP/1.1" 200 -
+2026-07-28 16:19:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:19:28] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:19:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:19:28] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:19:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:19:28] "GET /home HTTP/1.1" 200 -
+2026-07-28 16:19:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:19:28] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:19:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:19:28] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:26:19 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 16:26:22 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:26:27 - root - INFO - Logging configured successfully
+2026-07-28 16:26:27 - root - INFO - Log level: INFO
+2026-07-28 16:26:27 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:26:27 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:26:28 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:26:28 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:26:28 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:26:28 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:26:28 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:26:28 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:26:30 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 16:26:31 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:26:34 - root - INFO - Logging configured successfully
+2026-07-28 16:26:34 - root - INFO - Log level: INFO
+2026-07-28 16:26:34 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:26:34 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:26:34 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:26:34 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:26:34 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:26:34 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:26:34 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:26:34 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:27:28 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 16:27:29 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:27:33 - root - INFO - Logging configured successfully
+2026-07-28 16:27:33 - root - INFO - Log level: INFO
+2026-07-28 16:27:33 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:27:33 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:27:33 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:27:33 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:27:33 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:27:33 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:27:33 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:27:33 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:29:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:29:51] "GET /home HTTP/1.1" 200 -
+2026-07-28 16:29:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:29:51] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:29:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:29:51] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:29:52 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:29:52] "GET /favicon.ico HTTP/1.1" 200 -
+2026-07-28 16:29:57 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:29:57] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 16:29:57 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:29:57] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:29:57 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:29:57] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:31:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:31:51] "[32mPOST /admin/sales-upload HTTP/1.1[0m" 302 -
+2026-07-28 16:31:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:31:51] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 16:31:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:31:51] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:31:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:31:51] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:35:30 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:35:30] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 16:35:30 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:35:30] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:35:30 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:35:30] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:35:33 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:35:33] "GET /admin/sales-report-builder?start=&end=&chart_type=line&metrics=net_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips HTTP/1.1" 200 -
+2026-07-28 16:35:33 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:35:33] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:35:33 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:35:33] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:35:55 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 16:35:55 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:35:59 - root - INFO - Logging configured successfully
+2026-07-28 16:35:59 - root - INFO - Log level: INFO
+2026-07-28 16:35:59 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:35:59 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:35:59 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:35:59 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:35:59 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:35:59 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:35:59 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:35:59 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:36:03 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:36:03] "GET /home HTTP/1.1" 200 -
+2026-07-28 16:36:03 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:36:03] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:36:03 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:36:03] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:36:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:36:08] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 16:36:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:36:08] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:36:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:36:08] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:37:02 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 16:37:03 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:37:06 - root - INFO - Logging configured successfully
+2026-07-28 16:37:06 - root - INFO - Log level: INFO
+2026-07-28 16:37:06 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:37:06 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:37:06 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:37:06 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:37:06 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:37:06 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:37:06 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:37:06 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:37:21 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 16:37:22 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:44:33 - root - INFO - Logging configured successfully
+2026-07-28 16:44:33 - root - INFO - Log level: INFO
+2026-07-28 16:44:33 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:44:33 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:44:33 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:44:33 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:44:33 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:44:33 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:44:33 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 16:44:33 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 16:44:33 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:44:36 - root - INFO - Logging configured successfully
+2026-07-28 16:44:36 - root - INFO - Log level: INFO
+2026-07-28 16:44:36 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:44:36 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:44:36 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:44:36 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:44:36 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:44:36 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:44:36 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:44:36 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:44:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:44:36] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 16:44:37 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:44:37] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:44:37 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:44:37] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:44:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:44:51] "[32mPOST /admin/sales-upload HTTP/1.1[0m" 302 -
+2026-07-28 16:44:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:44:51] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 16:44:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:44:51] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:45:22 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:45:22] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 16:45:22 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:45:22] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:45:25 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:45:25] "GET /admin/sales-report-builder?start=&end=&chart_type=line&metrics=net_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips HTTP/1.1" 200 -
+2026-07-28 16:45:25 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:45:25] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:45:29 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:45:29] "GET /admin/sales-report-builder?start=&end=&chart_type=line&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges&metrics=tips_collected&metrics=tips_withheld&metrics=tips_after_withholding&metrics=total_cash_payments&metrics=expected_closeout_cash&metrics=actual_closeout_cash&metrics=cash_overage&metrics=total_guests&metrics=total_orders&metrics=avg_per_guest&metrics=avg_per_order&metrics=quick_service_net&metrics=table_service_net&metrics=void_amount&metrics=total_discounts_amount&metrics=sales_discounts&metrics=sales_refunds HTTP/1.1" 200 -
+2026-07-28 16:45:30 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:45:30] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:45:58 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:45:58] "GET /admin/sales-report-builder?start=2026-07-20&end=2026-07-26&chart_type=line&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges&metrics=tips_collected&metrics=tips_withheld&metrics=tips_after_withholding&metrics=total_cash_payments&metrics=expected_closeout_cash&metrics=actual_closeout_cash&metrics=cash_overage&metrics=total_guests&metrics=total_orders&metrics=avg_per_guest&metrics=avg_per_order&metrics=quick_service_net&metrics=table_service_net&metrics=void_amount&metrics=total_discounts_amount&metrics=sales_discounts&metrics=sales_refunds HTTP/1.1" 200 -
+2026-07-28 16:45:58 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:45:58] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:46:05 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:46:05] "GET /admin/sales-report-builder?start=2026-07-20&end=2026-07-26&chart_type=bar&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges&metrics=tips_collected&metrics=tips_withheld&metrics=tips_after_withholding&metrics=total_cash_payments&metrics=expected_closeout_cash&metrics=actual_closeout_cash&metrics=cash_overage&metrics=total_guests&metrics=total_orders&metrics=avg_per_guest&metrics=avg_per_order&metrics=quick_service_net&metrics=table_service_net&metrics=void_amount&metrics=total_discounts_amount&metrics=sales_discounts&metrics=sales_refunds HTTP/1.1" 200 -
+2026-07-28 16:46:05 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:46:05] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:46:33 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:46:33] "GET /home HTTP/1.1" 200 -
+2026-07-28 16:46:33 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:46:33] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:46:34 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:46:34] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:46:35 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:46:35] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 16:46:35 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:46:35] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:46:35 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:46:35] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:47:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:10] "[32mPOST /admin/sales-upload HTTP/1.1[0m" 302 -
+2026-07-28 16:47:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:10] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 16:47:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:10] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:47:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:10] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:47:37 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:37] "[32mPOST /admin/sales-upload HTTP/1.1[0m" 302 -
+2026-07-28 16:47:37 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:37] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 16:47:37 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:37] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:47:37 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:37] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:47:48 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:48] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 16:47:48 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:48] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:47:48 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:48] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:47:49 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:49] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 16:47:49 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:49] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:47:50 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:50] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 16:47:50 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:50] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:47:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:51] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 16:47:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:51] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:47:52 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:52] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 16:47:52 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:52] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:47:53 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:53] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 16:47:53 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:53] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:47:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:59] "GET /admin/sales-report-builder?start=2026-07-13&end=2026-07-19&chart_type=line&metrics=net_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips HTTP/1.1" 200 -
+2026-07-28 16:47:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:47:59] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:48:03 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:03] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 16:48:03 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:03] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:48:28 - root - INFO - Logging configured successfully
+2026-07-28 16:48:28 - root - INFO - Log level: INFO
+2026-07-28 16:48:28 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:48:28 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:48:28 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:48:28 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:48:28 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:48:28 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:48:28 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 16:48:28 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 16:48:28 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:48:31 - root - INFO - Logging configured successfully
+2026-07-28 16:48:31 - root - INFO - Log level: INFO
+2026-07-28 16:48:31 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:48:31 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:48:32 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:48:32 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:48:32 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:48:32 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:48:32 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:48:32 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:48:32 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:32] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 16:48:32 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:32] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:48:35 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:35] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 16:48:35 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:35] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:48:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:44] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 16:48:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:44] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:48:48 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:48] "GET /admin/sales-report-builder?start=&end=&chart_type=line&metrics=net_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips HTTP/1.1" 200 -
+2026-07-28 16:48:48 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:48] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:48:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:51] "GET /admin/sales-report-builder?start=&end=&chart_type=line&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges&metrics=tips_collected&metrics=tips_withheld&metrics=tips_after_withholding&metrics=total_cash_payments&metrics=expected_closeout_cash&metrics=actual_closeout_cash&metrics=cash_overage&metrics=total_guests&metrics=total_orders&metrics=avg_per_guest&metrics=avg_per_order&metrics=quick_service_net&metrics=table_service_net&metrics=void_amount&metrics=total_discounts_amount&metrics=sales_discounts&metrics=sales_refunds HTTP/1.1" 200 -
+2026-07-28 16:48:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:48:51] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:49:18 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:49:18] "GET /admin/sales-report-builder?start=&end=&chart_type=area&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges&metrics=tips_collected&metrics=tips_withheld&metrics=tips_after_withholding&metrics=total_cash_payments&metrics=expected_closeout_cash&metrics=actual_closeout_cash&metrics=cash_overage&metrics=total_guests&metrics=total_orders&metrics=avg_per_guest&metrics=avg_per_order&metrics=quick_service_net&metrics=table_service_net&metrics=void_amount&metrics=total_discounts_amount&metrics=sales_discounts&metrics=sales_refunds HTTP/1.1" 200 -
+2026-07-28 16:49:18 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:49:18] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:50:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:50:59] "GET /home HTTP/1.1" 200 -
+2026-07-28 16:50:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:50:59] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:50:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:50:59] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:51:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:51:01] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 16:51:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:51:01] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:51:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:51:01] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:51:08 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 16:51:09 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:51:13 - root - INFO - Logging configured successfully
+2026-07-28 16:51:13 - root - INFO - Log level: INFO
+2026-07-28 16:51:13 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:51:13 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:51:14 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:51:14 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:51:14 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:51:14 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:51:14 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:51:14 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:51:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:51:14] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 16:51:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:51:14] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 16:51:15 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:51:15] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:51:15 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:51:15] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:55:03 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:55:03] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 16:55:03 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:55:03] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:55:03 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:55:03] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:55:16 - root - INFO - Logging configured successfully
+2026-07-28 16:55:16 - root - INFO - Log level: INFO
+2026-07-28 16:55:16 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:55:17 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:55:17 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:55:17 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:55:17 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:55:17 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:55:17 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 16:55:17 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 16:55:17 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:55:19 - root - INFO - Logging configured successfully
+2026-07-28 16:55:19 - root - INFO - Log level: INFO
+2026-07-28 16:55:19 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:55:19 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:55:19 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:55:19 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:55:19 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:55:19 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:55:19 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:55:20 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 16:55:38 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:55:38] "GET /admin/sales-debug-zip HTTP/1.1" 200 -
+2026-07-28 16:55:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:55:44] "POST /admin/sales-debug-zip HTTP/1.1" 200 -
+2026-07-28 16:57:23 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:57:23] "GET /admin/sales-debug-zip HTTP/1.1" 200 -
+2026-07-28 16:57:25 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:57:25] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 16:57:25 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:57:25] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:57:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:57:28] "GET /home HTTP/1.1" 200 -
+2026-07-28 16:57:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:57:28] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:57:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:57:28] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:57:29 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:57:29] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 16:57:29 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:57:29] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:57:29 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:57:29] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 16:58:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:58:10] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 16:58:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:58:10] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:58:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:58:14] "GET /admin/sales-report-builder?start=&end=&chart_type=line&metrics=net_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips HTTP/1.1" 200 -
+2026-07-28 16:58:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:58:14] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:58:18 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:58:18] "GET /admin/sales-report-builder?start=2026-07-13&end=2026-07-19&chart_type=line&metrics=net_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips HTTP/1.1" 200 -
+2026-07-28 16:58:18 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:58:18] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:58:29 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:58:29] "GET /admin/sales-report-builder?start=2026-07-13&end=2026-07-19&chart_type=bar&metrics=net_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips HTTP/1.1" 200 -
+2026-07-28 16:58:30 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 16:58:30] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 16:58:58 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 16:58:58 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 16:59:01 - root - INFO - Logging configured successfully
+2026-07-28 16:59:01 - root - INFO - Log level: INFO
+2026-07-28 16:59:01 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 16:59:01 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 16:59:01 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 16:59:01 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 16:59:01 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 16:59:01 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 16:59:01 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 16:59:01 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:00:16 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:00:17 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:00:19 - root - INFO - Logging configured successfully
+2026-07-28 17:00:19 - root - INFO - Log level: INFO
+2026-07-28 17:00:19 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:00:19 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:00:20 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:00:20 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:00:20 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:00:20 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:00:20 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:00:20 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:00:29 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:00:29 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:00:31 - root - INFO - Logging configured successfully
+2026-07-28 17:00:31 - root - INFO - Log level: INFO
+2026-07-28 17:00:31 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:00:32 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:00:32 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:00:32 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:00:32 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:00:32 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:00:32 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:00:32 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:06:43 - root - INFO - Logging configured successfully
+2026-07-28 17:06:43 - root - INFO - Log level: INFO
+2026-07-28 17:06:43 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:06:43 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:06:43 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:06:43 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:06:43 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:06:43 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:06:43 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 17:06:43 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 17:06:43 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:06:45 - root - INFO - Logging configured successfully
+2026-07-28 17:06:45 - root - INFO - Log level: INFO
+2026-07-28 17:06:45 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:06:45 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:06:46 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:06:46 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:06:46 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:06:46 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:06:46 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:06:46 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:06:46 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:06:46] "GET /admin/sales-report-builder?start=2026-07-13&end=2026-07-19&chart_type=bar&metrics=net_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips HTTP/1.1" 200 -
+2026-07-28 17:06:46 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:06:46] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:06:46 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:06:46] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:06:57 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:06:57] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 17:06:57 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:06:57] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:06:58 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:06:58] "GET /home HTTP/1.1" 200 -
+2026-07-28 17:06:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:06:59] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:06:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:06:59] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:07:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:00] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 17:07:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:00] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:07:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:00] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:07:16 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:16] "[32mPOST /admin/sales-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:07:16 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:16] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:07:16 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:16] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:07:40 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:40] "[32mPOST /admin/sales-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:07:40 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:40] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:07:40 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:40] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:07:49 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:49] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:07:49 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:49] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:07:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:51] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:07:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:51] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:07:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:54] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 17:07:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:07:54] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:08:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:08:01] "GET /admin/sales-report-builder?start=2026-07-13&end=2026-07-26&chart_type=line&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges&metrics=tips_collected&metrics=tips_withheld&metrics=tips_after_withholding&metrics=total_cash_payments&metrics=expected_closeout_cash&metrics=actual_closeout_cash&metrics=cash_overage&metrics=total_guests&metrics=total_orders&metrics=avg_per_guest&metrics=avg_per_order&metrics=quick_service_net&metrics=table_service_net&metrics=void_amount&metrics=total_discounts_amount&metrics=sales_discounts&metrics=sales_refunds HTTP/1.1" 200 -
+2026-07-28 17:08:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:08:01] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:10:29 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:10:30 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:10:33 - root - INFO - Logging configured successfully
+2026-07-28 17:10:33 - root - INFO - Log level: INFO
+2026-07-28 17:10:33 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:10:33 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:10:34 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:10:34 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:10:34 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:10:34 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:10:34 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:10:34 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:10:38 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:10:39 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:10:42 - root - INFO - Logging configured successfully
+2026-07-28 17:10:42 - root - INFO - Log level: INFO
+2026-07-28 17:10:42 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:10:42 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:10:42 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:10:42 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:10:42 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:10:42 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:10:42 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:10:42 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:11:58 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:11:59 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:12:02 - root - INFO - Logging configured successfully
+2026-07-28 17:12:02 - root - INFO - Log level: INFO
+2026-07-28 17:12:02 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:12:02 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:12:02 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:12:02 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:12:02 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:12:02 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:12:02 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:12:02 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:15:20 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:15:20 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:15:25 - root - INFO - Logging configured successfully
+2026-07-28 17:15:25 - root - INFO - Log level: INFO
+2026-07-28 17:15:25 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:15:25 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:15:26 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:15:26 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:15:26 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:15:26 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:15:26 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:15:26 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:15:47 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:15:48 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:15:51 - root - INFO - Logging configured successfully
+2026-07-28 17:15:51 - root - INFO - Log level: INFO
+2026-07-28 17:15:51 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:15:51 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:15:51 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:15:51 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:15:51 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:15:51 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:15:51 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:15:51 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:16:08 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:16:09 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:16:11 - root - INFO - Logging configured successfully
+2026-07-28 17:16:11 - root - INFO - Log level: INFO
+2026-07-28 17:16:11 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:16:11 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:16:11 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:16:11 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:16:11 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:16:11 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:16:11 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:16:11 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:16:33 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:16:33 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:16:36 - root - INFO - Logging configured successfully
+2026-07-28 17:16:36 - root - INFO - Log level: INFO
+2026-07-28 17:16:36 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:16:36 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:16:36 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:16:36 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:16:36 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:16:36 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:16:36 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:16:36 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:18:07 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:18:08 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:18:10 - root - INFO - Logging configured successfully
+2026-07-28 17:18:10 - root - INFO - Log level: INFO
+2026-07-28 17:18:10 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:18:11 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:18:11 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:18:11 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:18:11 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:18:11 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:18:11 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:18:11 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:20:24 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:24] "GET /admin/sales-report-builder?start=2026-07-13&end=2026-07-26&chart_type=line&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges&metrics=tips_collected&metrics=tips_withheld&metrics=tips_after_withholding&metrics=total_cash_payments&metrics=expected_closeout_cash&metrics=actual_closeout_cash&metrics=cash_overage&metrics=total_guests&metrics=total_orders&metrics=avg_per_guest&metrics=avg_per_order&metrics=quick_service_net&metrics=table_service_net&metrics=void_amount&metrics=total_discounts_amount&metrics=sales_discounts&metrics=sales_refunds HTTP/1.1" 200 -
+2026-07-28 17:20:24 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:24] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:20:24 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:24] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:20:43 - root - INFO - Logging configured successfully
+2026-07-28 17:20:43 - root - INFO - Log level: INFO
+2026-07-28 17:20:43 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:20:43 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:20:44 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:20:44 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:20:44 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:20:44 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:20:44 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 17:20:44 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 17:20:44 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:20:46 - root - INFO - Logging configured successfully
+2026-07-28 17:20:46 - root - INFO - Log level: INFO
+2026-07-28 17:20:46 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:20:46 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:20:46 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:20:46 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:20:46 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:20:46 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:20:46 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:20:46 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:20:47 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:47] "GET /admin/sales-report-builder?start=2026-07-13&end=2026-07-26&chart_type=line&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges&metrics=tips_collected&metrics=tips_withheld&metrics=tips_after_withholding&metrics=total_cash_payments&metrics=expected_closeout_cash&metrics=actual_closeout_cash&metrics=cash_overage&metrics=total_guests&metrics=total_orders&metrics=avg_per_guest&metrics=avg_per_order&metrics=quick_service_net&metrics=table_service_net&metrics=void_amount&metrics=total_discounts_amount&metrics=sales_discounts&metrics=sales_refunds HTTP/1.1" 200 -
+2026-07-28 17:20:47 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:47] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:20:47 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:47] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:20:49 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:49] "GET /home HTTP/1.1" 200 -
+2026-07-28 17:20:49 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:49] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:20:49 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:49] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:20:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:51] "GET /admin/labor-dashboard HTTP/1.1" 200 -
+2026-07-28 17:20:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:51] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:20:51 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:20:51] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:22:02 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:02] "[32mPOST /admin/labor-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:22:02 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:02] "GET /admin/labor-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:22:02 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:02] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:22:02 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:02] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:22:09 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:09] "GET /admin/labor-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:22:09 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:09] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:22:09 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:09] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:22:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:12] "GET /home HTTP/1.1" 200 -
+2026-07-28 17:22:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:12] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:22:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:12] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:22:13 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:13] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 17:22:13 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:13] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:22:13 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:13] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:22:16 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:16] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:22:16 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:16] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:22:56 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:56] "GET /home HTTP/1.1" 200 -
+2026-07-28 17:22:56 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:56] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:22:56 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:56] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:22:57 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:57] "GET /admin/labor-dashboard HTTP/1.1" 200 -
+2026-07-28 17:22:57 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:57] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:22:57 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:22:57] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:23:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:23:08] "GET /admin/labor-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:23:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:23:08] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:23:45 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:23:45 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:23:48 - root - INFO - Logging configured successfully
+2026-07-28 17:23:48 - root - INFO - Log level: INFO
+2026-07-28 17:23:48 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:23:48 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:23:49 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:23:49 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:23:49 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:23:49 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:23:49 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:23:49 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:25:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:25:12] "GET /admin/labor-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:25:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:25:12] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:25:17 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:25:17] "GET /home HTTP/1.1" 200 -
+2026-07-28 17:25:17 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:25:17] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:25:17 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:25:17] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:26:20 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:26:21 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:26:23 - root - INFO - Logging configured successfully
+2026-07-28 17:26:23 - root - INFO - Log level: INFO
+2026-07-28 17:26:23 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:26:24 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:26:24 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:26:24 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:26:24 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:26:24 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:26:24 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:26:24 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:26:48 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:26:49 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:26:52 - root - INFO - Logging configured successfully
+2026-07-28 17:26:52 - root - INFO - Log level: INFO
+2026-07-28 17:26:52 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:26:52 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:26:52 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:26:52 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:26:52 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:26:52 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:26:52 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:26:52 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:27:03 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:27:04 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:27:08 - root - INFO - Logging configured successfully
+2026-07-28 17:27:08 - root - INFO - Log level: INFO
+2026-07-28 17:27:08 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:27:08 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:27:08 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:27:08 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:27:08 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:27:08 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:27:08 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:27:08 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:27:13 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:27:14 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:27:17 - root - INFO - Logging configured successfully
+2026-07-28 17:27:17 - root - INFO - Log level: INFO
+2026-07-28 17:27:17 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:27:17 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:27:17 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:27:17 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:27:17 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:27:17 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:27:17 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:27:17 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:27:31 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:27:31] "GET /home HTTP/1.1" 200 -
+2026-07-28 17:27:32 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:27:32] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:27:32 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:27:32] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:27:32 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:27:32] "GET /favicon.ico HTTP/1.1" 200 -
+2026-07-28 17:27:33 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:27:33] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 17:27:33 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:27:33] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:27:33 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:27:33] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:27:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:27:36] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:27:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:27:36] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:27:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:27:36] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:28:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:08] "[32mPOST /admin/labor-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:28:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:08] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:28:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:08] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:28:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:08] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:28:19 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:19] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 17:28:19 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:19] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:28:19 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:19] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:28:25 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:25] "GET /admin/sales-report-builder?start=2026-07-13&end=2026-07-19&chart_type=line&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges&metrics=tips_collected&metrics=tips_withheld&metrics=tips_after_withholding&metrics=total_cash_payments&metrics=expected_closeout_cash&metrics=actual_closeout_cash&metrics=cash_overage&metrics=total_guests&metrics=total_orders&metrics=avg_per_guest&metrics=avg_per_order&metrics=quick_service_net&metrics=table_service_net&metrics=void_amount&metrics=total_discounts_amount&metrics=sales_discounts&metrics=sales_refunds HTTP/1.1" 200 -
+2026-07-28 17:28:25 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:25] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:28:25 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:25] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:28:35 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:35] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 17:28:35 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:35] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:28:35 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:28:35] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:29:14 - root - INFO - Logging configured successfully
+2026-07-28 17:29:14 - root - INFO - Log level: INFO
+2026-07-28 17:29:14 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:29:15 - app - INFO - Toast API routes registered successfully
+2026-07-28 17:29:35 - root - INFO - Logging configured successfully
+2026-07-28 17:29:35 - root - INFO - Log level: INFO
+2026-07-28 17:29:35 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:29:35 - app - INFO - Toast API routes registered successfully
+2026-07-28 17:29:52 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:29:52] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 17:29:52 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:29:52] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:29:52 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:29:52] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:29:55 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:29:55] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:29:55 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:29:55] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:29:55 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:29:55] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:29:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:29:59] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:29:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:29:59] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:30:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:00] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:30:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:00] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:30:04 - root - INFO - Logging configured successfully
+2026-07-28 17:30:04 - root - INFO - Log level: INFO
+2026-07-28 17:30:04 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:30:04 - app - INFO - Toast API routes registered successfully
+2026-07-28 17:30:13 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:13] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 17:30:13 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:13] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:30:18 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:18] "GET /admin/sales-report-builder?start=&end=&chart_type=line&metrics=net_sales&metrics=gross_sales&metrics=total_amount&metrics=gratuity&metrics=tax_amount&metrics=tips&metrics=total_service_charges&metrics=tips_collected&metrics=tips_withheld&metrics=tips_after_withholding&metrics=total_cash_payments&metrics=expected_closeout_cash&metrics=actual_closeout_cash&metrics=cash_overage&metrics=total_guests&metrics=total_orders&metrics=avg_per_guest&metrics=avg_per_order&metrics=quick_service_net&metrics=table_service_net&metrics=void_amount&metrics=total_discounts_amount&metrics=sales_discounts&metrics=sales_refunds HTTP/1.1" 200 -
+2026-07-28 17:30:18 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:18] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:30:26 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:26] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:30:26 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:26] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:30:51 - root - INFO - Logging configured successfully
+2026-07-28 17:30:51 - root - INFO - Log level: INFO
+2026-07-28 17:30:51 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:30:51 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:30:52 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:30:52 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:30:52 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:30:52 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:30:52 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 17:30:52 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 17:30:52 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:30:54 - root - INFO - Logging configured successfully
+2026-07-28 17:30:54 - root - INFO - Log level: INFO
+2026-07-28 17:30:54 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:30:54 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:30:55 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:30:55 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:30:55 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:30:55 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:30:55 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:30:55 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:30:55 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:55] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:30:55 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:55] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:30:56 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:56] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:30:57 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:57] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:30:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:59] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:30:59 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:30:59] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:31:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:31:00] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:31:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:31:00] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:31:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:31:14] "[32mPOST /admin/labor-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:31:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:31:14] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:31:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:31:14] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:31:17 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:31:17] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:31:17 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:31:17] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:31:45 - root - INFO - Logging configured successfully
+2026-07-28 17:31:45 - root - INFO - Log level: INFO
+2026-07-28 17:31:45 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:31:45 - app - INFO - Toast API routes registered successfully
+2026-07-28 17:32:24 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:32:24 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:32:27 - root - INFO - Logging configured successfully
+2026-07-28 17:32:28 - root - INFO - Log level: INFO
+2026-07-28 17:32:28 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:32:28 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:32:28 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:32:28 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:32:28 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:32:28 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:32:28 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:32:28 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:37:19 - root - INFO - Logging configured successfully
+2026-07-28 17:37:19 - root - INFO - Log level: INFO
+2026-07-28 17:37:19 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:37:19 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:37:20 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:37:20 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:37:20 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:37:20 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:37:20 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 17:37:20 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 17:37:20 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:37:22 - root - INFO - Logging configured successfully
+2026-07-28 17:37:22 - root - INFO - Log level: INFO
+2026-07-28 17:37:22 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:37:22 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:37:23 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:37:23 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:37:23 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:37:23 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:37:23 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:37:23 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:37:23 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:23] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:37:23 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:23] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:37:23 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:23] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:37:25 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:25] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:37:26 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:26] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:37:26 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:26] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:37:26 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:26] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:37:27 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:27] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:37:32 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:32] "GET /admin/sales-report-builder HTTP/1.1" 200 -
+2026-07-28 17:37:32 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:32] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:37:34 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:34] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:37:34 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:34] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:37:37 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:37] "[32mPOST /admin/sales-delete/2 HTTP/1.1[0m" 302 -
+2026-07-28 17:37:38 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:38] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 17:37:38 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:38] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:37:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:54] "[32mPOST /admin/sales-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:37:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:54] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:37:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:37:54] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:38:10 - app - INFO - LABOR ZIP CSV: Labor cost by job.csv | headers: ['department', 'hourofday', 'restaurantguid', 'regular hours', 'overtime hours', 'total hours', 'regular cost', 'overtime cost', 'total cost', 'labor % (net)', 'labor % (gross)', 'last name', 'first name', 'chosen name', 'job code', 'job title', 'day']
+2026-07-28 17:38:10 - app - INFO -   has_employee=False has_hours=True has_pay=False
+2026-07-28 17:38:10 - app - INFO - LABOR ZIP CSV: Labor cost summary.csv | headers: ['net sales', 'gross sales', 'labor cost', 'labor % (net)', 'splh (net)', 'slph (gross)', 'labor % (gross)']
+2026-07-28 17:38:10 - app - INFO -   has_employee=False has_hours=False has_pay=False
+2026-07-28 17:38:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:38:10] "[32mPOST /admin/labor-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:38:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:38:10] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:38:10 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:38:10] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:39:42 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:39:42 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:39:46 - root - INFO - Logging configured successfully
+2026-07-28 17:39:46 - root - INFO - Log level: INFO
+2026-07-28 17:39:46 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:39:46 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:39:46 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:39:46 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:39:46 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:39:46 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:39:46 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:39:46 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:39:54 - root - INFO - Logging configured successfully
+2026-07-28 17:39:54 - root - INFO - Log level: INFO
+2026-07-28 17:39:54 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:39:54 - app - INFO - Toast API routes registered successfully
+2026-07-28 17:40:41 - root - INFO - Logging configured successfully
+2026-07-28 17:40:41 - root - INFO - Log level: INFO
+2026-07-28 17:40:41 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:40:41 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:40:41 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:40:41 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:40:41 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:40:41 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:40:41 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 17:40:41 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 17:40:41 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:40:43 - root - INFO - Logging configured successfully
+2026-07-28 17:40:43 - root - INFO - Log level: INFO
+2026-07-28 17:40:43 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:40:43 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:40:44 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:40:44 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:40:44 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:40:44 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:40:44 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:40:44 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:40:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:40:44] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:40:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:40:44] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:40:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:40:44] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:41:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:41:01] "[32mPOST /admin/labor-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:41:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:41:01] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:41:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:41:01] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:41:01 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:41:01] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:42:16 - werkzeug - INFO -  * Detected change in 'C:\\Users\\Zachary Rabinowitz\\room120buff\\app.py', reloading
+2026-07-28 17:42:16 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:42:19 - root - INFO - Logging configured successfully
+2026-07-28 17:42:19 - root - INFO - Log level: INFO
+2026-07-28 17:42:19 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:42:19 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:42:19 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:42:19 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:42:19 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:42:19 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:42:19 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:42:19 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:42:46 - root - INFO - Logging configured successfully
+2026-07-28 17:42:46 - root - INFO - Log level: INFO
+2026-07-28 17:42:46 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:42:46 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:42:46 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:42:46 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:42:46 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:42:46 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:42:46 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 17:42:46 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 17:42:46 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:42:49 - root - INFO - Logging configured successfully
+2026-07-28 17:42:49 - root - INFO - Log level: INFO
+2026-07-28 17:42:49 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:42:49 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:42:49 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:42:49 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:42:49 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:42:49 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:42:49 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:42:49 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:42:49 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:42:49] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:42:49 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:42:49] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:42:50 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:42:50] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:42:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:42:54] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:42:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:42:54] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:42:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:42:54] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:43:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:43:44] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:43:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:43:44] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:43:44 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:43:44] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:44:05 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:05] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:44:05 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:05] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:44:05 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:05] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:44:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:14] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:44:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:14] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:44:14 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:14] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:44:32 - root - INFO - Logging configured successfully
+2026-07-28 17:44:32 - root - INFO - Log level: INFO
+2026-07-28 17:44:32 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:44:32 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:44:32 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:44:32 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:44:32 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:44:32 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:44:32 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5002
+ * Running on http://10.55.20.225:5002
+2026-07-28 17:44:32 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-07-28 17:44:32 - werkzeug - INFO -  * Restarting with stat
+2026-07-28 17:44:35 - root - INFO - Logging configured successfully
+2026-07-28 17:44:35 - root - INFO - Log level: INFO
+2026-07-28 17:44:35 - root - INFO - Logs directory: C:\Users\Zachary Rabinowitz\room120buff\logs
+2026-07-28 17:44:35 - __main__ - INFO - Toast API routes registered successfully
+2026-07-28 17:44:35 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-07-28 17:44:35 - apscheduler.scheduler - INFO - Added job "_run_scheduled_backup" to job store "default"
+2026-07-28 17:44:35 - apscheduler.scheduler - INFO - Scheduler started
+2026-07-28 17:44:35 - __main__ - INFO - Daily backup scheduler started (fires at midnight EST)
+2026-07-28 17:44:35 - werkzeug - WARNING -  * Debugger is active!
+2026-07-28 17:44:35 - werkzeug - INFO -  * Debugger PIN: 373-360-172
+2026-07-28 17:44:35 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:35] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:44:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:36] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:44:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:36] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:44:40 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:40] "[32mPOST /admin/labor-delete/1 HTTP/1.1[0m" 302 -
+2026-07-28 17:44:40 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:40] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 17:44:40 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:40] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:44:40 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:40] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:44:56 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:56] "[32mPOST /admin/labor-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:44:56 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:56] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:44:56 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:56] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:44:56 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:44:56] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:46:37 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:46:37] "GET /home HTTP/1.1" 200 -
+2026-07-28 17:46:37 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:46:37] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:46:37 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:46:37] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:46:38 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:46:38] "GET /admin/shift-planner HTTP/1.1" 200 -
+2026-07-28 17:46:39 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:46:39] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:46:39 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:46:39] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:46:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:46:54] "[32mPOST /admin/shift-planner/upload HTTP/1.1[0m" 302 -
+2026-07-28 17:46:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:46:54] "GET /admin/shift-planner/edit HTTP/1.1" 200 -
+2026-07-28 17:46:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:46:54] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:46:54 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:46:54] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:47:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:00] "[32mPOST /admin/shift-planner/save HTTP/1.1[0m" 302 -
+2026-07-28 17:47:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:00] "GET /admin/shift-planner/edit HTTP/1.1" 200 -
+2026-07-28 17:47:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:00] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:47:00 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:00] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:47:22 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:22] "[32mPOST /admin/shift-planner/save HTTP/1.1[0m" 302 -
+2026-07-28 17:47:22 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:22] "GET /admin/shift-planner/edit HTTP/1.1" 200 -
+2026-07-28 17:47:22 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:22] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:47:22 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:22] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:47:28 - xhtml2pdf.util - WARNING - getSize: Not a float '.05em'
+2026-07-28 17:47:28 - xhtml2pdf.util - WARNING - getSize: Not a float '.06em'
+2026-07-28 17:47:28 - xhtml2pdf.util - WARNING - getSize: Not a float '.04em'
+2026-07-28 17:47:28 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:28] "POST /admin/shift-planner/download HTTP/1.1" 200 -
+2026-07-28 17:47:34 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:34] "GET /home HTTP/1.1" 200 -
+2026-07-28 17:47:34 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:34] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:47:34 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:34] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:47:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:36] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 17:47:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:36] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:47:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:36] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:47:38 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:38] "GET /admin/sales-dashboard?id=2 HTTP/1.1" 200 -
+2026-07-28 17:47:38 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:38] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:47:38 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:47:38] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:48:07 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:48:07] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:48:07 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:48:07] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:48:07 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:48:07] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:48:20 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:48:20] "[32mPOST /admin/labor-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:48:20 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:48:20] "GET /admin/sales-dashboard?id=1 HTTP/1.1" 200 -
+2026-07-28 17:48:20 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:48:20] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:48:20 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:48:20] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:52:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:52:12] "[32mPOST /admin/labor-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:52:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:52:12] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 17:52:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:52:12] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:52:12 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:52:12] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 17:53:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:53:36] "[32mPOST /admin/sales-upload HTTP/1.1[0m" 302 -
+2026-07-28 17:53:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:53:36] "GET /admin/sales-dashboard?id=3 HTTP/1.1" 200 -
+2026-07-28 17:53:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:53:36] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 17:53:36 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 17:53:36] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 18:02:06 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 18:02:06] "GET /home HTTP/1.1" 200 -
+2026-07-28 18:02:06 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 18:02:06] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 18:02:07 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 18:02:07] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -
+2026-07-28 18:02:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 18:02:08] "GET /admin/sales-dashboard HTTP/1.1" 200 -
+2026-07-28 18:02:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 18:02:08] "[36mGET /static/css/style_member.css HTTP/1.1[0m" 304 -
+2026-07-28 18:02:08 - werkzeug - INFO - 127.0.0.1 - - [28/Jul/2026 18:02:08] "[36mGET /static/assets/room120_hero.jpg HTTP/1.1[0m" 304 -

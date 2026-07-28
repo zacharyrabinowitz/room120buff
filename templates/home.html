@@ -145,6 +145,13 @@
       </a>
     </div>
     {% endif %}
+    {% if authorized('view_sales_dashboard') %}
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('sales_dashboard') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-chart-bar me-2" style="color:var(--accent);"></i>Sales &amp; Labor</h5></div>
+      </a>
+    </div>
+    {% endif %}
   </div>
 
   {% elif current_user.role == 'member' or (current_user.role in ('admin', 'staff') and view_as_member) %}

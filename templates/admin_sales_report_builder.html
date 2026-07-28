@@ -1,0 +1,579 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<div class="container-fluid px-4 mt-4">
+
+  <!-- ── Header ── -->
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+    <div>
+      <h2><i class="fas fa-sliders me-2" style="color:var(--accent);"></i>Custom Report Builder</h2>
+      <div class="accent-bar"></div>
+      <p class="text-muted mt-1 mb-0" style="font-size:.85rem;">
+        Filter any date range · pick your metrics · choose your chart type
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('sales_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Dashboard
+      </a>
+      {% if can_export and filtered %}
+      <a href="{{ url_for('sales_export', start=start, end=end) }}" class="btn btn-outline-success btn-sm">
+        <i class="fas fa-file-csv me-1"></i> Export CSV
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Filter Panel ── -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold d-flex align-items-center gap-2">
+      <i class="fas fa-filter" style="color:var(--accent);"></i> Filters & Options
+    </div>
+    <div class="card-body">
+      <form method="GET" action="{{ url_for('sales_report_builder') }}" id="reportForm">
+
+        <!-- Row 1: Date Range -->
+        <div class="row g-3 mb-3 align-items-end">
+          <div class="col-md-2">
+            <label class="form-label fw-medium">From Date</label>
+            <input type="date" class="form-control" name="start" id="startDate" value="{{ start }}">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-medium">To Date</label>
+            <input type="date" class="form-control" name="end" id="endDate" value="{{ end }}">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-medium">Quick Range</label>
+            <div class="d-flex flex-wrap gap-1">
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDays(30)">30d</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDays(90)">90d</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDays(180)">6mo</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDays(365)">1yr</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearDates()">All</button>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-medium">Jump to Stored Period</label>
+            <select class="form-select form-select-sm" onchange="jumpToPeriod(this.value)">
+              <option value="">— select —</option>
+              {% for r in reports %}
+              <option value="{{ r.week_start }}|{{ r.week_end }}">
+                {{ r.period_label or (r.week_start|string + ' – ' + r.week_end|string) }} ({{ r.period_type }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label fw-medium">Chart Type</label>
+            <select class="form-select form-select-sm" name="chart_type" id="chartTypeSelect">
+              <option value="line" {% if chart_type=='line' %}selected{% endif %}>Line</option>
+              <option value="bar" {% if chart_type=='bar' %}selected{% endif %}>Bar</option>
+              <option value="area" {% if chart_type=='area' %}selected{% endif %}>Area (filled)</option>
+              <option value="bar_stacked" {% if chart_type=='bar_stacked' %}selected{% endif %}>Stacked Bar</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 2: Metric Checkboxes -->
+        <div class="mb-3">
+          <label class="form-label fw-medium mb-2">Metrics to Include</label>
+          <div class="row g-2">
+            {% set metric_groups = [
+              ('Revenue', [
+                ('net_sales', 'Net Sales'),
+                ('gross_sales', 'Gross Sales'),
+                ('total_amount', 'Total Revenue'),
+              ]),
+              ('Charges', [
+                ('gratuity', 'Gratuity'),
+                ('tax_amount', 'Tax'),
+                ('tips', 'Tips'),
+                ('total_service_charges', 'Service Charges'),
+              ]),
+              ('Tips Detail', [
+                ('tips_collected', 'Tips Collected'),
+                ('tips_withheld', 'Tips Withheld'),
+                ('tips_after_withholding', 'After Withholding'),
+              ]),
+              ('Cash', [
+                ('total_cash_payments', 'Cash Payments'),
+                ('expected_closeout_cash', 'Expected Closeout'),
+                ('actual_closeout_cash', 'Actual Closeout'),
+                ('cash_overage', 'Cash Overage'),
+              ]),
+              ('Volume', [
+                ('total_guests', 'Total Guests'),
+                ('total_orders', 'Total Orders'),
+              ]),
+              ('Averages', [
+                ('avg_per_guest', 'Avg / Guest'),
+                ('avg_per_order', 'Avg / Order'),
+              ]),
+              ('Service Mode', [
+                ('quick_service_net', 'Quick Service Net'),
+                ('table_service_net', 'Table Service Net'),
+              ]),
+              ('Other', [
+                ('void_amount', 'Void Amount'),
+                ('total_discounts_amount', 'Total Discounts'),
+                ('sales_discounts', 'Sales Discounts'),
+                ('sales_refunds', 'Sales Refunds'),
+              ]),
+            ] %}
+            {% for group_name, group_metrics in metric_groups %}
+            <div class="col-md-3 col-6">
+              <div class="text-muted small fw-semibold mb-1 text-uppercase" style="font-size:.7rem;letter-spacing:.08em;">{{ group_name }}</div>
+              {% for m_key, m_label in group_metrics %}
+              <div class="form-check form-check-sm mb-1">
+                <input class="form-check-input" type="checkbox" name="metrics" value="{{ m_key }}"
+                       id="m_{{ m_key }}" {% if m_key in metrics %}checked{% endif %}>
+                <label class="form-check-label" for="m_{{ m_key }}" style="font-size:.83rem;">
+                  {{ m_label }}
+                </label>
+              </div>
+              {% endfor %}
+            </div>
+            {% endfor %}
+          </div>
+          <div class="d-flex gap-2 mt-2">
+            <button type="button" class="btn btn-link btn-sm p-0" onclick="checkAllMetrics(true)">Select all</button>
+            <span class="text-muted">·</span>
+            <button type="button" class="btn btn-link btn-sm p-0" onclick="checkAllMetrics(false)">Clear all</button>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-chart-bar me-1"></i> Build Report
+          </button>
+          <a href="{{ url_for('sales_report_builder') }}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if not reports %}
+  <!-- No data yet -->
+  <div class="text-center py-5">
+    <i class="fas fa-database fa-3x mb-3 opacity-25" style="color:var(--accent);"></i>
+    <p class="text-muted">No sales data uploaded yet. Go to the
+      <a href="{{ url_for('sales_dashboard') }}">Sales Dashboard</a> to upload your first report.</p>
+  </div>
+
+  {% elif not filtered %}
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>No records match the selected date range. Try broadening the filter or select "All".
+  </div>
+
+  {% else %}
+
+  <!-- ── Summary KPI Cards ── -->
+  {% set sum_net    = filtered | sum(attribute='net_sales') %}
+  {% set sum_rev    = filtered | sum(attribute='total_amount') %}
+  {% set sum_grat   = filtered | sum(attribute='gratuity') %}
+  {% set sum_tax    = filtered | sum(attribute='tax_amount') %}
+  {% set sum_tips   = filtered | sum(attribute='tips') %}
+  {% set sum_guests = filtered | sum(attribute='total_guests') %}
+  {% set sum_orders = filtered | sum(attribute='total_orders') %}
+  {% set n = filtered | length %}
+
+  <div class="row g-3 mb-4">
+    {% for label, val, icon, color, is_int in [
+      ('Net Sales',     sum_net,    'fa-dollar-sign',          '#f5b45c', false),
+      ('Total Revenue', sum_rev,    'fa-coins',                '#4bc4cf', false),
+      ('Gratuity',      sum_grat,   'fa-hand-holding-dollar',  '#a8e063', false),
+      ('Tax',           sum_tax,    'fa-percent',              '#f7797d', false),
+      ('Tips',          sum_tips,   'fa-star',                 '#6a82fb', false),
+      ('Guests',        sum_guests, 'fa-users',                '#ffd89b', true),
+      ('Orders',        sum_orders, 'fa-receipt',              '#11998e', true),
+    ] %}
+    <div class="col-6 col-sm-4 col-md-3 col-xl">
+      <div class="card h-100" style="border-top:3px solid {{ color }};">
+        <div class="card-body text-center py-3 px-2">
+          <i class="fas {{ icon }}" style="color:{{ color }};"></i>
+          <div class="fw-bold mt-1" style="color:{{ color }};font-size:1.15rem;">
+            {% if is_int %}{{ val | int }}
+            {% else %}${{ "{:,.2f}".format(val) }}{% endif %}
+          </div>
+          <div class="text-muted" style="font-size:.7rem;">{{ label }}</div>
+          {% if n > 1 and not is_int %}
+          <div class="text-muted" style="font-size:.68rem;">avg ${{ "{:,.0f}".format(val / n) }}/period</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── Main Trend / Comparison Chart ── -->
+  {% if metrics %}
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center fw-semibold">
+      <span>
+        <i class="fas fa-chart-line me-2" style="color:var(--accent);"></i>
+        {% if chart_type == 'bar' %}Bar Chart{% elif chart_type == 'area' %}Area Chart
+        {% elif chart_type == 'bar_stacked' %}Stacked Bar{% else %}Trend Chart{% endif %}
+        — {{ filtered | length }} Period{% if filtered | length != 1 %}s{% endif %}
+      </span>
+      <div class="d-flex gap-2">
+        <!-- Inline chart type switcher (JS-only, no page reload) -->
+        <button class="btn btn-outline-secondary btn-sm" onclick="switchChart('line')" title="Line">
+          <i class="fas fa-chart-line"></i>
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="switchChart('bar')" title="Bar">
+          <i class="fas fa-chart-bar"></i>
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="switchChart('area')" title="Area">
+          <i class="fas fa-chart-area"></i>
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="switchChart('bar_stacked')" title="Stacked">
+          <i class="fas fa-layer-group"></i>
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <canvas id="reportChart" style="max-height:360px;"></canvas>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Breakdown Charts (if single period selected, show category + payment pies) ── -->
+  {% if filtered | length == 1 %}
+  {% set r = filtered[0] %}
+  {% set cats = r.categories_json | fromjson %}
+  {% set pays = r.payments_json | fromjson %}
+  {% set rcs  = r.revenue_centers_json | fromjson %}
+
+  <div class="row g-4 mb-4">
+    {% if cats %}
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header fw-semibold"><i class="fas fa-utensils me-2" style="color:var(--accent);"></i>Sales by Category</div>
+        <div class="card-body d-flex align-items-center justify-content-center">
+          <canvas id="catPieChart" style="max-height:250px;"></canvas>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% if pays %}
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header fw-semibold"><i class="fas fa-credit-card me-2" style="color:var(--accent);"></i>Payment Methods</div>
+        <div class="card-body d-flex align-items-center justify-content-center">
+          <canvas id="payPieChart" style="max-height:250px;"></canvas>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% if rcs %}
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header fw-semibold"><i class="fas fa-store me-2" style="color:var(--accent);"></i>Revenue by Center</div>
+        <div class="card-body d-flex align-items-center justify-content-center">
+          <canvas id="rcPieChart" style="max-height:250px;"></canvas>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Single-period detail tables -->
+  <div class="row g-4 mb-4">
+    {% if cats %}
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header fw-semibold">Sales Category Detail</div>
+        <div class="card-body p-0">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="table-light"><tr><th>Category</th><th class="text-end">Items</th><th class="text-end">Net Sales</th><th class="text-end">%</th></tr></thead>
+            <tbody>
+              {% for c in cats %}
+              <tr>
+                <td>{{ c.category }}</td>
+                <td class="text-end">{{ c['items'] }}</td>
+                <td class="text-end">${{ "{:,.2f}".format(c.net_sales) }}</td>
+                <td class="text-end text-muted">{{ "{:.1f}".format(c.net_sales / r.net_sales * 100 if r.net_sales else 0) }}%</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% if pays %}
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header fw-semibold">Payment Method Detail</div>
+        <div class="card-body p-0">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="table-light"><tr><th>Type</th><th class="text-end">Amount</th><th class="text-end">Tips</th><th class="text-end">Grat</th><th class="text-end">Total</th></tr></thead>
+            <tbody>
+              {% for p in pays %}{% if p.total > 0 %}
+              <tr>
+                <td>{{ p.type }}</td>
+                <td class="text-end">${{ "{:,.2f}".format(p.amount) }}</td>
+                <td class="text-end">${{ "{:,.2f}".format(p.tips) }}</td>
+                <td class="text-end">${{ "{:,.2f}".format(p.grat) }}</td>
+                <td class="text-end fw-medium">${{ "{:,.2f}".format(p.total) }}</td>
+              </tr>
+              {% endif %}{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}{# single period #}
+
+  <!-- ── Data Table ── -->
+  <div class="card mb-5">
+    <div class="card-header d-flex justify-content-between align-items-center fw-semibold">
+      <span><i class="fas fa-table me-2" style="color:var(--accent);"></i>Period Data Table</span>
+      <span class="badge bg-secondary">{{ filtered | length }} period{% if filtered | length != 1 %}s{% endif %}</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0" id="dataTable">
+          <thead class="table-light">
+            <tr>
+              <th class="sticky-col">Period</th>
+              <th>Type</th>
+              {% for m_key, m_label in all_metrics if m_key in metrics %}
+              <th class="text-end">{{ m_label }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in filtered %}
+            <tr>
+              <td class="sticky-col">
+                <a href="{{ url_for('sales_dashboard', id=r.id) }}" class="text-decoration-none fw-medium">
+                  {{ r.period_label or (r.week_start|string + ' – ' + r.week_end|string) }}
+                </a>
+                <br><small class="text-muted">{{ r.week_start }} – {{ r.week_end }}</small>
+              </td>
+              <td><span class="badge bg-secondary">{{ r.period_type }}</span></td>
+              {% for m_key, m_label in all_metrics if m_key in metrics %}
+              <td class="text-end">
+                {% set raw = r[m_key] %}
+                {% if m_key in ['total_guests','total_orders','void_order_count','void_item_count',
+                                 'total_discount_count','service_charge_count'] %}
+                  {{ raw | int }}
+                {% else %}
+                  ${{ "{:,.2f}".format(raw) }}
+                {% endif %}
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot style="border-top:2px solid var(--accent);background:rgba(245,180,92,.06);">
+            <tr class="fw-bold">
+              <td class="sticky-col">TOTAL / SUM</td>
+              <td>{{ filtered | length }} periods</td>
+              {% for m_key, m_label in all_metrics if m_key in metrics %}
+              <td class="text-end" style="color:var(--accent);">
+                {% set vals = filtered | map(attribute=m_key) | list %}
+                {% if m_key in ['total_guests','total_orders'] %}
+                  {{ vals | sum | int }}
+                {% elif m_key in ['avg_per_guest','avg_per_order'] %}
+                  ${{ "{:,.2f}".format((vals | sum) / (vals | length)) }}
+                {% else %}
+                  ${{ "{:,.2f}".format(vals | sum) }}
+                {% endif %}
+              </td>
+              {% endfor %}
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {% endif %}{# end if filtered #}
+</div>
+
+<style>
+.sticky-col { position:sticky; left:0; background:var(--card-bg,#1e1e1e); z-index:1; }
+[data-theme="light"] .sticky-col { background:#fff; }
+</style>
+
+<script>
+/* ── Utilities ─────────────────────────────────────────────────── */
+function setDays(n) {
+  var e = new Date(), s = new Date(e);
+  s.setDate(s.getDate() - n);
+  document.getElementById('startDate').value = s.toISOString().slice(0,10);
+  document.getElementById('endDate').value   = e.toISOString().slice(0,10);
+}
+function clearDates() {
+  document.getElementById('startDate').value = '';
+  document.getElementById('endDate').value   = '';
+}
+function jumpToPeriod(val) {
+  if (!val) return;
+  var p = val.split('|');
+  document.getElementById('startDate').value = p[0];
+  document.getElementById('endDate').value   = p[1];
+}
+function checkAllMetrics(state) {
+  document.querySelectorAll('[name=metrics]').forEach(function(cb){ cb.checked = state; });
+}
+
+/* ── Chart Setup ────────────────────────────────────────────────── */
+{% if filtered and metrics %}
+(function () {
+  var isDark   = document.documentElement.getAttribute('data-theme') !== 'light';
+  var gridColor= isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)';
+  var textColor= isDark ? '#aaa' : '#555';
+
+  var labels   = {{ labels | safe }};
+  var datasets = {{ chart_datasets | safe }};
+  var palette  = ['#f5b45c','#4bc4cf','#a8e063','#f7797d','#6a82fb','#ffd89b','#11998e','#fc5c7d','#a18cd1','#ffecd2'];
+  var chartType = '{{ chart_type }}';
+  var stacked   = chartType === 'bar_stacked';
+  var baseType  = (chartType === 'bar' || chartType === 'bar_stacked') ? 'bar' : 'line';
+
+  function buildDatasets(cType) {
+    var isStacked = cType === 'bar_stacked';
+    var baseT = (cType === 'bar' || isStacked) ? 'bar' : 'line';
+    return datasets.map(function(ds, i) {
+      var color = ds.color || palette[i % palette.length];
+      return {
+        label: ds.label,
+        data:  ds.data,
+        borderColor: color,
+        backgroundColor: (cType === 'area')
+          ? hexAlpha(color, 0.25)
+          : (baseT === 'bar' ? hexAlpha(color, 0.75) : 'transparent'),
+        fill: cType === 'area',
+        tension: .35,
+        pointRadius: baseT === 'line' ? 4 : 0,
+        pointBackgroundColor: color,
+        borderWidth: 2,
+        borderRadius: baseT === 'bar' ? 4 : 0,
+        type: baseT,
+      };
+    });
+  }
+
+  function hexAlpha(hex, a) {
+    hex = hex.replace('#','');
+    if (hex.length === 3) hex = hex.split('').map(function(c){return c+c;}).join('');
+    var r = parseInt(hex.substring(0,2),16);
+    var g = parseInt(hex.substring(2,4),16);
+    var b = parseInt(hex.substring(4,6),16);
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+
+  var chartConfig = {
+    type: baseType,
+    data: { labels: labels, datasets: buildDatasets(chartType) },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: textColor, boxWidth: 14, font:{size:12} } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var v = ctx.parsed.y;
+              var isInt = Number.isInteger(v) && v < 100000;
+              return ' ' + ctx.dataset.label + ': ' +
+                (isInt ? v : '$'+v.toLocaleString('en-US',{minimumFractionDigits:2}));
+            }
+          }
+        }
+      },
+      scales: {
+        x: { stacked: stacked, ticks:{ color: textColor }, grid:{ color: gridColor } },
+        y: {
+          stacked: stacked,
+          ticks:{ color: textColor, callback: function(v){ return '$'+v.toLocaleString(); } },
+          grid:{ color: gridColor }
+        }
+      }
+    }
+  };
+
+  var myChart = new Chart(document.getElementById('reportChart'), chartConfig);
+
+  window.switchChart = function(cType) {
+    var isBar = cType === 'bar' || cType === 'bar_stacked';
+    myChart.config.type = isBar ? 'bar' : 'line';
+    myChart.data.datasets = buildDatasets(cType);
+    myChart.options.scales.x.stacked = cType === 'bar_stacked';
+    myChart.options.scales.y.stacked = cType === 'bar_stacked';
+    myChart.update();
+    // Sync the hidden form field so if they rebuild it remembers
+    document.getElementById('chartTypeSelect').value = cType;
+  };
+
+  /* ── Breakdown Pie Charts (single period only) ── */
+  {% if filtered | length == 1 %}
+  var piePalette = ['#f5b45c','#4bc4cf','#a8e063','#f7797d','#6a82fb','#ffd89b','#11998e','#fc5c7d','#a18cd1'];
+  var pieOpts = function(id, data, labels) {
+    return {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: piePalette.slice(0, labels.length),
+          borderWidth: 2,
+          borderColor: isDark ? '#1e1e1e' : '#fff',
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: textColor, boxWidth: 12, font:{size:10} } },
+          tooltip: { callbacks: { label: function(ctx){
+            return ' $'+ctx.parsed.toLocaleString('en-US',{minimumFractionDigits:2});
+          }}}
+        }
+      }
+    };
+  };
+
+  {% set cats = filtered[0].categories_json | fromjson %}
+  {% set pays = filtered[0].payments_json | fromjson %}
+  {% set rcs  = filtered[0].revenue_centers_json | fromjson %}
+
+  {% if cats %}
+  new Chart(document.getElementById('catPieChart'),
+    pieOpts('catPieChart',
+      {{ cats | map(attribute='net_sales') | list | tojson }},
+      {{ cats | map(attribute='category') | list | tojson }}
+    )
+  );
+  {% endif %}
+
+  {% if pays %}
+  var payFiltered = {{ pays | tojson | safe }}.filter(function(p){ return p.total > 0; });
+  new Chart(document.getElementById('payPieChart'),
+    pieOpts('payPieChart',
+      payFiltered.map(function(p){ return p.total; }),
+      payFiltered.map(function(p){ return p.type; })
+    )
+  );
+  {% endif %}
+
+  {% if rcs %}
+  new Chart(document.getElementById('rcPieChart'),
+    pieOpts('rcPieChart',
+      {{ rcs | map(attribute='net_sales') | list | tojson }},
+      {{ rcs | map(attribute='center') | list | tojson }}
+    )
+  );
+  {% endif %}
+  {% endif %}{# single period pie charts #}
+
+})();
+{% endif %}
+</script>
+{% endblock %}

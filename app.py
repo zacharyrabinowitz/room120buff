@@ -524,6 +524,101 @@ class SetupToken(db.Model):
     user       = db.relationship('User', backref='setup_tokens')
 
 
+class WeeklySalesReport(db.Model):
+    """Stores parsed data from weekly Toast Sales Summary PDF uploads."""
+    __tablename__ = 'weekly_sales_report'
+    id                = db.Column(db.Integer, primary_key=True)
+    week_start        = db.Column(db.Date, nullable=False, index=True)
+    week_end          = db.Column(db.Date, nullable=False)
+    period_label      = db.Column(db.String(150))   # user-defined label, e.g. "July 2026"
+    period_type       = db.Column(db.String(20), default='weekly')  # daily/weekly/monthly/quarterly/custom
+    location          = db.Column(db.String(200))
+    uploaded_at       = db.Column(db.DateTime, default=datetime.utcnow)
+    original_filename = db.Column(db.String(255))
+
+    # Revenue Summary
+    net_sales      = db.Column(db.Float, default=0.0)
+    gratuity       = db.Column(db.Float, default=0.0)
+    tax_amount     = db.Column(db.Float, default=0.0)
+    tips           = db.Column(db.Float, default=0.0)
+    paid_in_total  = db.Column(db.Float, default=0.0)
+    total_amount   = db.Column(db.Float, default=0.0)
+
+    # Net Sales Summary
+    gross_sales     = db.Column(db.Float, default=0.0)
+    sales_discounts = db.Column(db.Float, default=0.0)
+    sales_refunds   = db.Column(db.Float, default=0.0)
+
+    # Tip Summary
+    tips_collected         = db.Column(db.Float, default=0.0)
+    tips_refunded          = db.Column(db.Float, default=0.0)
+    tips_withheld          = db.Column(db.Float, default=0.0)
+    tips_after_withholding = db.Column(db.Float, default=0.0)
+
+    # Cash Summary
+    expected_closeout_cash = db.Column(db.Float, default=0.0)
+    actual_closeout_cash   = db.Column(db.Float, default=0.0)
+    cash_overage           = db.Column(db.Float, default=0.0)
+    total_cash_payments    = db.Column(db.Float, default=0.0)
+
+    # Service Mode Summary
+    quick_service_net = db.Column(db.Float, default=0.0)
+    table_service_net = db.Column(db.Float, default=0.0)
+    total_guests      = db.Column(db.Integer, default=0)
+    avg_per_guest     = db.Column(db.Float, default=0.0)
+    total_orders      = db.Column(db.Integer, default=0)
+    avg_per_order     = db.Column(db.Float, default=0.0)
+
+    # Void Summary
+    void_amount      = db.Column(db.Float, default=0.0)
+    void_order_count = db.Column(db.Integer, default=0)
+    void_item_count  = db.Column(db.Integer, default=0)
+
+    # Discounts & Service Charges
+    total_discounts_amount = db.Column(db.Float, default=0.0)
+    total_discount_count   = db.Column(db.Integer, default=0)
+    total_service_charges  = db.Column(db.Float, default=0.0)
+    service_charge_count   = db.Column(db.Integer, default=0)
+
+    # Tax
+    taxable_amount = db.Column(db.Float, default=0.0)
+
+    # JSON-encoded breakdowns (variable-length tables)
+    payments_json        = db.Column(db.Text, default='[]')
+    categories_json      = db.Column(db.Text, default='[]')
+    revenue_centers_json = db.Column(db.Text, default='[]')
+    dining_options_json  = db.Column(db.Text, default='[]')
+    discounts_json       = db.Column(db.Text, default='[]')
+
+
+class LaborReport(db.Model):
+    """Stores parsed Toast labor / employee shift data for a period."""
+    __tablename__ = 'labor_report'
+    id                = db.Column(db.Integer, primary_key=True)
+    week_start        = db.Column(db.Date, nullable=False, index=True)
+    week_end          = db.Column(db.Date, nullable=False)
+    period_label      = db.Column(db.String(150))
+    period_type       = db.Column(db.String(20), default='weekly')
+    uploaded_at       = db.Column(db.DateTime, default=datetime.utcnow)
+    original_filename = db.Column(db.String(255))
+
+    # Hour totals
+    total_hours    = db.Column(db.Float, default=0.0)
+    regular_hours  = db.Column(db.Float, default=0.0)
+    overtime_hours = db.Column(db.Float, default=0.0)
+    shift_count    = db.Column(db.Integer, default=0)
+    employee_count = db.Column(db.Integer, default=0)
+
+    # Cost totals
+    total_cost    = db.Column(db.Float, default=0.0)
+    regular_cost  = db.Column(db.Float, default=0.0)
+    overtime_cost = db.Column(db.Float, default=0.0)
+
+    # JSON breakdowns
+    employees_json   = db.Column(db.Text, default='[]')  # [{name, job, hours, regular_pay, ot_pay, total_pay}]
+    jobs_json        = db.Column(db.Text, default='[]')  # [{job, hours, cost}]
+
+
 BACKUP_ADMIN_USERNAME = "backupadmin"
 BACKUP_ADMIN_PASSWORD = "room120secure"
 
@@ -725,13 +820,19 @@ PERMISSIONS = {
         'delete_note': 'Delete notes',
     },
     'Reports & Analytics': {
-        'view_analytics':    'View analytics dashboard',
-        'view_sales_report': 'View sales report',
-        'view_reports':      'View saved reports',
-        'create_report':     'Create / save new reports',
-        'edit_report':       'Edit saved reports',
-        'delete_report':     'Delete saved reports',
-        'export_report':     'Export reports to CSV',
+        'view_analytics':      'View analytics dashboard',
+        'view_sales_report':   'View sales report',
+        'view_reports':        'View saved reports',
+        'create_report':       'Create / save new reports',
+        'edit_report':         'Edit saved reports',
+        'delete_report':       'Delete saved reports',
+        'export_report':       'Export reports to CSV',
+        'view_sales_dashboard':  'View weekly Toast Sales Dashboard',
+        'upload_sales_report':   'Upload weekly Toast Sales PDF',
+        'delete_sales_report':   'Delete uploaded weekly sales reports',
+        'view_labor_dashboard':  'View Labor & Payroll Dashboard',
+        'upload_labor_report':   'Upload Toast Labor ZIP',
+        'delete_labor_report':   'Delete uploaded labor reports',
     },
     'Seating': {
         'view_seating':   'View seating map',
@@ -5189,6 +5290,1630 @@ def shift_planner_load_history(filename):
 
 
 # =====================================================
+# TOAST SALES DASHBOARD — PDF PARSER & ROUTES
+# =====================================================
+
+def _parse_toast_sales_pdf(pdf_bytes):
+    """Parse a Toast Sales Summary PDF.
+
+    Two-pass approach: (1) regex-based section state machine for structured
+    extraction, (2) full-text key-value scan as fallback for any zero fields.
+    Uses money[0] (first $ value on a line) so that merged two-column rows
+    don't grab the wrong value. Also checks the next line when a label appears
+    without a dollar amount (pdfplumber sometimes splits key and value).
+    """
+    import pdfplumber
+
+    MONEY_RE = re.compile(r'-?\$[\d,]+(?:\.\d+)?')
+
+    def _money(s):
+        if not s:
+            return 0.0
+        s = str(s).strip().replace(',', '').replace('$', '')
+        if s in ('—', '-', '', 'None'):
+            return 0.0
+        try:
+            return float(s)
+        except ValueError:
+            return 0.0
+
+    def all_money(line):
+        return [_money(m) for m in MONEY_RE.findall(line)]
+
+    def _norm(s):
+        """Normalize whitespace and Unicode space variants (incl. non-breaking space u00a0)."""
+        import unicodedata
+        s = unicodedata.normalize('NFKD', s)
+        s = s.replace(u'\u00a0', ' ').replace(u'\u202f', ' ').replace(u'\u2009', ' ')
+        s = s.replace(u'\u200b', '').replace(u'\u00ad', '')
+        s = re.sub(r'\s+', ' ', s)
+        return s.strip()
+    # ── Extract text ──────────────────────────────────────────────────────────
+    full_text = ''
+    try:
+        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+            for page in pdf.pages:
+                t = page.extract_text()
+                if t:
+                    full_text += t + '\n'
+    except Exception as e:
+        raise ValueError(f'PDF read failed: {e}')
+
+    # Normalize every line on extraction to avoid Unicode space issues
+    lines = [_norm(l) for l in full_text.split('\n')]
+
+    # ── Debug log: write first 120 non-blank normalized lines to app log ──────
+    debug_preview = [l for l in lines if l][:120]
+    app.logger.info('=== PDF PARSER DEBUG START ===')
+    for i, dl in enumerate(debug_preview):
+        app.logger.info(f'  [{i:03d}] {dl}')
+    app.logger.info('=== PDF PARSER DEBUG END ===')
+
+    # ── Section state machine – regex patterns handle whitespace variations ──
+    SECTION_PATTERNS = [
+        (re.compile(r'^revenue\s+summary$',              re.I), 'Revenue Summary'),
+        (re.compile(r'^net\s+sales\s+summary$',          re.I), 'Net Sales Summary'),
+        (re.compile(r'^tip\s+summary$',                  re.I), 'Tip Summary'),
+        (re.compile(r'^cash\s+summary$',                 re.I), 'Cash Summary'),
+        (re.compile(r'^cash\s+activity$',                re.I), 'Cash Activity'),
+        (re.compile(r'^payments?\s+summary$',            re.I), 'Payments Summary'),
+        (re.compile(r'^unpaid\s+orders?\s+summary$',     re.I), 'Unpaid Orders Summary'),
+        (re.compile(r'^sales\s+category\s+summary$',     re.I), 'Sales Category Summary'),
+        (re.compile(r'^revenue\s+center\s+summary$',     re.I), 'Revenue Center Summary'),
+        (re.compile(r'^dining\s+option\s+summary$',      re.I), 'Dining Option Summary'),
+        (re.compile(r'^service\s+mode\s+summary$',       re.I), 'Service Mode Summary'),
+        (re.compile(r'^service\s+charge\s+summary$',     re.I), 'Service Charge Summary'),
+        (re.compile(r'^discount\s+summary$',             re.I), 'Discount Summary'),
+        (re.compile(r'^void\s+summary$',                 re.I), 'Void Summary'),
+        (re.compile(r'^tax\s+summary$',                  re.I), 'Tax Summary'),
+        (re.compile(r'^service\s*/\s*daypart\s+summary$',re.I), 'Daypart Summary'),
+    ]
+
+    sections = {name: [] for _, name in SECTION_PATTERNS}
+    current_section = None
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        matched = False
+        for pat, name in SECTION_PATTERNS:
+            if pat.match(stripped):
+                current_section = name
+                matched = True
+                break
+        if not matched and current_section:
+            sections[current_section].append(stripped)
+
+    # ── Result skeleton ────────────────────────────────────────────────────────
+    result = {
+        'week_start': None, 'week_end': None, 'location': '',
+        'net_sales': 0.0, 'gratuity': 0.0, 'tax_amount': 0.0,
+        'tips': 0.0, 'paid_in_total': 0.0, 'total_amount': 0.0,
+        'gross_sales': 0.0, 'sales_discounts': 0.0, 'sales_refunds': 0.0,
+        'tips_collected': 0.0, 'tips_refunded': 0.0,
+        'tips_withheld': 0.0, 'tips_after_withholding': 0.0,
+        'expected_closeout_cash': 0.0, 'actual_closeout_cash': 0.0,
+        'cash_overage': 0.0, 'total_cash_payments': 0.0,
+        'quick_service_net': 0.0, 'table_service_net': 0.0,
+        'total_guests': 0, 'avg_per_guest': 0.0,
+        'total_orders': 0, 'avg_per_order': 0.0,
+        'void_amount': 0.0, 'void_order_count': 0, 'void_item_count': 0,
+        'total_discounts_amount': 0.0, 'total_discount_count': 0,
+        'total_service_charges': 0.0, 'service_charge_count': 0,
+        'taxable_amount': 0.0,
+        'payments': [], 'categories': [],
+        'revenue_centers': [], 'dining_options': [], 'discounts': [],
+    }
+
+    # ── Section KV helper – money[0] + adjacent-line fallback ────────────────
+    def kv(sec_name, label):
+        """Return first $ value in section for label; checks the next line too."""
+        sec = sections.get(sec_name, [])
+        ll = label.lower()
+        for i, line in enumerate(sec):
+            if ll in line.lower():
+                money = all_money(line)
+                if money:
+                    return money[0]
+                if i + 1 < len(sec):
+                    money2 = all_money(sec[i + 1])
+                    if money2:
+                        return money2[0]
+        return 0.0
+
+    # ── Full-text fallback – used when a section is empty ────────────────────
+    def kv_ft(label, avoid_3plus=False):
+        """Scan full text for label + $ value.
+        avoid_3plus skips lines with 3+ $ values (Service Mode rows have 3:
+        Quick/Table/Total). Lines with 1-2 values are fine — 2-value lines
+        are typically merged two-column rows where money[0] is still correct.
+        """
+        ll = label.lower()
+        best_val = None
+        for i, raw in enumerate(lines):
+            stripped = raw.strip()
+            if ll not in stripped.lower():
+                continue
+            money = all_money(stripped)
+            if money:
+                if avoid_3plus and len(money) >= 3:
+                    continue
+                if best_val is None:
+                    best_val = money[0]
+            elif i + 1 < len(lines) and best_val is None:
+                money2 = all_money(lines[i + 1].strip())
+                if money2:
+                    best_val = money2[0]
+        return best_val or 0.0
+
+    # ── Header: date range & location ─────────────────────────────────────────
+    for line in lines[:35]:
+        stripped = line.strip()
+        low = stripped.lower()
+        if 'location' in low:
+            loc_m = re.sub(r'(?i)location\(s\)\s*:?\s*', '', stripped).strip()
+            if loc_m:
+                result['location'] = loc_m
+        date_m = re.search(
+            r'(\w+\s+\d+,?\s*\d{4})\s*[-–]\s*(\w+\s+\d+,?\s*\d{4})', stripped
+        )
+        if date_m:
+            try:
+                def _d(s):
+                    return datetime.strptime(
+                        re.sub(r'\s+', ' ', s.replace(',', '').strip()), '%B %d %Y'
+                    ).date()
+                result['week_start'] = _d(date_m.group(1))
+                result['week_end']   = _d(date_m.group(2))
+            except Exception:
+                pass
+
+    # ── Revenue Summary ────────────────────────────────────────────────────────
+    result['net_sales']    = kv('Revenue Summary', 'net sales')
+    result['gratuity']     = kv('Revenue Summary', 'gratuity')
+    result['tax_amount']   = kv('Revenue Summary', 'tax amount')
+    result['tips']         = kv('Revenue Summary', 'tips')
+    result['paid_in_total']= kv('Revenue Summary', 'paid in total')
+    result['total_amount'] = kv('Revenue Summary', 'total amount')
+
+    # Full-text fallbacks (require single $ so we don't grab Service Mode rows)
+    if not result['net_sales']:
+        result['net_sales']  = kv_ft('net sales', avoid_3plus=True)
+    if not result['gratuity']:
+        result['gratuity']   = kv_ft('gratuity',  avoid_3plus=True)
+    if not result['tax_amount']:
+        result['tax_amount'] = kv_ft('tax amount', avoid_3plus=True)
+    if not result['tips']:
+        result['tips']       = kv_ft('tips',       avoid_3plus=True)
+    if not result['total_amount']:
+        result['total_amount']= kv_ft('total amount', avoid_3plus=True)
+
+    # ── Net Sales Summary ──────────────────────────────────────────────────────
+    result['gross_sales']     = kv('Net Sales Summary', 'gross sales')
+    result['sales_discounts'] = kv('Net Sales Summary', 'discounts')
+    result['sales_refunds']   = kv('Net Sales Summary', 'refunds')
+    if not result['gross_sales']:
+        result['gross_sales'] = kv_ft('gross sales', avoid_3plus=True)
+
+    # ── Tip Summary ───────────────────────────────────────────────────────────
+    result['tips_collected']        = kv('Tip Summary', 'collected')
+    result['tips_refunded']         = kv('Tip Summary', 'refunded')
+    result['tips_after_withholding']= kv('Tip Summary', 'after withholding')
+    result['tips_withheld']         = kv('Tip Summary', 'withheld')
+    if not result['tips_collected']:
+        result['tips_collected']         = kv_ft('tips collected',    avoid_3plus=True)
+    if not result['tips_after_withholding']:
+        result['tips_after_withholding'] = kv_ft('after withholding', avoid_3plus=True)
+
+    # ── Cash Summary ──────────────────────────────────────────────────────────
+    result['expected_closeout_cash'] = kv('Cash Summary', 'expected closeout')
+    result['actual_closeout_cash']   = kv('Cash Summary', 'actual closeout')
+    result['cash_overage']           = kv('Cash Summary', 'overage') or kv('Cash Summary', 'shortage')
+    if not result['expected_closeout_cash']:
+        result['expected_closeout_cash'] = kv_ft('expected closeout', avoid_3plus=True)
+    if not result['actual_closeout_cash']:
+        result['actual_closeout_cash']   = kv_ft('actual closeout',   avoid_3plus=True)
+
+    # ── Cash Activity ─────────────────────────────────────────────────────────
+    result['total_cash_payments'] = kv('Cash Activity', 'total cash payments')
+
+    # ── Payments Summary ──────────────────────────────────────────────────────
+    PAYMENT_TYPES = [
+        'Credit/debit', 'Amex', 'Discover', 'Mastercard', 'Visa',
+        'Gift Card', 'House Account', 'Cash', 'Other',
+    ]
+    for line in sections['Payments Summary']:
+        money = all_money(line)
+        if len(money) < 2:
+            continue
+        for ptype in PAYMENT_TYPES:
+            if line.lower().startswith(ptype.lower()):
+                result['payments'].append({
+                    'type':    ptype,
+                    'amount':  money[0],
+                    'tips':    money[1] if len(money) > 1 else 0.0,
+                    'grat':    money[2] if len(money) > 2 else 0.0,
+                    'refunds': money[3] if len(money) > 3 else 0.0,
+                    'total':   money[4] if len(money) > 4 else money[0],
+                })
+                break
+
+    # ── Sales Category Summary ────────────────────────────────────────────────
+    TABLE_ROW = re.compile(r'^(.+?)\s+(\d+)\s+(-?\$[\d,]+\.\d+)\s+(-?\$[\d,]+\.\d+)')
+    for line in sections['Sales Category Summary']:
+        m = TABLE_ROW.match(line)
+        if m and 'total' not in m.group(1).lower():
+            result['categories'].append({
+                'category':    m.group(1).strip(),
+                'items':       int(m.group(2)),
+                'net_sales':   _money(m.group(3)),
+                'gross_sales': _money(m.group(4)),
+            })
+
+    # ── Revenue Center Summary ────────────────────────────────────────────────
+    for line in sections['Revenue Center Summary']:
+        m = TABLE_ROW.match(line)
+        if m and 'total' not in m.group(1).lower():
+            result['revenue_centers'].append({
+                'center':      m.group(1).strip(),
+                'items':       int(m.group(2)),
+                'net_sales':   _money(m.group(3)),
+                'gross_sales': _money(m.group(4)),
+            })
+
+    # ── Dining Option Summary ─────────────────────────────────────────────────
+    for line in sections['Dining Option Summary']:
+        m = TABLE_ROW.match(line)
+        if m and 'total' not in m.group(1).lower():
+            result['dining_options'].append({
+                'option':      m.group(1).strip(),
+                'orders':      int(m.group(2)),
+                'net_sales':   _money(m.group(3)),
+                'gross_sales': _money(m.group(4)),
+            })
+
+    # ── Service Mode Summary ──────────────────────────────────────────────────
+    for line in sections['Service Mode Summary']:
+        low = line.lower()
+        money = all_money(line)
+        if 'net sales' in low and len(money) >= 2:
+            result['quick_service_net'] = money[0]
+            result['table_service_net'] = money[1]
+        elif 'total guests' in low:
+            nums = re.findall(r'\d+', line)
+            if nums:
+                result['total_guests'] = int(nums[-1])
+        elif 'avg/guest' in low and money:
+            result['avg_per_guest'] = money[-1]
+        elif 'total orders' in low:
+            nums = re.findall(r'\d+', line)
+            if nums:
+                result['total_orders'] = int(nums[-1])
+        elif 'avg/order' in low and money:
+            result['avg_per_order'] = money[-1]
+
+    # ── Service Charge Summary ────────────────────────────────────────────────
+    for line in sections['Service Charge Summary']:
+        if 'total service charges' in line.lower():
+            money = all_money(line)
+            nums  = re.findall(r'\d+', line)
+            if nums:
+                result['service_charge_count']  = int(nums[0])
+            if money:
+                result['total_service_charges'] = money[0]
+
+    # ── Discount Summary ──────────────────────────────────────────────────────
+    DISC_ROW = re.compile(r'^(.+?)\s+(\d+)\s+(-?\$[\d,]+\.\d+)')
+    for line in sections['Discount Summary']:
+        m = DISC_ROW.match(line)
+        if not m:
+            continue
+        name = m.group(1).strip()
+        if 'total discounts' in name.lower():
+            result['total_discount_count']   = int(m.group(2))
+            result['total_discounts_amount'] = _money(m.group(3))
+        else:
+            result['discounts'].append({
+                'name':   name,
+                'count':  int(m.group(2)),
+                'amount': _money(m.group(3)),
+            })
+
+    # ── Void Summary ──────────────────────────────────────────────────────────
+    for i, line in enumerate(sections['Void Summary']):
+        low = line.lower()
+        if 'void amount' in low and '%' not in line:
+            money = all_money(line)
+            if money:
+                result['void_amount'] = money[0]  # first $ = void amount
+            elif i + 1 < len(sections['Void Summary']):
+                money2 = all_money(sections['Void Summary'][i + 1])
+                if money2:
+                    result['void_amount'] = money2[0]
+        elif 'void order count' in low:
+            nums = re.findall(r'\d+', line)
+            if nums:
+                result['void_order_count'] = int(nums[0])
+        elif 'void item count' in low:
+            nums = re.findall(r'\d+', line)
+            if nums:
+                result['void_item_count'] = int(nums[0])
+
+    # ── Tax Summary ───────────────────────────────────────────────────────────
+    for line in sections['Tax Summary']:
+        money = all_money(line)
+        if money and not result['taxable_amount']:
+            result['taxable_amount'] = money[0]
+
+    return result
+
+
+def _parse_toast_csv_zip(zip_bytes, original_filename=''):
+    """Parse a Toast SalesSummary ZIP export.
+
+    Toast CSV structure (confirmed from real export):
+      - Summary files (Revenue summary, Cash summary, etc.): row 0 = column headers,
+        row 1 = single data row.  Read with dict(zip(headers, values)).
+      - Table files (Payments, Category, etc.): row 0 = headers, N data rows below.
+      - Date range encoded in ZIP filename: SalesSummary_YYYY-MM-DD_YYYY-MM-DD.zip
+
+    Handles common Toast CSV export filenames:
+      AllPaymentsByType, SalesByCategory, SalesByCenter/Revenue, SalesByDiningOption,
+      CheckDetails (skipped), SalesSummary / any key-value summary.
+    """
+    import zipfile
+    import csv as _csv
+    import io as _io
+
+    result = {
+        'week_start': None, 'week_end': None, 'location': '',
+        'net_sales': 0.0, 'gratuity': 0.0, 'tax_amount': 0.0,
+        'tips': 0.0, 'paid_in_total': 0.0, 'total_amount': 0.0,
+        'gross_sales': 0.0, 'sales_discounts': 0.0, 'sales_refunds': 0.0,
+        'tips_collected': 0.0, 'tips_refunded': 0.0,
+        'tips_withheld': 0.0, 'tips_after_withholding': 0.0,
+        'expected_closeout_cash': 0.0, 'actual_closeout_cash': 0.0,
+        'cash_overage': 0.0, 'total_cash_payments': 0.0,
+        'quick_service_net': 0.0, 'table_service_net': 0.0,
+        'total_guests': 0, 'avg_per_guest': 0.0,
+        'total_orders': 0, 'avg_per_order': 0.0,
+        'void_amount': 0.0, 'void_order_count': 0, 'void_item_count': 0,
+        'total_discounts_amount': 0.0, 'total_discount_count': 0,
+        'total_service_charges': 0.0, 'service_charge_count': 0,
+        'taxable_amount': 0.0,
+        'payments': [], 'categories': [],
+        'revenue_centers': [], 'dining_options': [], 'discounts': [],
+    }
+
+    def cm(s):
+        try:
+            return float(str(s).strip().replace(',', '').replace('$', ''))
+        except Exception:
+            return 0.0
+
+    def ci(s):
+        try:
+            return int(float(str(s).strip().replace(',', '')))
+        except Exception:
+            return 0
+
+    def read_csv(zf, fname):
+        """Read a CSV from the ZIP, return (lowercase_headers, list_of_rows)."""
+        raw = zf.read(fname).decode('utf-8-sig', errors='replace')
+        rows = list(_csv.reader(_io.StringIO(raw)))
+        rows = [r for r in rows if any(c.strip() for c in r)]
+        if not rows:
+            return [], []
+        headers = [h.strip().lower() for h in rows[0]]
+        return headers, rows[1:]
+
+    def row_dict(headers, row):
+        return dict(zip(headers, [c.strip() for c in row]))
+
+    # ── Extract dates from the ZIP filename ───────────────────────────────────
+    # Format: SalesSummary_YYYY-MM-DD_YYYY-MM-DD.zip
+    date_m = re.search(r'(\d{4}-\d{2}-\d{2})[_\-](\d{4}-\d{2}-\d{2})', original_filename)
+    if date_m:
+        try:
+            result['week_start'] = datetime.strptime(date_m.group(1), '%Y-%m-%d').date()
+            result['week_end']   = datetime.strptime(date_m.group(2), '%Y-%m-%d').date()
+        except Exception:
+            pass
+
+    try:
+        with zipfile.ZipFile(_io.BytesIO(zip_bytes)) as zf:
+            # Build a lookup: normalised basename → original fname
+            file_map = {}
+            for fname in zf.namelist():
+                if fname.lower().endswith('.csv'):
+                    bn = fname.split('/')[-1].lower()
+                    bn_norm = re.sub(r'[\s_\-]', '', bn).replace('.csv', '')
+                    file_map[bn_norm] = fname
+
+            def get(bn_norm):
+                """Return (headers, data_rows) for a normalised basename, or ([], [])."""
+                fname = file_map.get(bn_norm)
+                if not fname:
+                    # fuzzy: find first key that contains bn_norm
+                    for k, v in file_map.items():
+                        if bn_norm in k or k in bn_norm:
+                            fname = v
+                            break
+                if not fname:
+                    return [], []
+                return read_csv(zf, fname)
+
+            # ── Revenue summary ────────────────────────────────────────────────
+            headers, rows = get('revenuesummary')
+            if rows:
+                d = row_dict(headers, rows[0])
+                result['net_sales']     = cm(d.get('net sales', 0))
+                result['gratuity']      = cm(d.get('gratuity', 0))
+                result['tax_amount']    = cm(d.get('tax amount', 0))
+                result['tips']          = cm(d.get('tips', 0))
+                result['paid_in_total'] = cm(d.get('paid in total', 0))
+                result['total_amount']  = cm(d.get('total', 0))
+
+            # ── Cash summary ───────────────────────────────────────────────────
+            headers, rows = get('cashsummary')
+            if rows:
+                d = row_dict(headers, rows[0])
+                result['expected_closeout_cash'] = cm(d.get('expected closeout cash', 0))
+                result['actual_closeout_cash']   = cm(d.get('actual closeout cash', 0))
+                result['cash_overage']           = cm(d.get('cash overage/shortage', 0))
+
+            # ── Cash activity ──────────────────────────────────────────────────
+            headers, rows = get('cashactivity')
+            if rows:
+                d = row_dict(headers, rows[0])
+                result['total_cash_payments'] = cm(d.get('total cash payments', 0))
+
+            # ── Net sales summary ──────────────────────────────────────────────
+            headers, rows = get('netsalessummary')
+            if rows:
+                d = row_dict(headers, rows[0])
+                result['gross_sales']     = cm(d.get('gross sales', 0))
+                result['sales_discounts'] = cm(d.get('sales discounts', 0))
+                result['sales_refunds']   = cm(d.get('sales refunds', 0))
+
+            # ── Tip summary ────────────────────────────────────────────────────
+            headers, rows = get('tipsummary')
+            if rows:
+                d = row_dict(headers, rows[0])
+                result['tips_collected']         = cm(d.get('tips collected', 0))
+                result['tips_refunded']          = cm(d.get('tips refunded', 0))
+                result['tips_withheld']          = cm(d.get('tips withheld', 0))
+                result['tips_after_withholding'] = cm(d.get('tips after withholding', 0))
+
+            # ── Void summary ───────────────────────────────────────────────────
+            headers, rows = get('voidsummary')
+            if rows:
+                d = row_dict(headers, rows[0])
+                result['void_amount']      = cm(d.get('void amount', 0))
+                result['void_order_count'] = ci(d.get('void order count', 0))
+                result['void_item_count']  = ci(d.get('void item count', 0))
+
+            # ── Service charge summary ─────────────────────────────────────────
+            headers, rows = get('servicechargesummary')
+            for row in rows:
+                d = row_dict(headers, row)
+                name = d.get('service charge', row[0] if row else '')
+                if 'total' in name.lower():
+                    result['service_charge_count']  = ci(d.get('count', 0))
+                    result['total_service_charges'] = cm(d.get('amount', 0))
+
+            # ── Tax summary ────────────────────────────────────────────────────
+            headers, rows = get('taxsummary')
+            for row in rows:
+                d = row_dict(headers, row)
+                rate = d.get('tax rate', row[0] if row else '').lower()
+                if 'state' in rate or 'local' in rate:
+                    result['taxable_amount'] = cm(d.get('taxable amount', 0))
+                    break
+
+            # ── Payments summary ───────────────────────────────────────────────
+            # Skip sub-type rows (AMEX, VISA, etc. under Credit/debit)
+            headers, rows = get('paymentssummary')
+            sub_idx = headers.index('payment sub type') if 'payment sub type' in headers else -1
+            for row in rows:
+                d = row_dict(headers, row)
+                name = d.get('payment type', row[0] if row else '').strip()
+                if not name or name.lower() == 'total':
+                    continue
+                if sub_idx >= 0 and sub_idx < len(row) and row[sub_idx].strip():
+                    continue  # skip AMEX/VISA/etc sub-type rows
+                result['payments'].append({
+                    'type':    name,
+                    'amount':  cm(d.get('amount', 0)),
+                    'tips':    cm(d.get('tips', 0)),
+                    'grat':    cm(d.get('grat', 0)),
+                    'refunds': cm(d.get('refunds', 0)),
+                    'total':   cm(d.get('total', 0)),
+                })
+
+            # ── Sales category summary ─────────────────────────────────────────
+            headers, rows = get('salescategorysummary')
+            for row in rows:
+                d = row_dict(headers, row)
+                name = d.get('sales category', row[0] if row else '').strip()
+                if not name or name.lower() == 'total':
+                    continue
+                result['categories'].append({
+                    'category':    name,
+                    'items':       ci(d.get('items', 0)),
+                    'net_sales':   cm(d.get('net sales', 0)),
+                    'gross_sales': cm(d.get('gross sales', 0)),
+                })
+
+            # ── Revenue center summary ─────────────────────────────────────────
+            headers, rows = get('revenuecentersummary')
+            for row in rows:
+                d = row_dict(headers, row)
+                name = d.get('revenue center', row[0] if row else '').strip()
+                if not name or name.lower() == 'total':
+                    continue
+                result['revenue_centers'].append({
+                    'center':      name,
+                    'items':       ci(d.get('items', 0)),
+                    'net_sales':   cm(d.get('net sales', 0)),
+                    'gross_sales': cm(d.get('gross sales', 0)),
+                })
+
+            # ── Dining options summary ─────────────────────────────────────────
+            headers, rows = get('diningoptionssummary')
+            for row in rows:
+                d = row_dict(headers, row)
+                name = d.get('dining option', row[0] if row else '').strip()
+                if not name or name.lower() == 'total':
+                    continue
+                result['dining_options'].append({
+                    'option':      name,
+                    'orders':      ci(d.get('orders', 0)),
+                    'net_sales':   cm(d.get('net sales', 0)),
+                    'gross_sales': cm(d.get('gross sales', 0)),
+                })
+
+            # ── Service mode summary ───────────────────────────────────────────
+            headers, rows = get('servicemodesummary')
+            for row in rows:
+                d = row_dict(headers, row)
+                mode = d.get('service mode', row[0] if row else '').strip().lower()
+                if mode == 'quick service':
+                    result['quick_service_net'] = cm(d.get('net sales', 0))
+                elif mode == 'table service':
+                    result['table_service_net'] = cm(d.get('net sales', 0))
+                elif mode == 'total':
+                    result['total_guests']  = ci(d.get('total guests', 0))
+                    result['total_orders']  = ci(d.get('total orders', 0))
+                    result['avg_per_guest'] = cm(d.get('avg/guest', 0))
+                    result['avg_per_order'] = cm(d.get('avg/order', 0))
+
+            # ── Discounts (merge Menu Item Discounts + Check Discounts) ─────────
+            for bn_key in ['menuitemdiscounts', 'checkdiscounts']:
+                headers, rows = get(bn_key)
+                for row in rows:
+                    d = row_dict(headers, row)
+                    name = d.get('discount', row[0] if row else '').strip()
+                    if not name or name.lower() == 'total':
+                        continue
+                    result['discounts'].append({
+                        'name':   name,
+                        'count':  ci(d.get('count', 0)),
+                        'amount': cm(d.get('amount', 0)),
+                    })
+            # Compute totals from accumulated discounts
+            if result['discounts']:
+                result['total_discount_count']   = sum(d['count']  for d in result['discounts'])
+                result['total_discounts_amount'] = sum(d['amount'] for d in result['discounts'])
+
+    except zipfile.BadZipFile:
+        raise ValueError('Uploaded file is not a valid ZIP archive.')
+
+    return result
+
+
+@app.route('/admin/sales-dashboard')
+def sales_dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if not authorized('view_sales_dashboard'):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('home'))
+
+    reports = WeeklySalesReport.query.order_by(WeeklySalesReport.week_start.desc()).all()
+
+    # Which week to show — default to most recent
+    selected_id = request.args.get('id', type=int)
+    report = None
+    if selected_id:
+        report = WeeklySalesReport.query.get(selected_id)
+    if not report and reports:
+        report = reports[0]
+
+    # Parse JSON breakdowns
+    payments = []
+    categories = []
+    revenue_centers = []
+    dining_options = []
+    discounts = []
+    if report:
+        try:
+            payments        = json.loads(report.payments_json or '[]')
+            categories      = json.loads(report.categories_json or '[]')
+            revenue_centers = json.loads(report.revenue_centers_json or '[]')
+            dining_options  = json.loads(report.dining_options_json or '[]')
+            discounts       = json.loads(report.discounts_json or '[]')
+        except Exception:
+            pass
+
+    # Labor data for selected period
+    labor = None
+    labor_employees = []
+    labor_jobs = []
+    labor_pct = None
+    rev_per_hour = None
+    cost_per_hour = None
+    filtered_hours = 0.0
+    filtered_cost = 0.0
+    filtered_ot_cost = 0.0
+    if report:
+        labor = LaborReport.query.filter_by(week_start=report.week_start).first()
+        if labor:
+            try:
+                all_emps = json.loads(labor.employees_json or '[]')
+                labor_employees = [e for e in all_emps if not e.get('excluded')]
+                labor_jobs = [j for j in json.loads(labor.jobs_json or '[]')
+                              if not _is_labor_excluded('', j.get('job', ''))]
+            except Exception:
+                pass
+            filtered_hours   = sum(e.get('hours', 0)       for e in labor_employees) or labor.total_hours
+            filtered_cost    = sum(e.get('total_pay', 0)   for e in labor_employees) or labor.total_cost
+            filtered_ot_cost = sum(e.get('ot_pay', 0)      for e in labor_employees) or labor.overtime_cost
+            if report.net_sales:
+                labor_pct = round(filtered_cost / report.net_sales * 100, 1)
+            if filtered_hours:
+                cost_per_hour = round(filtered_cost / filtered_hours, 2)
+                if report.net_sales:
+                    rev_per_hour = round(report.net_sales / filtered_hours, 2)
+
+    # Trend data for chart (all weeks, ascending)
+    trend_reports  = WeeklySalesReport.query.order_by(WeeklySalesReport.week_start.asc()).all()
+    labor_by_start = {lr.week_start: lr for lr in LaborReport.query.all()}
+
+    def _tlabor_cost(r):
+        lr = labor_by_start.get(r.week_start)
+        if not lr:
+            return None
+        try:
+            emps = json.loads(lr.employees_json or '[]')
+            active = [e for e in emps if not e.get('excluded')]
+            c = sum(e.get('total_pay', 0) for e in active)
+            return c if c else lr.total_cost
+        except Exception:
+            return lr.total_cost
+
+    trend_labels   = [r.week_start.strftime('%b %d') for r in trend_reports]
+    trend_net      = [r.net_sales    for r in trend_reports]
+    trend_total    = [r.total_amount for r in trend_reports]
+    trend_gratuity = [r.gratuity     for r in trend_reports]
+    trend_tips     = [r.tips         for r in trend_reports]
+    trend_labor    = [_tlabor_cost(r) for r in trend_reports]  # None where no labor uploaded
+
+    return render_template(
+        'admin_sales_dashboard.html',
+        reports=reports,
+        report=report,
+        payments=payments,
+        categories=categories,
+        revenue_centers=revenue_centers,
+        dining_options=dining_options,
+        discounts=discounts,
+        labor=labor,
+        labor_employees=labor_employees,
+        labor_jobs=labor_jobs,
+        labor_pct=labor_pct,
+        rev_per_hour=rev_per_hour,
+        cost_per_hour=cost_per_hour,
+        filtered_hours=filtered_hours,
+        filtered_cost=filtered_cost,
+        filtered_ot_cost=filtered_ot_cost,
+        can_upload_labor=authorized('upload_labor_report'),
+        trend_labels=json.dumps(trend_labels),
+        trend_net=json.dumps(trend_net),
+        trend_total=json.dumps(trend_total),
+        trend_gratuity=json.dumps(trend_gratuity),
+        trend_tips=json.dumps(trend_tips),
+        trend_labor=json.dumps(trend_labor),
+        can_upload=authorized('upload_sales_report'),
+        can_delete=authorized('delete_sales_report'),
+    )
+
+
+@app.route('/admin/sales-upload', methods=['POST'])
+def sales_upload():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if not authorized('upload_sales_report'):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    f = request.files.get('sales_pdf')
+    if not f or not f.filename:
+        flash('No file selected.', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    filename = secure_filename(f.filename)
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+    if ext not in ('pdf', 'zip'):
+        flash('Only PDF or ZIP files are accepted.', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    file_bytes = f.read()
+    try:
+        if ext == 'zip':
+            data = _parse_toast_csv_zip(file_bytes, original_filename=filename)
+        else:
+            data = _parse_toast_sales_pdf(file_bytes)
+    except Exception as e:
+        flash(f'Error parsing file: {e}', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    # Allow manual date overrides from the form
+    override_start = request.form.get('override_start', '').strip()
+    override_end   = request.form.get('override_end', '').strip()
+    period_label   = request.form.get('period_label', '').strip()
+    period_type    = request.form.get('period_type', 'weekly').strip()
+
+    if override_start:
+        try:
+            data['week_start'] = datetime.strptime(override_start, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid start date format — use YYYY-MM-DD.', 'danger')
+            return redirect(url_for('sales_dashboard'))
+
+    if override_end:
+        try:
+            data['week_end'] = datetime.strptime(override_end, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid end date format — use YYYY-MM-DD.', 'danger')
+            return redirect(url_for('sales_dashboard'))
+
+    if not data.get('week_start') or not data.get('week_end'):
+        flash('Could not determine date range. Please set the Start and End dates manually.', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    if not period_label:
+        period_label = f'{data["week_start"]} – {data["week_end"]}'
+
+    # Check for duplicate — match on exact start date
+    existing = WeeklySalesReport.query.filter_by(week_start=data['week_start']).first()
+    if existing:
+        rpt = existing
+        flash(f'Existing data for period starting {data["week_start"]} has been updated.', 'warning')
+    else:
+        rpt = WeeklySalesReport()
+        db.session.add(rpt)
+
+    rpt.week_start        = data['week_start']
+    rpt.week_end          = data['week_end']
+    rpt.period_label      = period_label
+    rpt.period_type       = period_type
+    rpt.location          = data.get('location') or request.form.get('location_override', '').strip()
+    rpt.original_filename = filename
+    rpt.uploaded_at       = datetime.utcnow()
+
+    for field in [
+        'net_sales', 'gratuity', 'tax_amount', 'tips', 'paid_in_total', 'total_amount',
+        'gross_sales', 'sales_discounts', 'sales_refunds',
+        'tips_collected', 'tips_refunded', 'tips_withheld', 'tips_after_withholding',
+        'expected_closeout_cash', 'actual_closeout_cash', 'cash_overage', 'total_cash_payments',
+        'quick_service_net', 'table_service_net', 'total_guests', 'avg_per_guest',
+        'total_orders', 'avg_per_order',
+        'void_amount', 'void_order_count', 'void_item_count',
+        'total_discounts_amount', 'total_discount_count',
+        'total_service_charges', 'service_charge_count',
+        'taxable_amount',
+    ]:
+        setattr(rpt, field, data.get(field, 0))
+
+    rpt.payments_json        = json.dumps(data.get('payments', []))
+    rpt.categories_json      = json.dumps(data.get('categories', []))
+    rpt.revenue_centers_json = json.dumps(data.get('revenue_centers', []))
+    rpt.dining_options_json  = json.dumps(data.get('dining_options', []))
+    rpt.discounts_json       = json.dumps(data.get('discounts', []))
+
+    db.session.commit()
+    log_audit('report', f'Uploaded sales report for week {data["week_start"]}')
+
+    if not existing:
+        flash(f'Sales report for week of {data["week_start"]} uploaded successfully!', 'success')
+
+    return redirect(url_for('sales_dashboard', id=rpt.id))
+
+
+@app.route('/admin/sales-delete/<int:report_id>', methods=['POST'])
+def sales_delete(report_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if not authorized('delete_sales_report'):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    rpt = WeeklySalesReport.query.get_or_404(report_id)
+    label = str(rpt.week_start)
+    db.session.delete(rpt)
+    db.session.commit()
+    log_audit('report', f'Deleted sales report for week {label}')
+    flash(f'Sales report for week of {label} deleted.', 'success')
+    return redirect(url_for('sales_dashboard'))
+
+
+@app.route('/admin/sales-debug-parse', methods=['GET', 'POST'])
+def sales_debug_parse():
+    """Admin-only: upload a PDF and see raw pdfplumber text + detected sections."""
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return 'Unauthorized', 403
+    if request.method == 'GET':
+        return '''<!doctype html><html><body style="font-family:monospace;padding:2rem;">
+        <h2>PDF Debug Parser</h2>
+        <form method="post" enctype="multipart/form-data">
+          <input type="file" name="pdf" accept=".pdf" required>
+          <button type="submit">Parse &amp; Show</button>
+        </form></body></html>'''
+
+    import pdfplumber
+    f = request.files.get('pdf')
+    if not f:
+        return 'No file', 400
+    pdf_bytes = f.read()
+    MONEY_RE = re.compile(r'-?\$[\d,]+(?:\.\d+)?')
+    SECTION_PATTERNS = [
+        (re.compile(r'^revenue\s+summary$',              re.I), 'Revenue Summary'),
+        (re.compile(r'^net\s+sales\s+summary$',          re.I), 'Net Sales Summary'),
+        (re.compile(r'^tip\s+summary$',                  re.I), 'Tip Summary'),
+        (re.compile(r'^cash\s+summary$',                 re.I), 'Cash Summary'),
+        (re.compile(r'^cash\s+activity$',                re.I), 'Cash Activity'),
+        (re.compile(r'^payments?\s+summary$',            re.I), 'Payments Summary'),
+        (re.compile(r'^unpaid\s+orders?\s+summary$',     re.I), 'Unpaid Orders Summary'),
+        (re.compile(r'^sales\s+category\s+summary$',     re.I), 'Sales Category Summary'),
+        (re.compile(r'^revenue\s+center\s+summary$',     re.I), 'Revenue Center Summary'),
+        (re.compile(r'^dining\s+option\s+summary$',      re.I), 'Dining Option Summary'),
+        (re.compile(r'^service\s+mode\s+summary$',       re.I), 'Service Mode Summary'),
+        (re.compile(r'^service\s+charge\s+summary$',     re.I), 'Service Charge Summary'),
+        (re.compile(r'^discount\s+summary$',             re.I), 'Discount Summary'),
+        (re.compile(r'^void\s+summary$',                 re.I), 'Void Summary'),
+        (re.compile(r'^tax\s+summary$',                  re.I), 'Tax Summary'),
+        (re.compile(r'^service\s*/\s*daypart\s+summary$',re.I), 'Daypart Summary'),
+    ]
+    sections = {name: [] for _, name in SECTION_PATTERNS}
+    current_section = None
+    raw_text = ''
+    annotated = []
+    try:
+        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+            for page in pdf.pages:
+                t = page.extract_text() or ''
+                raw_text += t + '\n'
+    except Exception as e:
+        return f'<pre>Error: {e}</pre>'
+
+    lines = [l.rstrip() for l in raw_text.split('\n')]
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            annotated.append(f'[blank]')
+            continue
+        matched = False
+        for pat, name in SECTION_PATTERNS:
+            if pat.match(stripped):
+                current_section = name
+                annotated.append(f'[SECTION: {name}] {stripped}')
+                matched = True
+                break
+        if not matched:
+            money = MONEY_RE.findall(stripped)
+            tag = f'[{current_section or "NO-SECTION"}]'
+            if money:
+                sections[current_section or ''].append(stripped) if current_section else None
+                annotated.append(f'{tag} {stripped}  ← money: {money}')
+            else:
+                annotated.append(f'{tag} {stripped}')
+
+    import html as _html
+    parsed = _parse_toast_sales_pdf(pdf_bytes)
+    parsed_html = '<br>'.join(
+        f'<b>{k}</b>: {v}' for k, v in parsed.items()
+        if k not in ('payments', 'categories', 'revenue_centers', 'dining_options', 'discounts')
+    )
+    section_html = ''
+    for sname, slines in sections.items():
+        if slines:
+            section_html += f'<h4 style="margin-top:1rem">{sname}</h4><pre style="background:#111;color:#0f0;padding:.5rem">'
+            section_html += _html.escape('\n'.join(slines))
+            section_html += '</pre>'
+
+    body = f'''<!doctype html><html><body style="font-family:monospace;background:#1a1a1a;color:#eee;padding:2rem">
+<h2>Parsed Values</h2><p>{parsed_html}</p>
+<h2>Detected Sections</h2>{section_html}
+<h2>Annotated Lines</h2>
+<pre style="background:#111;color:#aaa;padding:1rem;overflow:auto;max-height:80vh">{_html.escape(chr(10).join(annotated))}</pre>
+<h2>Raw Text</h2>
+<pre style="background:#0a0a0a;color:#888;padding:1rem;overflow:auto;max-height:60vh">{_html.escape(raw_text)}</pre>
+</body></html>'''
+    return body
+
+
+@app.route('/admin/sales-debug-zip', methods=['GET', 'POST'])
+def sales_debug_zip():
+    """Admin-only: upload a ZIP and see every CSV filename, header row, and first 5 rows."""
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return 'Unauthorized', 403
+    if request.method == 'GET':
+        return '''<!doctype html><html><body style="font-family:monospace;padding:2rem;background:#1a1a1a;color:#eee;">
+        <h2>ZIP Debug Inspector</h2>
+        <form method="post" enctype="multipart/form-data">
+          <input type="file" name="zip" accept=".zip" required style="color:#eee">
+          <button type="submit" style="margin-left:1rem">Inspect ZIP</button>
+        </form></body></html>'''
+    import zipfile, csv as _csv
+    import io as _io
+    f = request.files.get('zip')
+    if not f:
+        return 'No file', 400
+    zip_bytes = f.read()
+    import html as _html
+    out = ['<html><body style="font-family:monospace;background:#1a1a1a;color:#eee;padding:2rem">']
+    out.append(f'<h2>ZIP: {_html.escape(f.filename)}</h2>')
+    try:
+        with zipfile.ZipFile(_io.BytesIO(zip_bytes)) as zf:
+            names = sorted(zf.namelist())
+            out.append(f'<p><b>{len(names)} files total</b></p>')
+            for fname in names:
+                basename = fname.split('/')[-1]
+                out.append(f'<h3 style="color:#f5b45c;margin-top:2rem">{_html.escape(fname)}</h3>')
+                if not fname.lower().endswith('.csv'):
+                    out.append('<p style="color:#888">Not a CSV — skipped</p>')
+                    continue
+                try:
+                    raw = zf.read(fname).decode('utf-8-sig', errors='replace')
+                    reader = _csv.reader(_io.StringIO(raw))
+                    rows = list(reader)
+                    out.append(f'<p style="color:#888">{len(rows)} rows total</p>')
+                    # Show first 8 rows as a table
+                    out.append('<div style="overflow-x:auto"><table border="1" style="border-collapse:collapse;font-size:0.8rem">')
+                    for ri, row in enumerate(rows[:8]):
+                        style = 'background:#2a2a2a' if ri == 0 else ''
+                        out.append(f'<tr style="{style}">')
+                        for cell in row:
+                            out.append(f'<td style="padding:4px 8px;border-color:#444">{_html.escape(str(cell))}</td>')
+                        out.append('</tr>')
+                    out.append('</table></div>')
+                except Exception as e:
+                    out.append(f'<p style="color:red">Error: {_html.escape(str(e))}</p>')
+    except zipfile.BadZipFile:
+        out.append('<p style="color:red">Not a valid ZIP file.</p>')
+    out.append('</body></html>')
+    return ''.join(out)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# LABOR / PAYROLL MODULE
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Employees/roles to exclude from all labor cost & hour calculations.
+# These are internal/system entries (POS terminals, bar computers, etc.)
+LABOR_EXCLUDED_NAMES = {
+    'low bar, tdr',
+    'main bar, tdr',
+    'bar computer',
+    'room 120',
+    'room 120 bartender',
+    'room 120 computer',
+}
+
+
+def _is_labor_excluded(name, job=''):
+    """Return True if this employee/role should be excluded from labor totals."""
+    n = (name or '').strip().lower()
+    j = (job  or '').strip().lower()
+    return n in LABOR_EXCLUDED_NAMES or j in LABOR_EXCLUDED_NAMES
+
+
+def _parse_labor_csv_zip(zip_bytes, original_filename=''):
+    """Parse a Toast Labor / Employee ZIP export.
+
+    Toast labor ZIPs typically contain one or more of:
+      - A shift-level CSV with columns: Employee Name, Job/Role, Date, In, Out,
+        Regular Hours, Overtime Hours, Total Hours, Regular Pay, OT Pay, Total Pay
+      - A summary CSV with period totals
+      - Variations depending on Toast version
+
+    The parser reads every CSV and tries to detect the format from the column headers.
+    Date range is extracted from the filename (YYYY-MM-DD_YYYY-MM-DD).
+    """
+    import zipfile, csv as _csv, io as _io
+
+    result = {
+        'week_start': None, 'week_end': None,
+        'total_hours': 0.0, 'regular_hours': 0.0, 'overtime_hours': 0.0,
+        'total_cost': 0.0,  'regular_cost': 0.0,  'overtime_cost': 0.0,
+        'shift_count': 0,   'employee_count': 0,
+        'employees': [],    'jobs': [],
+    }
+
+    def cm(s):
+        try:
+            return float(str(s).strip().replace(',', '').replace('$', ''))
+        except Exception:
+            return 0.0
+
+    def ch(s):
+        """Parse hours that may be 'H:MM' or a decimal float."""
+        s = str(s).strip()
+        if ':' in s:
+            parts = s.split(':')
+            try:
+                return int(parts[0]) + int(parts[1]) / 60.0
+            except Exception:
+                return 0.0
+        return cm(s)
+
+    # Extract dates from filename
+    date_m = re.search(r'(\d{4}-\d{2}-\d{2})[_\-](\d{4}-\d{2}-\d{2})', original_filename)
+    if date_m:
+        try:
+            result['week_start'] = datetime.strptime(date_m.group(1), '%Y-%m-%d').date()
+            result['week_end']   = datetime.strptime(date_m.group(2), '%Y-%m-%d').date()
+        except Exception:
+            pass
+
+    try:
+        with zipfile.ZipFile(_io.BytesIO(zip_bytes)) as zf:
+            for fname in sorted(zf.namelist()):
+                if not fname.lower().endswith('.csv'):
+                    continue
+                try:
+                    raw = zf.read(fname).decode('utf-8-sig', errors='replace')
+                except Exception:
+                    continue
+                rows = list(_csv.reader(_io.StringIO(raw)))
+                rows = [r for r in rows if any(c.strip() for c in r)]
+                if len(rows) < 2:
+                    continue
+
+                headers = [h.strip().lower() for h in rows[0]]
+
+                def hdr(*candidates):
+                    for c in candidates:
+                        if c in headers:
+                            return headers.index(c)
+                    return -1
+
+                # Toast "Labor cost by job" format uses last name / first name columns
+                # and "total cost" / "regular cost" / "overtime cost" instead of "pay"
+                has_firstname = hdr('first name', 'firstname') >= 0
+                has_lastname  = hdr('last name',  'lastname')  >= 0
+                has_employee  = hdr('employee', 'employee name', 'name') >= 0 or has_firstname or has_lastname
+                has_hours     = hdr('total hours', 'hours', 'reg hours', 'regular hours') >= 0
+                has_pay       = hdr('total pay', 'gross pay', 'regular pay', 'total wages',
+                                    'total cost', 'regular cost', 'overtime cost') >= 0
+
+                # Also handle the summary CSV ("Labor cost summary.csv")
+                if 'labor cost' in headers and 'net sales' in headers and not has_employee:
+                    d = dict(zip(headers, [c.strip() for c in rows[1]] if len(rows) > 1 else []))
+                    lc = cm(d.get('labor cost', 0))
+                    if lc > 0 and result['total_cost'] == 0.0:
+                        result['total_cost'] = lc
+                    app.logger.info(f'  → summary CSV, labor cost={lc}')
+                    continue
+
+                if has_employee and (has_hours or has_pay):
+                    # Column indices — Toast uses first name + last name separately
+                    fn_idx   = hdr('first name', 'firstname')
+                    ln_idx   = hdr('last name',  'lastname')
+                    emp_idx  = hdr('employee', 'employee name', 'name')
+                    job_idx  = hdr('job title', 'job', 'role', 'position', 'department')
+                    reg_h    = hdr('regular hours', 'reg hours', 'regular hrs', 'reg. hours')
+                    ot_h     = hdr('overtime hours', 'ot hours', 'overtime hrs', 'ot hrs')
+                    tot_h    = hdr('total hours', 'hours', 'total hrs')
+                    reg_p    = hdr('regular cost', 'regular pay', 'reg pay', 'regular wages')
+                    ot_p     = hdr('overtime cost', 'overtime pay', 'ot pay', 'overtime wages')
+                    tot_p    = hdr('total cost', 'total pay', 'gross pay', 'total wages')
+
+                    def get(row, idx, fn=cm):
+                        if idx >= 0 and idx < len(row):
+                            return fn(row[idx])
+                        return 0.0
+
+                    def emp_name(row):
+                        if fn_idx >= 0 or ln_idx >= 0:
+                            fn = row[fn_idx].strip() if fn_idx >= 0 and fn_idx < len(row) else ''
+                            ln = row[ln_idx].strip() if ln_idx >= 0 and ln_idx < len(row) else ''
+                            full = f'{fn} {ln}'.strip()
+                            return full if full else 'Unknown'
+                        if emp_idx >= 0 and emp_idx < len(row):
+                            return row[emp_idx].strip()
+                        return 'Unknown'
+
+                    emp_map = {}  # name → {hours, regular_pay, ot_pay, total_pay, job}
+                    job_map = {}  # job  → {hours, cost}
+
+                    for row in rows[1:]:
+                        if not row or not any(c.strip() for c in row):
+                            continue
+                        name = emp_name(row)
+                        if not name or name.lower() in ('total', 'totals', ' ', ''):
+                            continue
+
+                        job = row[job_idx].strip() if job_idx >= 0 and job_idx < len(row) else ''
+                        rh  = get(row, reg_h, ch)
+                        oh  = get(row, ot_h,  ch)
+                        th  = get(row, tot_h, ch) or (rh + oh)
+                        rp  = get(row, reg_p)
+                        op  = get(row, ot_p)
+                        tp  = get(row, tot_p) or (rp + op)
+
+                        if th == 0.0 and tp == 0.0:
+                            continue  # skip blank/zero rows
+
+                        excluded = _is_labor_excluded(name, job)
+                        result['shift_count'] += 1
+
+                        if name not in emp_map:
+                            emp_map[name] = {'name': name, 'job': job,
+                                             'hours': 0.0, 'regular_pay': 0.0,
+                                             'ot_pay': 0.0, 'total_pay': 0.0,
+                                             'excluded': excluded}
+                        emp_map[name]['hours']       += th
+                        emp_map[name]['regular_pay'] += rp
+                        emp_map[name]['ot_pay']      += op
+                        emp_map[name]['total_pay']   += tp
+                        if job and not emp_map[name]['job']:
+                            emp_map[name]['job'] = job
+
+                        if job and not excluded:
+                            if job not in job_map:
+                                job_map[job] = {'job': job, 'hours': 0.0, 'cost': 0.0}
+                            job_map[job]['hours'] += th
+                            job_map[job]['cost']  += tp
+
+                    result['employees'] = sorted(emp_map.values(), key=lambda e: -e['total_pay'])
+                    result['jobs']      = sorted(job_map.values(), key=lambda j: -j['cost'])
+                    result['employee_count'] = sum(1 for e in emp_map.values() if not e.get('excluded'))
+
+                    active = [e for e in emp_map.values() if not e.get('excluded')]
+                    if active:
+                        result['total_hours']   = sum(e['hours']       for e in active)
+                        result['total_cost']    = sum(e['total_pay']   for e in active)
+                        result['regular_cost']  = sum(e['regular_pay'] for e in active)
+                        result['overtime_cost'] = sum(e['ot_pay']      for e in active)
+                    app.logger.info(f'  → parsed {len(emp_map)} employees, total_cost={result["total_cost"]:.2f}')
+
+    except zipfile.BadZipFile:
+        raise ValueError('Uploaded file is not a valid ZIP archive.')
+
+    return result
+
+
+@app.route('/admin/labor-debug-zip', methods=['GET', 'POST'])
+def labor_debug_zip():
+    """Admin-only: inspect a labor ZIP — shows every CSV's headers and first 8 rows."""
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return 'Unauthorized', 403
+    if request.method == 'GET':
+        return '''<!doctype html><html><body style="font-family:monospace;padding:2rem;background:#1a1a1a;color:#eee;">
+        <h2>Labor ZIP Inspector</h2>
+        <form method="post" enctype="multipart/form-data">
+          <input type="file" name="zip" accept=".zip" required style="color:#eee">
+          <button type="submit" style="margin-left:1rem">Inspect</button>
+        </form></body></html>'''
+    import zipfile, csv as _csv
+    import io as _io, html as _html
+    f = request.files.get('zip')
+    if not f:
+        return 'No file', 400
+    out = [f'<html><body style="font-family:monospace;background:#1a1a1a;color:#eee;padding:2rem"><h2>Labor ZIP: {_html.escape(f.filename)}</h2>']
+    try:
+        with zipfile.ZipFile(_io.BytesIO(f.read())) as zf:
+            for fname in sorted(zf.namelist()):
+                out.append(f'<h3 style="color:#f5b45c;margin-top:2rem">{_html.escape(fname)}</h3>')
+                if not fname.lower().endswith('.csv'):
+                    out.append('<p style="color:#888">Skipped (not CSV)</p>'); continue
+                raw  = zf.read(fname).decode('utf-8-sig', errors='replace')
+                rows = list(_csv.reader(_io.StringIO(raw)))
+                rows = [r for r in rows if any(c.strip() for c in r)]
+                out.append(f'<p style="color:#888">{len(rows)} rows</p>')
+                out.append('<div style="overflow-x:auto"><table border="1" style="border-collapse:collapse;font-size:0.8rem">')
+                for ri, row in enumerate(rows[:8]):
+                    style = 'background:#2a2a2a' if ri == 0 else ''
+                    out.append(f'<tr style="{style}">')
+                    for cell in row:
+                        out.append(f'<td style="padding:4px 8px;border-color:#444">{_html.escape(str(cell))}</td>')
+                    out.append('</tr>')
+                out.append('</table></div>')
+    except zipfile.BadZipFile:
+        out.append('<p style="color:red">Not a valid ZIP file.</p>')
+    out.append('</body></html>')
+    return ''.join(out)
+
+
+@app.route('/admin/labor-upload', methods=['POST'])
+def labor_upload():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if not authorized('upload_labor_report'):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    f = request.files.get('labor_zip')
+    if not f or not f.filename:
+        flash('No file selected.', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    filename = secure_filename(f.filename)
+    if not filename.lower().endswith('.zip'):
+        flash('Only ZIP files are accepted for labor data.', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    file_bytes = f.read()
+    try:
+        data = _parse_labor_csv_zip(file_bytes, original_filename=filename)
+    except Exception as e:
+        flash(f'Error parsing labor ZIP: {e}', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    # Manual date overrides
+    override_start = request.form.get('override_start', '').strip()
+    override_end   = request.form.get('override_end',   '').strip()
+    period_label   = request.form.get('period_label',   '').strip()
+    period_type    = request.form.get('period_type', 'weekly').strip()
+
+    if override_start:
+        try:
+            data['week_start'] = datetime.strptime(override_start, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid start date.', 'danger')
+            return redirect(url_for('sales_dashboard'))
+    if override_end:
+        try:
+            data['week_end'] = datetime.strptime(override_end, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Invalid end date.', 'danger')
+            return redirect(url_for('sales_dashboard'))
+
+    if not data.get('week_start') or not data.get('week_end'):
+        flash('Could not determine date range — set Start and End dates manually.', 'danger')
+        return redirect(url_for('sales_dashboard'))
+
+    if not period_label:
+        period_label = f'{data["week_start"]} – {data["week_end"]}'
+
+    existing = LaborReport.query.filter_by(week_start=data['week_start']).first()
+    if existing:
+        rpt = existing
+        flash(f'Labor data for period starting {data["week_start"]} updated.', 'warning')
+    else:
+        rpt = LaborReport()
+        db.session.add(rpt)
+
+    rpt.week_start        = data['week_start']
+    rpt.week_end          = data['week_end']
+    rpt.period_label      = period_label
+    rpt.period_type       = period_type
+    rpt.uploaded_at       = datetime.utcnow()
+    rpt.original_filename = filename
+
+    for field in ['total_hours', 'regular_hours', 'overtime_hours',
+                  'total_cost', 'regular_cost', 'overtime_cost',
+                  'shift_count', 'employee_count']:
+        setattr(rpt, field, data.get(field, 0))
+
+    rpt.employees_json = json.dumps(data.get('employees', []))
+    rpt.jobs_json      = json.dumps(data.get('jobs', []))
+
+    db.session.commit()
+    log_audit('labor', f'Uploaded labor report for period {data["week_start"]}')
+    if not existing:
+        flash(f'Labor report for {data["week_start"]} uploaded successfully!', 'success')
+
+    # Redirect to the matching sales period so both are shown together
+    sales_rpt = WeeklySalesReport.query.filter_by(week_start=rpt.week_start).first()
+    if sales_rpt:
+        return redirect(url_for('sales_dashboard', id=sales_rpt.id))
+    return redirect(url_for('sales_dashboard'))
+
+
+@app.route('/admin/labor-delete/<int:report_id>', methods=['POST'])
+def labor_delete(report_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if not authorized('delete_labor_report'):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('sales_dashboard'))
+    rpt = LaborReport.query.get_or_404(report_id)
+    label = str(rpt.week_start)
+    db.session.delete(rpt)
+    db.session.commit()
+    log_audit('labor', f'Deleted labor report for period {label}')
+    flash(f'Labor report for {label} deleted.', 'success')
+    return redirect(url_for('sales_dashboard'))
+
+
+@app.route('/admin/labor-dashboard')
+def labor_dashboard():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if not authorized('view_labor_dashboard'):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('home'))
+
+    reports = LaborReport.query.order_by(LaborReport.week_start.desc()).all()
+
+    selected_id = request.args.get('id', type=int)
+    report = None
+    if selected_id:
+        report = LaborReport.query.get(selected_id)
+    if not report and reports:
+        report = reports[0]
+
+    employees_all = []
+    jobs          = []
+    if report:
+        try:
+            employees_all = json.loads(report.employees_json or '[]')
+            jobs          = json.loads(report.jobs_json      or '[]')
+        except Exception:
+            pass
+
+    # Split active vs excluded employees for display
+    employees         = [e for e in employees_all if not e.get('excluded')]
+    employees_excluded = [e for e in employees_all if e.get('excluded')]
+
+    # Recalculate filtered totals from active employees (handles both old and new uploads)
+    filtered_hours   = sum(e.get('hours', 0)       for e in employees)
+    filtered_cost    = sum(e.get('total_pay', 0)   for e in employees)
+    filtered_reg_cost= sum(e.get('regular_pay', 0) for e in employees)
+    filtered_ot_cost = sum(e.get('ot_pay', 0)      for e in employees)
+    # Fall back to stored totals if per-employee data not present
+    if not employees and report:
+        filtered_hours    = report.total_hours
+        filtered_cost     = report.total_cost
+        filtered_reg_cost = report.regular_cost
+        filtered_ot_cost  = report.overtime_cost
+
+    # Filter jobs list to exclude any job present only in excluded employees
+    jobs = [j for j in jobs if not _is_labor_excluded('', j.get('job', ''))]
+
+    # Match to a sales report for the same period (for labor % calculations)
+    sales = None
+    if report:
+        sales = WeeklySalesReport.query.filter_by(week_start=report.week_start).first()
+
+    labor_pct     = round(filtered_cost / sales.net_sales * 100, 1) if (sales and sales.net_sales and filtered_cost) else None
+    rev_per_hour  = round(sales.net_sales / filtered_hours, 2)       if (sales and filtered_hours) else None
+    cost_per_hour = round(filtered_cost / filtered_hours, 2)          if filtered_hours else None
+
+    # Trend data (all periods) — use filtered totals derived from per-employee JSON
+    trend_reports = LaborReport.query.order_by(LaborReport.week_start.asc()).all()
+    trend_sales   = {s.week_start: s for s in WeeklySalesReport.query.all()}
+
+    def _filtered_cost(r):
+        try:
+            emps = json.loads(r.employees_json or '[]')
+            active = [e for e in emps if not e.get('excluded')]
+            c = sum(e.get('total_pay', 0) for e in active)
+            return c if c else r.total_cost
+        except Exception:
+            return r.total_cost
+
+    def _filtered_hours(r):
+        try:
+            emps = json.loads(r.employees_json or '[]')
+            active = [e for e in emps if not e.get('excluded')]
+            h = sum(e.get('hours', 0) for e in active)
+            return h if h else r.total_hours
+        except Exception:
+            return r.total_hours
+
+    trend_labels    = [r.week_start.strftime('%b %d') for r in trend_reports]
+    trend_cost      = [_filtered_cost(r)              for r in trend_reports]
+    trend_hours     = [_filtered_hours(r)             for r in trend_reports]
+    trend_labor_pct = [
+        round(_filtered_cost(r) / trend_sales[r.week_start].net_sales * 100, 1)
+        if r.week_start in trend_sales and trend_sales[r.week_start].net_sales else 0
+        for r in trend_reports
+    ]
+    trend_net_sales = [
+        trend_sales[r.week_start].net_sales if r.week_start in trend_sales else 0
+        for r in trend_reports
+    ]
+
+    return render_template(
+        'admin_labor_dashboard.html',
+        reports=reports,
+        report=report,
+        employees=employees,
+        employees_excluded=employees_excluded,
+        jobs=jobs,
+        sales=sales,
+        filtered_hours=filtered_hours,
+        filtered_cost=filtered_cost,
+        filtered_ot_cost=filtered_ot_cost,
+        labor_pct=labor_pct,
+        rev_per_hour=rev_per_hour,
+        cost_per_hour=cost_per_hour,
+        # Chart.js — JSON strings
+        js_trend_labels=json.dumps(trend_labels),
+        js_trend_cost=json.dumps(trend_cost),
+        js_trend_hours=json.dumps(trend_hours),
+        js_trend_labor_pct=json.dumps(trend_labor_pct),
+        js_trend_net_sales=json.dumps(trend_net_sales),
+        # Jinja2 table — Python lists
+        trend_rows=list(zip(trend_labels, trend_net_sales, trend_cost, trend_labor_pct, trend_hours)),
+        can_upload=authorized('upload_labor_report'),
+        can_delete=authorized('delete_labor_report'),
+        excluded_names=sorted(LABOR_EXCLUDED_NAMES),
+    )
+
+
+@app.route('/admin/sales-export')
+def sales_export():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if not authorized('view_sales_dashboard'):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('home'))
+
+    start = request.args.get('start')
+    end   = request.args.get('end')
+
+    q = WeeklySalesReport.query.order_by(WeeklySalesReport.week_start.asc())
+    if start:
+        try:
+            q = q.filter(WeeklySalesReport.week_start >= datetime.strptime(start, '%Y-%m-%d').date())
+        except ValueError:
+            pass
+    if end:
+        try:
+            q = q.filter(WeeklySalesReport.week_end <= datetime.strptime(end, '%Y-%m-%d').date())
+        except ValueError:
+            pass
+
+    reports = q.all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        'Week Start', 'Week End', 'Location',
+        'Net Sales', 'Gross Sales', 'Sales Discounts', 'Sales Refunds',
+        'Gratuity', 'Tax', 'Tips', 'Total Amount',
+        'Tips Collected', 'Tips Withheld', 'Tips After Withholding',
+        'Cash Payments', 'Expected Closeout', 'Actual Closeout', 'Cash Overage',
+        'Total Guests', 'Total Orders', 'Avg/Guest', 'Avg/Order',
+        'Quick Service Net', 'Table Service Net',
+        'Void Amount', 'Void Orders', 'Void Items',
+        'Total Discounts', 'Total Service Charges',
+        'Taxable Amount',
+    ])
+    for r in reports:
+        writer.writerow([
+            r.week_start, r.week_end, r.location,
+            r.net_sales, r.gross_sales, r.sales_discounts, r.sales_refunds,
+            r.gratuity, r.tax_amount, r.tips, r.total_amount,
+            r.tips_collected, r.tips_withheld, r.tips_after_withholding,
+            r.total_cash_payments, r.expected_closeout_cash,
+            r.actual_closeout_cash, r.cash_overage,
+            r.total_guests, r.total_orders, r.avg_per_guest, r.avg_per_order,
+            r.quick_service_net, r.table_service_net,
+            r.void_amount, r.void_order_count, r.void_item_count,
+            r.total_discounts_amount, r.total_service_charges,
+            r.taxable_amount,
+        ])
+
+    output.seek(0)
+    return send_file(
+        io.BytesIO(output.read().encode()),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='sales_export.csv',
+    )
+
+
+@app.route('/admin/sales-report-builder')
+def sales_report_builder():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if not authorized('view_sales_dashboard'):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('home'))
+
+    # All weeks for filter dropdowns
+    reports = WeeklySalesReport.query.order_by(WeeklySalesReport.week_start.asc()).all()
+
+    start      = request.args.get('start')
+    end        = request.args.get('end')
+    chart_type = request.args.get('chart_type', 'line')
+    metrics    = request.args.getlist('metrics') or [
+        'net_sales', 'gratuity', 'tax_amount', 'tips', 'total_amount'
+    ]
+
+    q = WeeklySalesReport.query.order_by(WeeklySalesReport.week_start.asc())
+    if start:
+        try:
+            q = q.filter(WeeklySalesReport.week_start >= datetime.strptime(start, '%Y-%m-%d').date())
+        except ValueError:
+            pass
+    if end:
+        try:
+            q = q.filter(WeeklySalesReport.week_end <= datetime.strptime(end, '%Y-%m-%d').date())
+        except ValueError:
+            pass
+
+    filtered = q.all()
+
+    # Ordered list of (key, label) for template iteration
+    ALL_METRICS = [
+        ('net_sales',              'Net Sales'),
+        ('gross_sales',            'Gross Sales'),
+        ('total_amount',           'Total Revenue'),
+        ('gratuity',               'Gratuity'),
+        ('tax_amount',             'Tax'),
+        ('tips',                   'Tips'),
+        ('total_service_charges',  'Service Charges'),
+        ('tips_collected',         'Tips Collected'),
+        ('tips_withheld',          'Tips Withheld'),
+        ('tips_after_withholding', 'After Withholding'),
+        ('total_cash_payments',    'Cash Payments'),
+        ('expected_closeout_cash', 'Expected Closeout'),
+        ('actual_closeout_cash',   'Actual Closeout'),
+        ('cash_overage',           'Cash Overage'),
+        ('total_guests',           'Total Guests'),
+        ('total_orders',           'Total Orders'),
+        ('avg_per_guest',          'Avg / Guest'),
+        ('avg_per_order',          'Avg / Order'),
+        ('quick_service_net',      'Quick Service Net'),
+        ('table_service_net',      'Table Service Net'),
+        ('void_amount',            'Void Amount'),
+        ('total_discounts_amount', 'Total Discounts'),
+        ('sales_discounts',        'Sales Discounts'),
+        ('sales_refunds',          'Sales Refunds'),
+    ]
+    METRIC_LABELS = dict(ALL_METRICS)
+
+    colors = ['#f5b45c','#4bc4cf','#a8e063','#f7797d','#6a82fb',
+              '#ffd89b','#11998e','#fc5c7d','#a18cd1','#ffecd2']
+
+    labels = [
+        (r.period_label or f'{r.week_start} – {r.week_end}')
+        for r in filtered
+    ]
+    chart_datasets = []
+    for i, m in enumerate(metrics):
+        if m in METRIC_LABELS:
+            chart_datasets.append({
+                'label': METRIC_LABELS[m],
+                'data':  [getattr(r, m, 0) for r in filtered],
+                'color': colors[i % len(colors)],
+            })
+
+    return render_template(
+        'admin_sales_report_builder.html',
+        reports=reports,
+        filtered=filtered,
+        metrics=metrics,
+        all_metrics=ALL_METRICS,
+        metric_labels=METRIC_LABELS,
+        chart_type=chart_type,
+        start=start or '',
+        end=end or '',
+        labels=json.dumps(labels),
+        chart_datasets=json.dumps(chart_datasets),
+        can_export=authorized('export_report'),
+    )
+
+
+# =====================================================
 # SCHEDULED DAILY BACKUP (midnight EST)
 # =====================================================
 
@@ -5247,6 +6972,7 @@ def _run_scheduled_backup():
             ToastMemberSpending.__tablename__:  _dump(ToastMemberSpending),
             ToastSyncLog.__tablename__:         _dump(ToastSyncLog),
             SetupToken.__tablename__:           _dump(SetupToken),
+            WeeklySalesReport.__tablename__:    _dump(WeeklySalesReport),
         }
 
         fname = f'room120_backup_{datetime.utcnow().strftime("%Y%m%d_%H%M%S")}.json'

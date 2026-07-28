@@ -1,0 +1,404 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-3 px-md-4 mt-4">
+
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="page-title mb-0"><i class="fas fa-user-clock me-2" style="color:var(--accent)"></i>Labor &amp; Payroll</h2>
+      <p class="text-muted mb-0" style="font-size:0.82rem">Toast labor exports — filtered totals exclude system/POS entries</p>
+    </div>
+    {% if can_upload %}
+    <button class="btn btn-sm" style="background:var(--accent);color:#1a1a1a;font-weight:600"
+            data-bs-toggle="modal" data-bs-target="#uploadModal">
+      <i class="fas fa-upload me-1"></i>Upload Labor ZIP
+    </button>
+    {% endif %}
+  </div>
+
+  {% if not reports %}
+  <div class="text-center py-5">
+    <i class="fas fa-user-clock fa-3x mb-3" style="color:var(--accent);opacity:0.4"></i>
+    <p class="text-muted">No labor data uploaded yet.</p>
+    {% if can_upload %}
+    <button class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal">Upload Your First Labor ZIP</button>
+    {% endif %}
+  </div>
+
+  {% else %}
+
+  <!-- Period selector -->
+  <div class="row g-2 mb-4">
+    {% for r in reports %}
+    <div class="col-auto">
+      <a href="{{ url_for('labor_dashboard', id=r.id) }}"
+         class="btn btn-sm {% if report and report.id == r.id %}btn-warning{% else %}btn-outline-secondary{% endif %}"
+         style="font-size:0.78rem">
+        {{ r.week_start.strftime('%b %d') }} – {{ r.week_end.strftime('%b %d, %Y') }}
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if report %}
+  <!-- KPI cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="portal-card-box text-center">
+        <div class="text-muted" style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase">Total Labor Cost</div>
+        <div class="fw-bold mt-1" style="font-size:1.4rem;color:var(--accent)">${{ "%.2f"|format(filtered_cost) }}</div>
+        {% if labor_pct is not none %}
+        <div style="font-size:0.75rem;color:#aaa">{{ labor_pct }}% of net sales</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="portal-card-box text-center">
+        <div class="text-muted" style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase">Total Hours</div>
+        <div class="fw-bold mt-1" style="font-size:1.4rem;color:var(--accent)">{{ "%.1f"|format(filtered_hours) }}</div>
+        <div style="font-size:0.75rem;color:#aaa">{{ employees|length }} employees</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="portal-card-box text-center">
+        <div class="text-muted" style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase">Cost / Hour</div>
+        <div class="fw-bold mt-1" style="font-size:1.4rem;color:var(--accent)">
+          {% if cost_per_hour %}${{ "%.2f"|format(cost_per_hour) }}{% else %}—{% endif %}
+        </div>
+        <div style="font-size:0.75rem;color:#aaa">avg effective rate</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="portal-card-box text-center">
+        <div class="text-muted" style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase">Revenue / Hour</div>
+        <div class="fw-bold mt-1" style="font-size:1.4rem;color:var(--accent)">
+          {% if rev_per_hour %}${{ "%.2f"|format(rev_per_hour) }}{% else %}—{% endif %}
+        </div>
+        <div style="font-size:0.75rem;color:#aaa">
+          {% if sales %}net sales ${{ "%.0f"|format(sales.net_sales) }}{% else %}no matching sales data{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OT callout -->
+  {% if filtered_ot_cost and filtered_ot_cost > 0 %}
+  <div class="alert alert-warning d-flex align-items-center gap-2 mb-4" style="font-size:0.84rem">
+    <i class="fas fa-triangle-exclamation"></i>
+    <span>Overtime cost this period: <strong>${{ "%.2f"|format(filtered_ot_cost) }}</strong></span>
+  </div>
+  {% endif %}
+
+  <!-- Charts row -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="portal-card-box">
+        <h6 class="mb-3" style="color:var(--accent);font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase">Labor Cost % Trend</h6>
+        <canvas id="chartLaborPct" height="160"></canvas>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="portal-card-box">
+        <h6 class="mb-3" style="color:var(--accent);font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase">Cost vs Net Sales</h6>
+        <canvas id="chartCostVsSales" height="160"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Jobs breakdown + Employee table -->
+  <div class="row g-3 mb-4">
+    {% if jobs %}
+    <div class="col-md-4">
+      <div class="portal-card-box h-100">
+        <h6 class="mb-3" style="color:var(--accent);font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase">Hours by Role</h6>
+        <canvas id="chartJobs" height="220"></canvas>
+        <div class="mt-3" style="max-height:220px;overflow-y:auto">
+          <table class="table table-sm mb-0" style="font-size:0.78rem">
+            <thead><tr>
+              <th style="color:var(--accent)">Role</th>
+              <th class="text-end" style="color:var(--accent)">Hours</th>
+              <th class="text-end" style="color:var(--accent)">Cost</th>
+            </tr></thead>
+            <tbody>
+            {% for j in jobs %}
+            <tr>
+              <td>{{ j.job }}</td>
+              <td class="text-end">{{ "%.1f"|format(j.hours) }}</td>
+              <td class="text-end">${{ "%.2f"|format(j.cost) }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="col-md-{% if jobs %}8{% else %}12{% endif %}">
+      <div class="portal-card-box">
+        <h6 class="mb-3" style="color:var(--accent);font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase">
+          Employees <span class="badge bg-secondary ms-1" style="font-size:0.65rem">{{ employees|length }}</span>
+        </h6>
+        <div style="max-height:480px;overflow-y:auto">
+          <table class="table table-sm mb-0" style="font-size:0.8rem">
+            <thead style="position:sticky;top:0;background:var(--card-bg,#1e1e1e)">
+              <tr>
+                <th style="color:var(--accent)">Name</th>
+                <th style="color:var(--accent)">Role</th>
+                <th class="text-end" style="color:var(--accent)">Hours</th>
+                <th class="text-end" style="color:var(--accent)">Reg Pay</th>
+                <th class="text-end" style="color:var(--accent)">OT Pay</th>
+                <th class="text-end" style="color:var(--accent)">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for e in employees %}
+            <tr>
+              <td>{{ e.name }}</td>
+              <td class="text-muted">{{ e.job or '—' }}</td>
+              <td class="text-end">{{ "%.2f"|format(e.hours) }}</td>
+              <td class="text-end">${{ "%.2f"|format(e.regular_pay) }}</td>
+              <td class="text-end {% if e.ot_pay > 0 %}text-warning{% endif %}">${{ "%.2f"|format(e.ot_pay) }}</td>
+              <td class="text-end fw-semibold">${{ "%.2f"|format(e.total_pay) }}</td>
+            </tr>
+            {% endfor %}
+            {% if not employees %}
+            <tr><td colspan="6" class="text-center text-muted py-3">No employee detail available.</td></tr>
+            {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Labor vs Sales comparison table (all periods) -->
+  {% if trend_rows|length > 1 %}
+  <div class="portal-card-box mb-4">
+    <h6 class="mb-3" style="color:var(--accent);font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase">Period Comparison — Labor vs Sales</h6>
+    <div style="overflow-x:auto">
+      <table class="table table-sm mb-0" style="font-size:0.8rem">
+        <thead><tr>
+          <th style="color:var(--accent)">Period</th>
+          <th class="text-end" style="color:var(--accent)">Net Sales</th>
+          <th class="text-end" style="color:var(--accent)">Labor Cost</th>
+          <th class="text-end" style="color:var(--accent)">Labor %</th>
+          <th class="text-end" style="color:var(--accent)">Hours</th>
+          <th class="text-end" style="color:var(--accent)">Rev / Hr</th>
+        </tr></thead>
+        <tbody>
+        {% for lbl, ns, cost, lp, hrs in trend_rows %}
+        <tr>
+          <td>{{ lbl }}</td>
+          <td class="text-end">${{ "%.0f"|format(ns) }}</td>
+          <td class="text-end">${{ "%.0f"|format(cost) }}</td>
+          <td class="text-end">
+            <span class="badge {% if lp > 35 %}bg-danger{% elif lp > 28 %}bg-warning text-dark{% else %}bg-success{% endif %}">
+              {{ lp }}%
+            </span>
+          </td>
+          <td class="text-end">{{ "%.1f"|format(hrs) }}</td>
+          <td class="text-end">{% if hrs > 0 and ns > 0 %}${{ "%.2f"|format(ns / hrs) }}{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Excluded entries notice -->
+  {% if employees_excluded %}
+  <div class="portal-card-box mb-4" style="border-color:rgba(255,200,0,0.2)">
+    <h6 class="mb-2" style="color:#aaa;font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase">
+      <i class="fas fa-filter me-1"></i>Excluded from Totals ({{ employees_excluded|length }} entries)
+    </h6>
+    <p class="text-muted mb-2" style="font-size:0.75rem">These POS/system entries are stored but not counted in any metric above.</p>
+    <div style="overflow-x:auto">
+      <table class="table table-sm mb-0" style="font-size:0.75rem;opacity:0.65">
+        <thead><tr>
+          <th>Name</th><th>Role</th><th class="text-end">Hours</th><th class="text-end">Total Pay</th>
+        </tr></thead>
+        <tbody>
+        {% for e in employees_excluded %}
+        <tr>
+          <td>{{ e.name }}</td>
+          <td>{{ e.job or '—' }}</td>
+          <td class="text-end">{{ "%.2f"|format(e.hours) }}</td>
+          <td class="text-end">${{ "%.2f"|format(e.total_pay) }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Delete -->
+  {% if can_delete %}
+  <div class="text-end mb-5">
+    <form method="post" action="{{ url_for('labor_delete', report_id=report.id) }}"
+          onsubmit="return confirm('Delete labor report for {{ report.week_start }}?')">
+      <button class="btn btn-outline-danger btn-sm"><i class="fas fa-trash me-1"></i>Delete This Period</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% endif %}{# /if report #}
+  {% endif %}{# /if reports #}
+</div>
+
+<!-- Upload Modal -->
+{% if can_upload %}
+<div class="modal fade" id="uploadModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background:var(--card-bg,#1e1e1e);border:1px solid var(--border)">
+      <div class="modal-header" style="border-bottom:1px solid var(--border)">
+        <h5 class="modal-title" style="color:var(--accent)"><i class="fas fa-upload me-2"></i>Upload Labor ZIP</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{{ url_for('labor_upload') }}" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label text-muted" style="font-size:0.82rem">Toast Labor Export ZIP</label>
+            <input type="file" name="labor_zip" class="form-control form-control-sm"
+                   accept=".zip,application/zip" required>
+            <div class="form-text" style="font-size:0.74rem">Upload the ZIP downloaded from Toast → Labor &amp; Payroll export</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-muted" style="font-size:0.82rem">Period Label (optional)</label>
+            <input type="text" name="period_label" class="form-control form-control-sm"
+                   placeholder="e.g. Week of Jul 20, 2026">
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col">
+              <label class="form-label text-muted" style="font-size:0.82rem">Start Date (override)</label>
+              <input type="date" name="override_start" class="form-control form-control-sm">
+            </div>
+            <div class="col">
+              <label class="form-label text-muted" style="font-size:0.82rem">End Date (override)</label>
+              <input type="date" name="override_end" class="form-control form-control-sm">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label text-muted" style="font-size:0.82rem">Period Type</label>
+            <select name="period_type" class="form-select form-select-sm">
+              <option value="weekly">Weekly</option>
+              <option value="biweekly">Bi-Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="alert alert-info p-2 mt-3" style="font-size:0.75rem">
+            <i class="fas fa-info-circle me-1"></i>
+            Entries named <em>LOW BAR TDR, MAIN BAR TDR, Bar Computer, Room 120</em> are automatically excluded from all totals.
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid var(--border)">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm" style="background:var(--accent);color:#1a1a1a;font-weight:600">Upload &amp; Parse</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  var gridC  = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  var textC  = isDark ? '#aaa' : '#555';
+  var accent = '#f5b45c';
+
+  function baseOpts(yLabel) {
+    return {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        x: { ticks: { color: textC, font: { size: 11 } }, grid: { color: gridC } },
+        y: { ticks: { color: textC, font: { size: 11 } }, grid: { color: gridC },
+             title: { display: !!yLabel, text: yLabel, color: textC, font: { size: 11 } } }
+      }
+    };
+  }
+
+  var labels = {{ js_trend_labels|safe }};
+  var tcost  = {{ js_trend_cost|safe }};
+  var thours = {{ js_trend_hours|safe }};
+  var tlp    = {{ js_trend_labor_pct|safe }};
+  var tns    = {{ js_trend_net_sales|safe }};
+
+  // Chart 1 — Labor % trend
+  var c1 = document.getElementById('chartLaborPct');
+  if (c1) new Chart(c1, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Labor %',
+        data: tlp,
+        borderColor: accent,
+        backgroundColor: 'rgba(245,180,92,0.12)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 4,
+        pointBackgroundColor: accent
+      }]
+    },
+    options: (function() {
+      var o = baseOpts('Labor %');
+      o.plugins.tooltip.callbacks = { label: function(ctx){ return ctx.raw + '%'; } };
+      return o;
+    })()
+  });
+
+  // Chart 2 — Cost vs Net Sales (grouped bar)
+  var c2 = document.getElementById('chartCostVsSales');
+  if (c2) new Chart(c2, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Net Sales', data: tns, backgroundColor: 'rgba(100,180,255,0.6)' },
+        { label: 'Labor Cost', data: tcost, backgroundColor: 'rgba(245,180,92,0.7)' }
+      ]
+    },
+    options: (function() {
+      var o = baseOpts('$');
+      o.plugins.legend = { display: true, labels: { color: textC } };
+      o.plugins.tooltip.callbacks = { label: function(ctx){ return '$' + ctx.raw.toFixed(0); } };
+      return o;
+    })()
+  });
+
+  // Chart 3 — Jobs donut
+  {% if jobs %}
+  var c3 = document.getElementById('chartJobs');
+  if (c3) {
+    var jLabels = [{% for j in jobs %}'{{ j.job }}',{% endfor %}];
+    var jHours  = [{% for j in jobs %}{{ "%.1f"|format(j.hours) }},{% endfor %}];
+    var palette = ['#f5b45c','#64b4ff','#82cfb4','#ff8fa3','#c8b4ff','#ffd6a5','#a8dadc','#ffb4a2'];
+    new Chart(c3, {
+      type: 'doughnut',
+      data: {
+        labels: jLabels,
+        datasets: [{ data: jHours, backgroundColor: palette, borderWidth: 1, borderColor: isDark ? '#1e1e1e' : '#fff' }]
+      },
+      options: {
+        responsive: true,
+        cutout: '60%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(ctx){ return ctx.label + ': ' + ctx.raw + ' hrs'; } } }
+        }
+      }
+    });
+  }
+  {% endif %}
+})();
+</script>
+{% endblock %}

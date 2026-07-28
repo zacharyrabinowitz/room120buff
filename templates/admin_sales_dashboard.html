@@ -1,0 +1,899 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<div class="container-fluid px-4 mt-4">
+
+  <!-- ── Page Header ── -->
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+    <div>
+      <h2><i class="fas fa-chart-bar me-2" style="color:var(--accent);"></i>Sales &amp; Labor Dashboard</h2>
+      <div class="accent-bar"></div>
+      <p class="text-muted mt-1 mb-0" style="font-size:.85rem;">
+        Toast Sales &amp; Labor — all periods stored with no time limit
+      </p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      {% if can_export %}
+      <a href="{{ url_for('sales_export') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-download me-1"></i> Export CSV
+      </a>
+      {% endif %}
+      <a href="{{ url_for('sales_report_builder') }}" class="btn btn-outline-info btn-sm">
+        <i class="fas fa-sliders me-1"></i> Report Builder
+      </a>
+      {% if can_upload_labor %}
+      <button class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#laborUploadModal">
+        <i class="fas fa-user-clock me-1"></i> Upload Labor ZIP
+      </button>
+      {% endif %}
+      {% if can_upload %}
+      <button class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#uploadSection">
+        <i class="fas fa-upload me-1"></i> Upload Sales
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Upload Form (collapsible) ── -->
+  {% if can_upload %}
+  <div class="collapse {% if not report %}show{% endif %}" id="uploadSection">
+    <div class="card mb-4" style="border-color:var(--accent);border-top:3px solid var(--accent);">
+      <div class="card-header fw-semibold">
+        <i class="fas fa-file-pdf me-2" style="color:var(--accent);"></i>Upload Toast Sales Summary PDF
+      </div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('sales_upload') }}" enctype="multipart/form-data">
+
+          <!-- File + Period Type -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-5">
+              <label class="form-label fw-medium">Report File <span class="text-danger">*</span></label>
+              <input type="file" class="form-control" name="sales_pdf" accept=".pdf,application/pdf,.zip,application/zip" required>
+              <div class="form-text">Upload a Toast Sales Summary <strong>PDF</strong> — or a <strong>ZIP</strong> of Toast CSV exports (AllPaymentsByType, SalesByCategory, etc.).</div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-medium">Period Type</label>
+              <select name="period_type" class="form-select">
+                <option value="weekly">Weekly</option>
+                <option value="daily">Daily</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-medium">Period Label <span class="text-muted fw-normal">(optional)</span></label>
+              <input type="text" class="form-control" name="period_label"
+                     placeholder="e.g. July 2026, Q2 2026, Week 29…">
+              <div class="form-text">Auto-filled from PDF dates if left blank.</div>
+            </div>
+          </div>
+
+          <!-- Date Override -->
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="fw-medium" style="font-size:.88rem;">Date Override</span>
+                <span class="badge bg-secondary" style="font-size:.7rem;">Optional — leave blank to use dates from PDF</span>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-medium" style="font-size:.85rem;">Start Date</label>
+              <input type="date" class="form-control form-control-sm" name="override_start">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-medium" style="font-size:.85rem;">End Date</label>
+              <input type="date" class="form-control form-control-sm" name="override_end">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-medium" style="font-size:.85rem;">Location Override</label>
+              <input type="text" class="form-control form-control-sm" name="location_override"
+                     placeholder="Leave blank to use PDF value">
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-cloud-upload-alt me-1"></i> Parse & Store Report
+            </button>
+            {% if report %}
+            <button type="button" class="btn btn-outline-secondary"
+                    data-bs-toggle="collapse" data-bs-target="#uploadSection">
+              Cancel
+            </button>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not report %}
+  <!-- Empty state -->
+  <div class="text-center py-5">
+    <i class="fas fa-chart-bar fa-4x mb-3" style="color:var(--accent);opacity:.4;"></i>
+    <h4 class="text-muted">No sales data yet</h4>
+    <p class="text-muted">Upload a Toast Sales Summary PDF to get started.</p>
+  </div>
+  {% else %}
+
+  <!-- ── Period Selector ── -->
+  <div class="card mb-4">
+    <div class="card-body py-2 px-3">
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="fw-medium me-1"><i class="fas fa-calendar-week me-1" style="color:var(--accent);"></i>Period:</span>
+        <div class="d-flex gap-1 flex-wrap">
+          {% for r in reports %}
+          <a href="{{ url_for('sales_dashboard', id=r.id) }}"
+             class="btn btn-sm {% if r.id == report.id %}btn-warning{% else %}btn-outline-secondary{% endif %}">
+            {{ r.period_label or (r.week_start|string + ' – ' + r.week_end|string) }}
+            <small class="ms-1 opacity-75">({{ r.period_type }})</small>
+          </a>
+          {% endfor %}
+        </div>
+        <div class="ms-auto d-flex gap-2 flex-wrap">
+          {% if can_delete %}
+          <form action="{{ url_for('sales_delete', report_id=report.id) }}" method="POST"
+                onsubmit="return confirm('Delete SALES report for {{ report.period_label or report.week_start }}? This cannot be undone.')">
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              <i class="fas fa-chart-bar me-1"></i> Delete Sales
+            </button>
+          </form>
+          {% endif %}
+          {% if labor and authorized('delete_labor_report') %}
+          <form action="{{ url_for('labor_delete', report_id=labor.id) }}" method="POST"
+                onsubmit="return confirm('Delete LABOR report for {{ report.period_label or report.week_start }}? This cannot be undone.')">
+            <button type="submit" class="btn btn-outline-warning btn-sm">
+              <i class="fas fa-user-clock me-1"></i> Delete Labor
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Period Info Banner ── -->
+  <div class="mb-3 d-flex align-items-center gap-3 flex-wrap">
+    <span style="font-size:1.05rem;font-weight:600;">
+      {{ report.period_label or (report.week_start|string + ' – ' + report.week_end|string) }}
+    </span>
+    <span class="badge bg-secondary">{{ report.period_type | capitalize }}</span>
+    {% if report.location %}
+    <span class="text-muted"><i class="fas fa-location-dot me-1"></i>{{ report.location }}</span>
+    {% endif %}
+    <span class="text-muted" style="font-size:.8rem;">
+      Uploaded {{ report.uploaded_at.strftime('%b %d, %Y') }}
+    </span>
+  </div>
+
+  <!-- ── KPI Cards ── -->
+  <div class="row g-3 mb-4">
+    {% set kpis = [
+      ('Net Sales',     report.net_sales,    'fa-dollar-sign',      '#f5b45c'),
+      ('Total Revenue', report.total_amount, 'fa-coins',            '#4bc4cf'),
+      ('Gratuity',      report.gratuity,     'fa-hand-holding-dollar','#a8e063'),
+      ('Tax',           report.tax_amount,   'fa-percent',          '#f7797d'),
+      ('Tips',          report.tips,         'fa-star',             '#6a82fb'),
+      ('Guests',        report.total_guests, 'fa-users',            '#ffd89b'),
+    ] %}
+    {% for label, val, icon, color in kpis %}
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="card h-100" style="border-top:3px solid {{ color }};">
+        <div class="card-body text-center py-3">
+          <i class="fas {{ icon }} fa-lg mb-2" style="color:{{ color }};"></i>
+          <div class="fw-bold" style="font-size:1.3rem;color:{{ color }};">
+            {% if label == 'Guests' %}
+              {{ report.total_guests | int }}
+            {% else %}
+              ${{ "{:,.2f}".format(val) }}
+            {% endif %}
+          </div>
+          <div class="text-muted" style="font-size:.75rem;">{{ label }}</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── Labor KPI Cards ── -->
+  <div class="mb-2 mt-1 d-flex align-items-center gap-2">
+    <span class="fw-semibold" style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)"><i class="fas fa-user-clock me-1"></i>Labor</span>
+    {% if not labor %}
+    <span class="badge bg-secondary" style="font-size:.68rem">No labor data for this period — upload a labor ZIP to see payroll metrics</span>
+    {% endif %}
+  </div>
+  {% if labor %}
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card h-100" style="border-top:3px solid #fc5c7d;">
+        <div class="card-body text-center py-3">
+          <i class="fas fa-money-bill-wave fa-lg mb-2" style="color:#fc5c7d;"></i>
+          <div class="fw-bold" style="font-size:1.3rem;color:#fc5c7d;">${{ "{:,.2f}".format(filtered_cost) }}</div>
+          <div class="text-muted" style="font-size:.75rem;">Labor Cost</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card h-100" style="border-top:3px solid #c8b4ff;">
+        <div class="card-body text-center py-3">
+          <i class="fas fa-percent fa-lg mb-2" style="color:#c8b4ff;"></i>
+          <div class="fw-bold" style="font-size:1.3rem;color:#c8b4ff;">
+            {% if labor_pct is not none %}{{ labor_pct }}%{% else %}—{% endif %}
+          </div>
+          <div class="text-muted" style="font-size:.75rem;">Labor % of Net Sales</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card h-100" style="border-top:3px solid #82cfb4;">
+        <div class="card-body text-center py-3">
+          <i class="fas fa-clock fa-lg mb-2" style="color:#82cfb4;"></i>
+          <div class="fw-bold" style="font-size:1.3rem;color:#82cfb4;">{{ "%.1f"|format(filtered_hours) }}</div>
+          <div class="text-muted" style="font-size:.75rem;">Hours ({{ labor_employees|length }} staff)</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card h-100" style="border-top:3px solid #64b4ff;">
+        <div class="card-body text-center py-3">
+          <i class="fas fa-chart-line fa-lg mb-2" style="color:#64b4ff;"></i>
+          <div class="fw-bold" style="font-size:1.3rem;color:#64b4ff;">
+            {% if rev_per_hour %}${{ "%.2f"|format(rev_per_hour) }}{% else %}—{% endif %}
+          </div>
+          <div class="text-muted" style="font-size:.75rem;">Revenue / Hour</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% if filtered_ot_cost and filtered_ot_cost > 0 %}
+  <div class="alert alert-warning d-flex align-items-center gap-2 mb-3" style="font-size:.84rem">
+    <i class="fas fa-triangle-exclamation"></i>
+    <span>Overtime this period: <strong>${{ "{:,.2f}".format(filtered_ot_cost) }}</strong></span>
+  </div>
+  {% endif %}
+  {% else %}
+  <div class="mb-4"></div>
+  {% endif %}
+
+  <!-- ── Charts Row ── -->
+  <div class="row g-4 mb-4">
+
+    <!-- Sales Trend (all periods) -->
+    <div class="col-lg-8">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-chart-line me-2" style="color:var(--accent);"></i>Sales Trend — All Periods
+        </div>
+        <div class="card-body">
+          {% if reports|length > 1 %}
+          <canvas id="trendChart" height="80"></canvas>
+          {% else %}
+          <div class="text-center text-muted py-4">
+            <i class="fas fa-chart-line fa-2x mb-2 opacity-50"></i><br>
+            Upload more periods to see a trend chart.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Breakdown -->
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-credit-card me-2" style="color:var(--accent);"></i>Payment Breakdown
+        </div>
+        <div class="card-body d-flex align-items-center justify-content-center">
+          {% if payments %}
+          <canvas id="paymentChart" style="max-height:250px;"></canvas>
+          {% else %}
+          <p class="text-muted text-center">No payment data extracted.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Category & Revenue Center ── -->
+  <div class="row g-4 mb-4">
+
+    <!-- Sales by Category -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-utensils me-2" style="color:var(--accent);"></i>Sales by Category
+        </div>
+        <div class="card-body p-0">
+          {% if categories %}
+          <canvas id="categoryChart" style="max-height:260px;" class="p-3"></canvas>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+              <thead class="table-light"><tr><th>Category</th><th class="text-end">Items</th><th class="text-end">Net Sales</th></tr></thead>
+              <tbody>
+                {% for c in categories %}
+                <tr>
+                  <td>{{ c.category }}</td>
+                  <td class="text-end">{{ c['items'] }}</td>
+                  <td class="text-end fw-medium">${{ "{:,.2f}".format(c.net_sales) }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="p-4 text-center text-muted">No category data extracted.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Center -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-store me-2" style="color:var(--accent);"></i>Revenue by Center
+        </div>
+        <div class="card-body p-0">
+          {% if revenue_centers %}
+          <canvas id="centerChart" style="max-height:260px;" class="p-3"></canvas>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+              <thead class="table-light"><tr><th>Center</th><th class="text-end">Items</th><th class="text-end">Net Sales</th></tr></thead>
+              <tbody>
+                {% for rc in revenue_centers %}
+                <tr>
+                  <td>{{ rc.center }}</td>
+                  <td class="text-end">{{ rc['items'] }}</td>
+                  <td class="text-end fw-medium">${{ "{:,.2f}".format(rc.net_sales) }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="p-4 text-center text-muted">No revenue center data extracted.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Service Mode + Payments Detail ── -->
+  <div class="row g-4 mb-4">
+
+    <!-- Service Mode -->
+    <div class="col-md-5">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-table-cells me-2" style="color:var(--accent);"></i>Service Mode
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <thead class="table-light">
+              <tr><th></th><th class="text-end">Quick Service</th><th class="text-end">Table Service</th><th class="text-end">Total</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="fw-medium">Net Sales</td>
+                <td class="text-end">${{ "{:,.2f}".format(report.quick_service_net) }}</td>
+                <td class="text-end">${{ "{:,.2f}".format(report.table_service_net) }}</td>
+                <td class="text-end fw-bold">${{ "{:,.2f}".format(report.net_sales) }}</td>
+              </tr>
+              <tr>
+                <td class="fw-medium">Guests</td>
+                <td class="text-end" colspan="2">—</td>
+                <td class="text-end fw-bold">{{ report.total_guests }}</td>
+              </tr>
+              <tr>
+                <td class="fw-medium">Orders</td>
+                <td class="text-end" colspan="2">—</td>
+                <td class="text-end fw-bold">{{ report.total_orders }}</td>
+              </tr>
+              <tr>
+                <td class="fw-medium">Avg / Guest</td>
+                <td class="text-end" colspan="2">—</td>
+                <td class="text-end fw-bold">${{ "{:,.2f}".format(report.avg_per_guest) }}</td>
+              </tr>
+              <tr>
+                <td class="fw-medium">Avg / Order</td>
+                <td class="text-end" colspan="2">—</td>
+                <td class="text-end fw-bold">${{ "{:,.2f}".format(report.avg_per_order) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments Detail -->
+    <div class="col-md-7">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-credit-card me-2" style="color:var(--accent);"></i>Payments Detail
+        </div>
+        <div class="card-body p-0">
+          {% if payments %}
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Type</th>
+                  <th class="text-end">Amount</th>
+                  <th class="text-end">Tips</th>
+                  <th class="text-end">Grat</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in payments %}
+                {% if p.total > 0 %}
+                <tr>
+                  <td>{{ p.type }}</td>
+                  <td class="text-end">${{ "{:,.2f}".format(p.amount) }}</td>
+                  <td class="text-end">${{ "{:,.2f}".format(p.tips) }}</td>
+                  <td class="text-end">${{ "{:,.2f}".format(p.grat) }}</td>
+                  <td class="text-end fw-medium">${{ "{:,.2f}".format(p.total) }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="p-4 text-center text-muted">No payment data extracted.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Net Sales Summary + Discounts + Voids ── -->
+  <div class="row g-4 mb-4">
+
+    <!-- Net Sales Breakdown -->
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-receipt me-2" style="color:var(--accent);"></i>Net Sales Breakdown
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <tbody>
+              <tr><td>Gross Sales</td><td class="text-end fw-medium">${{ "{:,.2f}".format(report.gross_sales) }}</td></tr>
+              <tr><td>Discounts</td><td class="text-end text-danger">-${{ "{:,.2f}".format(report.sales_discounts | abs) }}</td></tr>
+              <tr><td>Refunds</td><td class="text-end text-danger">-${{ "{:,.2f}".format(report.sales_refunds | abs) }}</td></tr>
+              <tr class="table-light fw-bold"><td>Net Sales</td><td class="text-end">${{ "{:,.2f}".format(report.net_sales) }}</td></tr>
+              <tr><td class="text-muted">Gratuity</td><td class="text-end">${{ "{:,.2f}".format(report.gratuity) }}</td></tr>
+              <tr><td class="text-muted">Tax</td><td class="text-end">${{ "{:,.2f}".format(report.tax_amount) }}</td></tr>
+              <tr><td class="text-muted">Tips</td><td class="text-end">${{ "{:,.2f}".format(report.tips) }}</td></tr>
+              <tr class="fw-bold" style="border-top:2px solid var(--accent);"><td>Total</td><td class="text-end" style="color:var(--accent);">${{ "{:,.2f}".format(report.total_amount) }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tip Summary -->
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-star me-2" style="color:var(--accent);"></i>Tip Summary
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <tbody>
+              <tr><td>Tips Collected</td><td class="text-end fw-medium">${{ "{:,.2f}".format(report.tips_collected) }}</td></tr>
+              <tr><td>Tips Refunded</td><td class="text-end text-danger">-${{ "{:,.2f}".format(report.tips_refunded | abs) }}</td></tr>
+              <tr><td>Tips Withheld</td><td class="text-end text-danger">-${{ "{:,.2f}".format(report.tips_withheld | abs) }}</td></tr>
+              <tr class="table-light fw-bold"><td>After Withholding</td><td class="text-end">${{ "{:,.2f}".format(report.tips_after_withholding) }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discounts & Voids -->
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-tag me-2" style="color:var(--accent);"></i>Discounts & Voids
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <tbody>
+              {% if discounts %}
+              {% for d in discounts %}
+              <tr><td>{{ d.name }}<small class="text-muted ms-1">(x{{ d.count }})</small></td><td class="text-end text-danger">-${{ "{:,.2f}".format(d.amount | abs) }}</td></tr>
+              {% endfor %}
+              <tr class="table-light"><td class="fw-medium">Total Discounts</td><td class="text-end fw-medium text-danger">-${{ "{:,.2f}".format(report.total_discounts_amount | abs) }}</td></tr>
+              {% else %}
+              <tr><td colspan="2" class="text-muted text-center py-2">No discounts.</td></tr>
+              {% endif %}
+              <tr><td colspan="2" class="py-1"></td></tr>
+              <tr><td class="fw-medium">Void Amount</td><td class="text-end text-danger">${{ "{:,.2f}".format(report.void_amount) }}</td></tr>
+              <tr><td class="text-muted">Void Orders</td><td class="text-end">{{ report.void_order_count }}</td></tr>
+              <tr><td class="text-muted">Void Items</td><td class="text-end">{{ report.void_item_count }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Dining Options ── -->
+  {% if dining_options %}
+  <div class="card mb-4">
+    <div class="card-header fw-semibold">
+      <i class="fas fa-list me-2" style="color:var(--accent);"></i>Dining Option Summary
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="table-light">
+            <tr><th>Dining Option</th><th class="text-center">Orders</th><th class="text-end">Net Sales</th><th class="text-end">Gross Sales</th></tr>
+          </thead>
+          <tbody>
+            {% for d in dining_options %}
+            <tr>
+              <td>{{ d.option }}</td>
+              <td class="text-center">{{ d.orders }}</td>
+              <td class="text-end">${{ "{:,.2f}".format(d.net_sales) }}</td>
+              <td class="text-end">${{ "{:,.2f}".format(d.gross_sales) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Labor Breakdown (when available) ── -->
+  {% if labor and (labor_employees or labor_jobs) %}
+  <div class="row g-4 mb-4">
+    {% if labor_jobs %}
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-briefcase me-2" style="color:var(--accent);"></i>Hours by Role
+        </div>
+        <div class="card-body p-0">
+          <canvas id="laborJobsChart" style="max-height:200px;" class="p-3"></canvas>
+          <div class="table-responsive">
+            <table class="table table-sm mb-0">
+              <thead class="table-light"><tr><th>Role</th><th class="text-end">Hrs</th><th class="text-end">Cost</th></tr></thead>
+              <tbody>
+                {% for j in labor_jobs %}
+                <tr>
+                  <td style="font-size:.8rem">{{ j.job }}</td>
+                  <td class="text-end" style="font-size:.8rem">{{ "%.1f"|format(j.hours) }}</td>
+                  <td class="text-end" style="font-size:.8rem">${{ "%.0f"|format(j.cost) }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    <div class="col-md-{% if labor_jobs %}8{% else %}12{% endif %}">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-users me-2" style="color:var(--accent);"></i>
+          Employees
+          <span class="badge bg-secondary ms-1" style="font-size:.68rem">{{ labor_employees|length }}</span>
+          {% if cost_per_hour %}
+          <span class="ms-2 text-muted fw-normal" style="font-size:.78rem">avg ${{ "%.2f"|format(cost_per_hour) }}/hr</span>
+          {% endif %}
+        </div>
+        <div class="card-body p-0">
+          <div style="max-height:380px;overflow-y:auto">
+            <table class="table table-sm table-hover mb-0" style="font-size:.8rem">
+              <thead class="table-light" style="position:sticky;top:0">
+                <tr><th>Name</th><th>Role</th><th class="text-end">Hours</th><th class="text-end">Reg Pay</th><th class="text-end">OT</th><th class="text-end">Total</th></tr>
+              </thead>
+              <tbody>
+                {% for e in labor_employees %}
+                <tr>
+                  <td>{{ e.name }}</td>
+                  <td class="text-muted">{{ e.job or '—' }}</td>
+                  <td class="text-end">{{ "%.2f"|format(e.hours) }}</td>
+                  <td class="text-end">${{ "%.2f"|format(e.regular_pay) }}</td>
+                  <td class="text-end {% if e.ot_pay > 0 %}text-warning{% endif %}">${{ "%.2f"|format(e.ot_pay) }}</td>
+                  <td class="text-end fw-medium">${{ "%.2f"|format(e.total_pay) }}</td>
+                </tr>
+                {% endfor %}
+                {% if not labor_employees %}
+                <tr><td colspan="6" class="text-center text-muted py-3">No employee detail in this upload.</td></tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Cash Summary ── -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold">
+      <i class="fas fa-money-bill-wave me-2" style="color:var(--accent);"></i>Cash Summary
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3 text-center">
+          <div class="text-muted small mb-1">Expected Closeout</div>
+          <div class="fw-bold">${{ "{:,.2f}".format(report.expected_closeout_cash) }}</div>
+        </div>
+        <div class="col-md-3 text-center">
+          <div class="text-muted small mb-1">Actual Closeout</div>
+          <div class="fw-bold">${{ "{:,.2f}".format(report.actual_closeout_cash) }}</div>
+        </div>
+        <div class="col-md-3 text-center">
+          <div class="text-muted small mb-1">Cash Overage/Shortage</div>
+          <div class="fw-bold {% if report.cash_overage >= 0 %}text-success{% else %}text-danger{% endif %}">
+            ${{ "{:,.2f}".format(report.cash_overage) }}
+          </div>
+        </div>
+        <div class="col-md-3 text-center">
+          <div class="text-muted small mb-1">Total Cash Payments</div>
+          <div class="fw-bold">${{ "{:,.2f}".format(report.total_cash_payments) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% endif %}{# end if report #}
+</div>
+
+<script>
+(function () {
+  var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  var gridColor = isDark ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)';
+  var textColor = isDark ? '#aaa' : '#555';
+
+  {% if reports|length > 1 %}
+  // ── Trend Chart ──
+  var trendLabels  = {{ trend_labels | safe }};
+  var trendNet     = {{ trend_net | safe }};
+  var trendTotal   = {{ trend_total | safe }};
+  var trendGrat    = {{ trend_gratuity | safe }};
+  var trendTips    = {{ trend_tips | safe }};
+  var trendLabor   = {{ trend_labor | safe }};  // null where no labor uploaded
+
+  var datasets = [
+    {
+      label: 'Net Sales',
+      data: trendNet,
+      borderColor: '#f5b45c',
+      backgroundColor: 'rgba(245,180,92,.1)',
+      tension: .35, fill: true, pointRadius: 4, pointBackgroundColor: '#f5b45c',
+    },
+    {
+      label: 'Total Revenue',
+      data: trendTotal,
+      borderColor: '#4bc4cf',
+      backgroundColor: 'rgba(75,196,207,.08)',
+      tension: .35, fill: false, pointRadius: 4, pointBackgroundColor: '#4bc4cf',
+    },
+    {
+      label: 'Gratuity',
+      data: trendGrat,
+      borderColor: '#a8e063',
+      tension: .35, fill: false, pointRadius: 3, borderDash: [4, 3],
+    },
+    {
+      label: 'Tips',
+      data: trendTips,
+      borderColor: '#6a82fb',
+      tension: .35, fill: false, pointRadius: 3, borderDash: [4, 3],
+    },
+  ];
+  // Add labor cost line only if at least one period has labor data
+  if (trendLabor.some(function(v){ return v !== null; })) {
+    datasets.push({
+      label: 'Labor Cost',
+      data: trendLabor,
+      borderColor: '#fc5c7d',
+      backgroundColor: 'rgba(252,92,125,.08)',
+      tension: .35, fill: false, pointRadius: 4,
+      pointBackgroundColor: '#fc5c7d',
+      borderDash: [6, 3],
+      spanGaps: true,
+    });
+  }
+
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: { labels: trendLabels, datasets: datasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: textColor, boxWidth: 14 } },
+        tooltip: { callbacks: { label: function(ctx) { return ' $' + (ctx.parsed.y === null ? '—' : ctx.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2})); } } }
+      },
+      scales: {
+        x: { ticks: { color: textColor }, grid: { color: gridColor } },
+        y: {
+          ticks: { color: textColor, callback: function(v) { return '$' + v.toLocaleString(); } },
+          grid: { color: gridColor }
+        }
+      }
+    }
+  });
+  {% endif %}
+
+  {% if payments %}
+  // ── Payment Pie Chart ──
+  var payData = {{ payments | tojson | safe }};
+  var payFiltered = payData.filter(function(p){ return p.total > 0; });
+  var piePalette = ['#f5b45c','#4bc4cf','#a8e063','#f7797d','#6a82fb','#ffd89b','#11998e','#fc5c7d'];
+  new Chart(document.getElementById('paymentChart'), {
+    type: 'doughnut',
+    data: {
+      labels: payFiltered.map(function(p){ return p.type; }),
+      datasets: [{
+        data: payFiltered.map(function(p){ return p.total; }),
+        backgroundColor: piePalette.slice(0, payFiltered.length),
+        borderWidth: 2,
+        borderColor: isDark ? '#1e1e1e' : '#fff',
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: textColor, boxWidth: 12, font: {size:11} } },
+        tooltip: { callbacks: { label: function(ctx) { return ' $' + ctx.parsed.toLocaleString('en-US', {minimumFractionDigits:2}); } } }
+      }
+    }
+  });
+  {% endif %}
+
+  {% if categories %}
+  // ── Category Bar Chart ──
+  var catData = {{ categories | tojson | safe }};
+  new Chart(document.getElementById('categoryChart'), {
+    type: 'bar',
+    data: {
+      labels: catData.map(function(c){ return c.category; }),
+      datasets: [{
+        label: 'Net Sales',
+        data: catData.map(function(c){ return c.net_sales; }),
+        backgroundColor: 'rgba(245,180,92,.75)',
+        borderColor: '#f5b45c',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx) { return ' $' + ctx.parsed.y.toLocaleString('en-US', {minimumFractionDigits:2}); } } }
+      },
+      scales: {
+        x: { ticks: { color: textColor, font: {size:10} }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor, callback: function(v){ return '$'+v.toLocaleString(); } }, grid: { color: gridColor } }
+      }
+    }
+  });
+  {% endif %}
+
+  {% if revenue_centers %}
+  // ── Revenue Center Horizontal Bar ──
+  var rcData = {{ revenue_centers | tojson | safe }};
+  new Chart(document.getElementById('centerChart'), {
+    type: 'bar',
+    data: {
+      labels: rcData.map(function(r){ return r.center; }),
+      datasets: [{
+        label: 'Net Sales',
+        data: rcData.map(function(r){ return r.net_sales; }),
+        backgroundColor: 'rgba(75,196,207,.75)',
+        borderColor: '#4bc4cf',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx) { return ' $' + ctx.parsed.x.toLocaleString('en-US', {minimumFractionDigits:2}); } } }
+      },
+      scales: {
+        x: { ticks: { color: textColor, callback: function(v){ return '$'+v.toLocaleString(); } }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor, font: {size:11} }, grid: { color: gridColor } }
+      }
+    }
+  });
+  {% endif %}
+
+  {% if labor_jobs %}
+  // ── Labor Jobs Donut ──
+  var jobData = {{ labor_jobs | tojson | safe }};
+  var palette = ['#f5b45c','#64b4ff','#82cfb4','#fc5c7d','#c8b4ff','#ffd6a5','#a8dadc'];
+  new Chart(document.getElementById('laborJobsChart'), {
+    type: 'doughnut',
+    data: {
+      labels: jobData.map(function(j){ return j.job; }),
+      datasets: [{
+        data: jobData.map(function(j){ return j.hours; }),
+        backgroundColor: palette.slice(0, jobData.length),
+        borderWidth: 1,
+        borderColor: isDark ? '#1e1e1e' : '#fff',
+      }]
+    },
+    options: {
+      responsive: true, cutout: '60%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.label + ': ' + ctx.raw.toFixed(1) + ' hrs'; } } }
+      }
+    }
+  });
+  {% endif %}
+
+})();
+</script>
+
+{% if can_upload_labor %}
+<!-- Labor Upload Modal -->
+<div class="modal fade" id="laborUploadModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background:var(--card-bg,#1e1e1e);border:1px solid var(--border)">
+      <div class="modal-header" style="border-bottom:1px solid var(--border)">
+        <h5 class="modal-title" style="color:var(--accent)"><i class="fas fa-user-clock me-2"></i>Upload Labor ZIP</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{{ url_for('labor_upload') }}" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-medium">Toast Labor Export ZIP <span class="text-danger">*</span></label>
+            <input type="file" name="labor_zip" class="form-control form-control-sm" accept=".zip,application/zip" required>
+            <div class="form-text">Download from Toast → Labor &amp; Payroll export</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium" style="font-size:.85rem">Period Label <span class="text-muted fw-normal">(optional)</span></label>
+            <input type="text" name="period_label" class="form-control form-control-sm" placeholder="e.g. Week of Jul 20, 2026">
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col">
+              <label class="form-label fw-medium" style="font-size:.85rem">Start Date <span class="text-muted fw-normal">(override)</span></label>
+              <input type="date" name="override_start" class="form-control form-control-sm">
+            </div>
+            <div class="col">
+              <label class="form-label fw-medium" style="font-size:.85rem">End Date <span class="text-muted fw-normal">(override)</span></label>
+              <input type="date" name="override_end" class="form-control form-control-sm">
+            </div>
+          </div>
+          <select name="period_type" class="form-select form-select-sm mb-2">
+            <option value="weekly">Weekly</option>
+            <option value="biweekly">Bi-Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="custom">Custom</option>
+          </select>
+          <div class="alert alert-info p-2 mt-2" style="font-size:.75rem">
+            <i class="fas fa-filter me-1"></i>
+            <em>LOW BAR TDR, MAIN BAR TDR, Bar Computer, Room 120</em> are auto-excluded from all totals.
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid var(--border)">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-warning btn-sm fw-semibold">Upload &amp; Parse</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
