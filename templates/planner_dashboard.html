@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1"><i class="fas fa-clipboard-check me-2" style="color:var(--accent);"></i>Day Planner</h2>
+      <p class="text-muted mb-0">Create and manage daily operational checklists</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      {% if session.get('role') == 'admin' %}
+      <a href="{{ url_for('settings_task_library') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-list-check me-1"></i> Task Library
+      </a>
+      {% endif %}
+      {% if session.get('role') == 'admin' or authorized('manage_day_planner') %}
+      <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importPdfModal">
+        <i class="fas fa-file-import me-1"></i> Import PDF
+      </button>
+      <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#createPlanModal">
+        <i class="fas fa-plus me-1"></i> New Day Plan
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- Upcoming Plans -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold">
+      <i class="fas fa-calendar-day me-2" style="color:var(--accent);"></i>Upcoming &amp; Today
+    </div>
+    <div class="card-body p-0">
+      {% if upcoming %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Day</th>
+              <th>Event / Label</th>
+              <th>Template</th>
+              <th class="text-center">Progress</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for plan in upcoming %}
+            {% set total = plan.tasks | length %}
+            {% set done = plan.tasks | selectattr('is_completed') | list | length %}
+            <tr class="{% if plan.plan_date == today %}table-warning{% endif %}">
+              <td class="fw-semibold">
+                {{ plan.plan_date.strftime('%b %d, %Y') }}
+                {% if plan.plan_date == today %}
+                  <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem;">Today</span>
+                {% endif %}
+              </td>
+              <td class="text-muted">{{ plan.plan_date.strftime('%A') }}</td>
+              <td>{{ plan.event_name or '—' }}</td>
+              <td>
+                {% if plan.template %}
+                  <span class="badge" style="background:rgba(139,92,246,.15);color:#8b5cf6;border:1px solid rgba(139,92,246,.25);">
+                    {{ plan.template.name }}
+                  </span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                {% if total > 0 %}
+                <div class="d-flex align-items-center gap-2 justify-content-center">
+                  <div class="progress flex-grow-1" style="height:6px;max-width:80px;">
+                    <div class="progress-bar bg-success" style="width:{{ (done/total*100)|int }}%;"></div>
+                  </div>
+                  <small class="text-muted">{{ done }}/{{ total }}</small>
+                </div>
+                {% else %}
+                  <span class="text-muted small">No tasks</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <a href="{{ url_for('planner_day', plan_id=plan.id) }}"
+                   class="btn btn-outline-primary btn-sm">
+                  <i class="fas fa-arrow-right me-1"></i> Open
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="p-5 text-center text-muted">
+          <i class="fas fa-calendar-plus fa-2x mb-3 d-block" style="opacity:.3;"></i>
+          No upcoming plans. Create one for today or a future date.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Past Plans (last 30 days) -->
+  {% if past %}
+  <div class="card mb-4">
+    <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-history me-2"></i>Recent Plans (last 30 days)</span>
+      <button class="btn btn-link btn-sm p-0 text-muted" type="button"
+              data-bs-toggle="collapse" data-bs-target="#pastPlansBody">
+        <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
+    <div class="collapse" id="pastPlansBody">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Day</th>
+              <th>Event / Label</th>
+              <th class="text-center">Progress</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for plan in past %}
+            {% set total = plan.tasks | length %}
+            {% set done = plan.tasks | selectattr('is_completed') | list | length %}
+            <tr>
+              <td>{{ plan.plan_date.strftime('%b %d, %Y') }}</td>
+              <td class="text-muted">{{ plan.plan_date.strftime('%A') }}</td>
+              <td>{{ plan.event_name or '—' }}</td>
+              <td class="text-center">
+                {% if total > 0 %}
+                <div class="d-flex align-items-center gap-2 justify-content-center">
+                  <div class="progress flex-grow-1" style="height:6px;max-width:80px;">
+                    <div class="progress-bar {% if done == total %}bg-success{% else %}bg-warning{% endif %}"
+                         style="width:{{ (done/total*100)|int }}%;"></div>
+                  </div>
+                  <small class="text-muted">{{ done }}/{{ total }}</small>
+                </div>
+                {% else %}
+                  <span class="text-muted small">No tasks</span>
+                {% endif %}
+              </td>
+              <td class="text-center">
+                <a href="{{ url_for('planner_day', plan_id=plan.id) }}"
+                   class="btn btn-outline-secondary btn-sm">
+                  <i class="fas fa-eye me-1"></i> View
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Create Plan Modal -->
+{% if session.get('role') == 'admin' or authorized('manage_day_planner') %}
+
+<!-- Import PDF Modal -->
+<div class="modal fade" id="importPdfModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('planner_import_pdf') }}" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-file-import me-2"></i>Import Checklist from PDF</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">
+            Upload a PDF checklist or task sheet. The system will detect the date and checklist
+            items automatically — you can review and edit everything before the plan is created.
+          </p>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">PDF File <span class="text-danger">*</span></label>
+            <input type="file" name="pdf_file" class="form-control" accept=".pdf" required>
+            <div class="form-text">Max 20 MB. Must be a text-based PDF (not a scanned image).</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search me-1"></i> Parse PDF
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="createPlanModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('planner_create') }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-plus me-2"></i>New Day Plan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Date <span class="text-danger">*</span></label>
+            <input type="date" name="plan_date" class="form-control"
+                   value="{{ today.isoformat() }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Checklist Template</label>
+            <select name="template_id" class="form-select">
+              <option value="">— None (blank plan) —</option>
+              {% for tmpl in templates %}
+              <option value="{{ tmpl.id }}">{{ tmpl.name }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">Tasks from the selected template will be pre-loaded.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Event / Label</label>
+            <input type="text" name="event_name" class="form-control"
+                   placeholder="e.g. Friday Night Service, Private Buyout, Brunch">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Notes</label>
+            <textarea name="notes" class="form-control" rows="3"
+                      placeholder="Any special instructions or details for this day…"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i> Create Plan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,435 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <h2 class="mb-1"><i class="fas fa-list-check me-2" style="color:var(--accent);"></i>Task Library &amp; Templates</h2>
+      <p class="text-muted mb-0">Build your task library, then group tasks into time-based checklist templates</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#importPdfModal">
+        <i class="fas fa-file-import me-1"></i> Import from PDF
+      </button>
+      <a href="{{ url_for('planner_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-clipboard-check me-1"></i> Day Planner
+      </a>
+      <a href="{{ url_for('home') }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Back
+      </a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- ── Task Library ──────────────────────────────────────────────── -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center fw-semibold">
+      <span><i class="fas fa-tasks me-2"></i>Task Library</span>
+      <span class="text-muted fw-normal small">Edit any field and click Save All — no modals needed</span>
+    </div>
+    <form method="POST" action="{{ url_for('settings_tasks_bulk_save') }}">
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 align-middle" id="taskTable">
+          <thead class="table-light">
+            <tr>
+              <th style="width:30px;"></th>
+              <th style="width:130px;">Category</th>
+              <th>Title <span class="text-danger">*</span></th>
+              <th>Description</th>
+              <th style="width:70px;" class="text-center">Order</th>
+              <th style="width:60px;" class="text-center">Active</th>
+              <th style="width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="taskTableBody">
+            {% for i, t in enumerate(tasks) %}
+            <tr class="task-row {% if not t.is_active %}opacity-50{% endif %}">
+              <td class="text-muted ps-2" style="cursor:grab;">
+                <i class="fas fa-grip-vertical"></i>
+              </td>
+              <input type="hidden" name="task_id_{{ i }}" value="{{ t.id }}">
+              <td>
+                <input type="text" name="category_{{ i }}" class="form-control form-control-sm"
+                       value="{{ t.category }}"
+                       list="catList" placeholder="Category">
+              </td>
+              <td>
+                <input type="text" name="title_{{ i }}" class="form-control form-control-sm"
+                       value="{{ t.title }}" required placeholder="Task title">
+              </td>
+              <td>
+                <input type="text" name="description_{{ i }}" class="form-control form-control-sm"
+                       value="{{ t.description or '' }}" placeholder="Optional instructions">
+              </td>
+              <td>
+                <input type="number" name="sort_order_{{ i }}" class="form-control form-control-sm text-center"
+                       value="{{ t.sort_order }}" min="0" style="width:60px;">
+              </td>
+              <td class="text-center">
+                <input class="form-check-input" type="checkbox"
+                       name="is_active_{{ i }}"
+                       {% if t.is_active %}checked{% endif %}>
+              </td>
+              <td>
+                <button type="submit" name="delete_{{ i }}" value="1"
+                        class="btn btn-outline-danger btn-sm py-0 px-2"
+                        onclick="return confirm('Delete this task?')"
+                        title="Delete">
+                  <i class="fas fa-trash" style="font-size:.7rem;"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- New row template (hidden, cloned by JS) -->
+      <template id="newRowTpl">
+        <tr class="task-row">
+          <td class="text-muted ps-2"><i class="fas fa-grip-vertical"></i></td>
+          <input type="hidden" name="task_id___IDX__" value="">
+          <td>
+            <input type="text" name="category___IDX__" class="form-control form-control-sm"
+                   value="General" list="catList" placeholder="Category">
+          </td>
+          <td>
+            <input type="text" name="title___IDX__" class="form-control form-control-sm"
+                   placeholder="New task title" required>
+          </td>
+          <td>
+            <input type="text" name="description___IDX__" class="form-control form-control-sm"
+                   placeholder="Optional instructions">
+          </td>
+          <td>
+            <input type="number" name="sort_order___IDX__" class="form-control form-control-sm text-center"
+                   value="0" min="0" style="width:60px;">
+          </td>
+          <td class="text-center">
+            <input class="form-check-input" type="checkbox" name="is_active___IDX__" checked>
+          </td>
+          <td>
+            <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2"
+                    onclick="this.closest('tr').remove()" title="Remove">
+              <i class="fas fa-times" style="font-size:.7rem;"></i>
+            </button>
+          </td>
+        </tr>
+      </template>
+
+      <datalist id="catList">
+        {% for cat in tasks | map(attribute='category') | list | unique | sort %}
+          <option value="{{ cat }}">
+        {% endfor %}
+      </datalist>
+
+      <div class="card-footer d-flex justify-content-between align-items-center">
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addTaskRow()">
+          <i class="fas fa-plus me-1"></i> Add Row
+        </button>
+        <button type="submit" class="btn btn-success btn-sm px-4">
+          <i class="fas fa-save me-1"></i> Save All
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ── Checklist Templates ───────────────────────────────────────── -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0"><i class="fas fa-layer-group me-2" style="color:var(--accent);"></i>Checklist Templates</h5>
+    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addTemplateModal">
+      <i class="fas fa-plus me-1"></i> New Template
+    </button>
+  </div>
+
+  {% if templates %}
+  <div class="accordion" id="templateAccordion">
+    {% for tmpl in templates %}
+    <div class="accordion-item mb-3" id="tmpl-{{ tmpl.id }}">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed fw-semibold" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#tmplBody{{ tmpl.id }}">
+          <div class="d-flex align-items-center gap-2 w-100 me-3">
+            {{ tmpl.name }}
+            {% if not tmpl.is_active %}
+              <span class="badge bg-secondary" style="font-size:.65rem;">Inactive</span>
+            {% endif %}
+            <span class="badge bg-light text-dark ms-auto border" style="font-size:.7rem;">
+              {{ tmpl.tasks | length }} task{{ 's' if tmpl.tasks | length != 1 else '' }}
+            </span>
+          </div>
+        </button>
+      </h2>
+      <div id="tmplBody{{ tmpl.id }}" class="accordion-collapse collapse">
+        <div class="accordion-body pt-2 pb-0">
+          {% if tmpl.description %}
+            <p class="text-muted small mb-3">{{ tmpl.description }}</p>
+          {% endif %}
+
+          <form method="POST"
+                action="{{ url_for('settings_checklist_save_tasks', tmpl_id=tmpl.id) }}">
+            <div class="table-responsive mb-2">
+              <table class="table table-sm align-middle mb-0" id="tmplTable{{ tmpl.id }}">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width:30px;"></th>
+                    <th style="width:150px;">Time Period</th>
+                    <th>Task Title <span class="text-danger">*</span></th>
+                    <th>Description / Notes</th>
+                    <th style="width:40px;"></th>
+                  </tr>
+                </thead>
+                <tbody id="tmplBody_rows{{ tmpl.id }}">
+                  {% for j, tt in enumerate(tmpl.tasks) %}
+                  <tr class="tmpl-task-row">
+                    <td class="text-muted ps-2" style="cursor:grab;">
+                      <i class="fas fa-grip-vertical"></i>
+                    </td>
+                    <td>
+                      <select name="tt_time_period_{{ j }}"
+                              class="form-select form-select-sm">
+                        <option value="" {% if not tt.time_period %}selected{% endif %}>General</option>
+                        <option value="Opening" {% if tt.time_period == 'Opening' %}selected{% endif %}>Opening</option>
+                        <option value="During Service" {% if tt.time_period == 'During Service' %}selected{% endif %}>During Service</option>
+                        <option value="Closing" {% if tt.time_period == 'Closing' %}selected{% endif %}>Closing</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input type="text" name="tt_title_{{ j }}" class="form-control form-control-sm"
+                             value="{{ tt.title }}" required placeholder="Task title">
+                    </td>
+                    <td>
+                      <input type="text" name="tt_desc_{{ j }}" class="form-control form-control-sm"
+                             value="{{ tt.description or '' }}" placeholder="Optional details">
+                    </td>
+                    <td>
+                      <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2"
+                              onclick="this.closest('tr').remove()" title="Remove row">
+                        <i class="fas fa-times" style="font-size:.7rem;"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <button type="button" class="btn btn-outline-primary btn-sm"
+                      onclick="addTmplRow({{ tmpl.id }})">
+                <i class="fas fa-plus me-1"></i> Add Task Row
+              </button>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editTmplModal{{ tmpl.id }}">
+                  <i class="fas fa-pen me-1"></i> Rename
+                </button>
+                <form method="POST"
+                      action="{{ url_for('settings_checklist_delete', tmpl_id=tmpl.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('Delete template \'{{ tmpl.name }}\'?')">
+                  <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-trash me-1"></i> Delete
+                  </button>
+                </form>
+                <button type="submit" class="btn btn-success btn-sm px-4">
+                  <i class="fas fa-save me-1"></i> Save Template
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Template Name Modal -->
+    <div class="modal fade" id="editTmplModal{{ tmpl.id }}" tabindex="-1">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <form method="POST" action="{{ url_for('settings_checklist_edit', tmpl_id=tmpl.id) }}">
+            <div class="modal-header py-2">
+              <h6 class="modal-title">Edit Template</h6>
+              <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-2">
+              <div class="mb-2">
+                <label class="form-label small fw-semibold">Name</label>
+                <input type="text" name="name" class="form-control form-control-sm"
+                       value="{{ tmpl.name }}" required>
+              </div>
+              <div class="mb-2">
+                <label class="form-label small fw-semibold">Description</label>
+                <textarea name="description" class="form-control form-control-sm" rows="2">{{ tmpl.description or '' }}</textarea>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="is_active" id="ta{{ tmpl.id }}"
+                       {% if tmpl.is_active %}checked{% endif %}>
+                <label class="form-check-label small" for="ta{{ tmpl.id }}">Active</label>
+              </div>
+            </div>
+            <div class="modal-footer py-2">
+              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary btn-sm">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="card">
+      <div class="card-body text-center text-muted py-5">
+        No templates yet. Create one to pre-load tasks onto any day plan.
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- Add Template Modal -->
+<div class="modal fade" id="addTemplateModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('settings_checklist_add') }}">
+        <div class="modal-header">
+          <h5 class="modal-title">New Template</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="form-control"
+                   placeholder="e.g. Friday Night, Brunch, Private Event" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description</label>
+            <textarea name="description" class="form-control" rows="2"
+                      placeholder="When to use this template (optional)"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-success">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Import PDF Modal -->
+<div class="modal fade" id="importPdfModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('planner_import_pdf') }}" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-file-import me-2"></i>Import Template from PDF</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">
+            Upload a PDF checklist. The system will detect task items automatically —
+            you'll review them and set time periods (Opening / During Service / Closing)
+            before the template is created.
+          </p>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">PDF File <span class="text-danger">*</span></label>
+            <input type="file" name="pdf_file" class="form-control" accept=".pdf" required>
+            <div class="form-text">Max 20 MB. Must be text-based (not a scanned image).</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search me-1"></i> Parse PDF
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Task Library ─────────────────────────────────────────────── */
+let taskRowCount = {{ tasks | length }};
+
+function addTaskRow() {
+  const tpl = document.getElementById('newRowTpl');
+  const body = document.getElementById('taskTableBody');
+  const idx  = taskRowCount++;
+  const html  = tpl.innerHTML.replace(/__IDX__/g, idx);
+  const tr    = document.createElement('tr');
+  tr.className = 'task-row';
+  tr.innerHTML = html.replace(/<tr[^>]*>|<\/tr>/g, '');
+  // Actually clone the template properly
+  const wrapper = document.createElement('tbody');
+  wrapper.innerHTML = tpl.innerHTML.replace(/__IDX__/g, idx);
+  const newTr = wrapper.querySelector('tr');
+  if (newTr) {
+    body.appendChild(newTr);
+    newTr.querySelector('input[type=text]').focus();
+  }
+}
+
+/* ── Template task rows ───────────────────────────────────────── */
+const tmplRowCounts = {};
+{% for tmpl in templates %}
+tmplRowCounts[{{ tmpl.id }}] = {{ tmpl.tasks | length }};
+{% endfor %}
+
+function addTmplRow(tmplId) {
+  if (!(tmplId in tmplRowCounts)) tmplRowCounts[tmplId] = 0;
+  const j    = tmplRowCounts[tmplId]++;
+  const body = document.getElementById('tmplBody_rows' + tmplId);
+  const tr   = document.createElement('tr');
+  tr.className = 'tmpl-task-row';
+  tr.innerHTML = `
+    <td class="text-muted ps-2" style="cursor:grab;"><i class="fas fa-grip-vertical"></i></td>
+    <td>
+      <select name="tt_time_period_${j}" class="form-select form-select-sm">
+        <option value="">General</option>
+        <option value="Opening">Opening</option>
+        <option value="During Service">During Service</option>
+        <option value="Closing">Closing</option>
+      </select>
+    </td>
+    <td>
+      <input type="text" name="tt_title_${j}" class="form-control form-control-sm"
+             placeholder="Task title" required>
+    </td>
+    <td>
+      <input type="text" name="tt_desc_${j}" class="form-control form-control-sm"
+             placeholder="Optional details">
+    </td>
+    <td>
+      <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2"
+              onclick="this.closest('tr').remove()">
+        <i class="fas fa-times" style="font-size:.7rem;"></i>
+      </button>
+    </td>`;
+  body.appendChild(tr);
+  tr.querySelector('input[type=text]').focus();
+}
+
+/* ── Auto-open accordion from URL fragment ───────────────────── */
+document.addEventListener('DOMContentLoaded', function () {
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#tmpl-')) {
+    const collapseEl = document.querySelector(hash + ' .accordion-collapse');
+    if (collapseEl) {
+      new bootstrap.Collapse(collapseEl, { toggle: false }).show();
+      setTimeout(() => collapseEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+    }
+  }
+});
+</script>
+{% endblock %}

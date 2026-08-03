@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4" style="max-width:1000px;">
+
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <div class="text-muted small mb-1">
+        <a href="{{ url_for('settings_task_library') }}" class="text-muted text-decoration-none">
+          <i class="fas fa-list-check me-1"></i>Task Library
+        </a>
+        <i class="fas fa-chevron-right mx-2" style="font-size:.65rem;"></i>
+        Import from PDF
+      </div>
+      <h2 class="mb-0"><i class="fas fa-file-import me-2" style="color:var(--accent);"></i>Import Checklist Template</h2>
+      <p class="text-muted mb-0 mt-1 small"><i class="fas fa-file-pdf me-1"></i>{{ filename }}</p>
+    </div>
+    <a href="{{ url_for('settings_task_library') }}" class="btn btn-secondary btn-sm">
+      <i class="fas fa-times me-1"></i> Cancel
+    </a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  {% if not parsed.tasks %}
+  <div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    No checklist items could be detected. The PDF may be scanned/image-based.
+    You can add tasks manually below.
+  </div>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('planner_import_pdf_confirm') }}">
+
+    <!-- Template Info -->
+    <div class="card mb-4">
+      <div class="card-header fw-semibold"><i class="fas fa-layer-group me-2"></i>Template Details</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Template Name <span class="text-danger">*</span></label>
+            <input type="text" name="template_name" class="form-control"
+                   value="{{ parsed.event_name or '' }}"
+                   placeholder="e.g. Friday Night, Brunch, Opening Checklist" required>
+            <div class="form-text">Name used when assigning this template to a day plan.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Description</label>
+            <input type="text" name="template_description" class="form-control"
+                   placeholder="When to use this template (optional)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center fw-semibold">
+        <span>
+          <i class="fas fa-tasks me-2"></i>Detected Tasks
+          <span class="badge bg-secondary ms-1">{{ parsed.tasks | length }}</span>
+        </span>
+        <div class="d-flex gap-2 align-items-center">
+          <small class="text-muted">Set time periods to split into Opening / During / Closing sections</small>
+          <button type="button" class="btn btn-link btn-sm p-0 text-muted" onclick="selectAll(true)">All</button>
+          <span class="text-muted">|</span>
+          <button type="button" class="btn btn-link btn-sm p-0 text-muted" onclick="selectAll(false)">None</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0" id="importTaskTable">
+          <thead class="table-light">
+            <tr>
+              <th style="width:36px;"></th>
+              <th style="width:160px;">Time Period</th>
+              <th>Task Title</th>
+              <th>Description</th>
+              <th style="width:36px;"></th>
+            </tr>
+          </thead>
+          <tbody id="importTaskBody">
+            {% for i, task in enumerate(parsed.tasks) %}
+            <tr class="import-row">
+              <td class="ps-2 text-center">
+                <input class="form-check-input task-cb" type="checkbox"
+                       name="task_include_{{ i }}" checked
+                       onchange="rowToggle(this)">
+                <input type="hidden" name="task_title_{{ i }}" value="{{ task }}">
+              </td>
+              <td>
+                <select name="task_time_period_{{ i }}" class="form-select form-select-sm">
+                  <option value="">General</option>
+                  <option value="Opening">Opening</option>
+                  <option value="During Service">During Service</option>
+                  <option value="Closing">Closing</option>
+                </select>
+              </td>
+              <td>
+                <input type="text" name="task_title_{{ i }}" class="form-control form-control-sm"
+                       value="{{ task }}">
+              </td>
+              <td>
+                <input type="text" name="task_desc_{{ i }}" class="form-control form-control-sm"
+                       placeholder="Optional">
+              </td>
+              <td>
+                <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2"
+                        onclick="this.closest('tr').remove()" title="Remove">
+                  <i class="fas fa-times" style="font-size:.7rem;"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-footer">
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="addRow()">
+          <i class="fas fa-plus me-1"></i> Add task manually
+        </button>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3 justify-content-end mb-5">
+      <a href="{{ url_for('settings_task_library') }}" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-success px-5">
+        <i class="fas fa-check me-2"></i>Create Template
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+let rowCount = {{ parsed.tasks | length }};
+
+function rowToggle(cb) {
+  const row = cb.closest('tr');
+  const inputs = row.querySelectorAll('input[type=text], select');
+  row.classList.toggle('opacity-50', !cb.checked);
+  inputs.forEach(el => el.disabled = !cb.checked);
+}
+
+function selectAll(v) {
+  document.querySelectorAll('.task-cb').forEach(cb => { cb.checked = v; rowToggle(cb); });
+}
+
+function addRow() {
+  const i = rowCount++;
+  const body = document.getElementById('importTaskBody');
+  const tr = document.createElement('tr');
+  tr.className = 'import-row';
+  tr.innerHTML = `
+    <td class="ps-2 text-center">
+      <input class="form-check-input task-cb" type="checkbox" name="task_include_${i}" checked
+             onchange="rowToggle(this)">
+      <input type="hidden" name="task_title_${i}" value="">
+    </td>
+    <td>
+      <select name="task_time_period_${i}" class="form-select form-select-sm">
+        <option value="">General</option>
+        <option value="Opening">Opening</option>
+        <option value="During Service">During Service</option>
+        <option value="Closing">Closing</option>
+      </select>
+    </td>
+    <td>
+      <input type="text" name="task_title_${i}" class="form-control form-control-sm"
+             placeholder="Task title" autofocus>
+    </td>
+    <td>
+      <input type="text" name="task_desc_${i}" class="form-control form-control-sm" placeholder="Optional">
+    </td>
+    <td>
+      <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2"
+              onclick="this.closest('tr').remove()">
+        <i class="fas fa-times" style="font-size:.7rem;"></i>
+      </button>
+    </td>`;
+  body.appendChild(tr);
+  tr.querySelector('input[type=text]').focus();
+}
+</script>
+{% endblock %}

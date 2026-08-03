@@ -619,6 +619,86 @@ class LaborReport(db.Model):
     jobs_json        = db.Column(db.Text, default='[]')  # [{job, hours, cost}]
 
 
+# =====================================================
+# DAY PLANNER MODELS
+# =====================================================
+
+class TaskLibrary(db.Model):
+    """Reusable task definitions the admin maintains."""
+    __tablename__ = 'task_library'
+    id          = db.Column(db.Integer, primary_key=True)
+    title       = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    category    = db.Column(db.String(100), default='General')
+    sort_order  = db.Column(db.Integer, default=0)
+    is_active   = db.Column(db.Boolean, default=True)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ChecklistTemplate(db.Model):
+    """A named template of tasks that can be applied to any day plan."""
+    __tablename__ = 'checklist_template'
+    id          = db.Column(db.Integer, primary_key=True)
+    name        = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    is_active   = db.Column(db.Boolean, default=True)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+    tasks       = db.relationship('ChecklistTemplateTask', back_populates='template',
+                                   cascade='all, delete-orphan',
+                                   order_by='ChecklistTemplateTask.sort_order')
+    day_plans   = db.relationship('DayPlan', back_populates='template')
+
+
+class ChecklistTemplateTask(db.Model):
+    """One task within a checklist template."""
+    __tablename__ = 'checklist_template_task'
+    id          = db.Column(db.Integer, primary_key=True)
+    template_id = db.Column(db.Integer, db.ForeignKey('checklist_template.id'), nullable=False)
+    task_lib_id = db.Column(db.Integer, db.ForeignKey('task_library.id'), nullable=True)
+    title       = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    time_period = db.Column(db.String(50), default='')
+    sort_order  = db.Column(db.Integer, default=0)
+    template    = db.relationship('ChecklistTemplate', back_populates='tasks')
+    task_lib    = db.relationship('TaskLibrary')
+
+
+class DayPlan(db.Model):
+    """A specific date's operational plan."""
+    __tablename__ = 'day_plan'
+    id            = db.Column(db.Integer, primary_key=True)
+    plan_date     = db.Column(db.Date, nullable=False, unique=True)
+    template_id   = db.Column(db.Integer, db.ForeignKey('checklist_template.id'), nullable=True)
+    event_name    = db.Column(db.String(200))
+    notes         = db.Column(db.Text)
+    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    template      = db.relationship('ChecklistTemplate', back_populates='day_plans')
+    created_by    = db.relationship('User', foreign_keys=[created_by_id])
+    tasks         = db.relationship('DayPlanTask', back_populates='day_plan',
+                                     cascade='all, delete-orphan',
+                                     order_by='DayPlanTask.sort_order')
+
+
+class DayPlanTask(db.Model):
+    """One task in a day plan with completion tracking and manager notes."""
+    __tablename__ = 'day_plan_task'
+    id              = db.Column(db.Integer, primary_key=True)
+    day_plan_id     = db.Column(db.Integer, db.ForeignKey('day_plan.id'), nullable=False)
+    title           = db.Column(db.String(200), nullable=False)
+    description     = db.Column(db.Text)
+    is_completed     = db.Column(db.Boolean, default=False)
+    completed_by_id  = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    completed_at     = db.Column(db.DateTime, nullable=True)
+    assigned_to_id   = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    manager_note     = db.Column(db.Text)
+    time_period      = db.Column(db.String(50), default='')
+    sort_order       = db.Column(db.Integer, default=0)
+    day_plan         = db.relationship('DayPlan', back_populates='tasks')
+    completed_by     = db.relationship('User', foreign_keys=[completed_by_id])
+    assigned_to      = db.relationship('User', foreign_keys=[assigned_to_id])
+
+
 BACKUP_ADMIN_USERNAME = "backupadmin"
 BACKUP_ADMIN_PASSWORD = "room120secure"
 
@@ -842,6 +922,10 @@ PERMISSIONS = {
     'Shift Planner': {
         'view_shift_planner': 'View & use the shift planner',
         'edit_shift_planner': 'Edit shift plans & download PDFs',
+    },
+    'Day Planner': {
+        'view_day_planner':   'View day plans & check off tasks',
+        'manage_day_planner': 'Create, edit & delete day plans',
     },
     'Settings & System': {
         'view_settings':           'View settings page',
@@ -4424,10 +4508,14 @@ def admin_analytics():
 def admin_calendar():
     can_view = (authorized('view_reservations') or
                 authorized('view_events') or
-                authorized('view_private_events'))
+                authorized('view_private_events') or
+                session.get('role') == 'admin' or
+                authorized('view_day_planner'))
     if not can_view:
         return redirect(url_for('home'))
-    return render_template('admin_calendar.html')
+    templates = ChecklistTemplate.query.filter_by(is_active=True)\
+                                        .order_by(ChecklistTemplate.name).all()
+    return render_template('admin_calendar.html', templates=templates)
 
 
 @app.route('/admin/calendar/events')
@@ -4523,6 +4611,30 @@ def admin_calendar_events():
             if pe.end_time:
                 ev['end'] = f'{pe.event_date.isoformat()}T{pe.end_time}'
             events.append(ev)
+
+    # ── Day Plans ─────────────────────────────────────────────────────────────
+    if session.get('role') == 'admin' or authorized('view_day_planner'):
+        for dp in DayPlan.query.filter(
+            DayPlan.plan_date >= start_date,
+            DayPlan.plan_date <= end_date
+        ).all():
+            total     = len(dp.tasks)
+            done      = sum(1 for t in dp.tasks if t.is_completed)
+            label     = dp.event_name or 'Day Plan'
+            pct_label = f' ({done}/{total})' if total else ''
+            events.append({
+                'id':    f'dp-{dp.id}',
+                'title': f'{label}{pct_label}',
+                'start': dp.plan_date.isoformat(),
+                'allDay': True,
+                'color': '#8b5cf6',
+                'url':   url_for('planner_day', plan_id=dp.id),
+                'extendedProps': {
+                    'type':  'day_plan',
+                    'total': total,
+                    'done':  done,
+                },
+            })
 
     # ── Blocked Dates ─────────────────────────────────────────────────────────
     if authorized('view_reservations'):
@@ -7012,6 +7124,640 @@ def _start_scheduler():
     scheduler.start()
     logger.info('Daily backup scheduler started (fires at midnight EST)')
     return scheduler
+
+
+# =====================================================
+# CHECKLIST PDF IMPORT HELPERS
+# =====================================================
+
+_MONTH_MAP = {
+    'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+    'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
+}
+
+_TASK_RE = re.compile(
+    r'^(?:'
+    r'[□☐☑✓✗✔⬜◻◼▢▣•·▪►▶○●◦‣⁃]\s+'   # checkbox / bullet chars
+    r'|\[[\s xX✓]\]\s*'                   # [ ] [x] [✓]
+    r'|\d{1,2}[.)]\s+'                    # 1. 2) etc.
+    r'|\(\d{1,2}\)\s*'                    # (1) (2)
+    r'|[-–—]\s+'                          # dash bullet
+    r')(.{2,180})$',
+    re.UNICODE,
+)
+
+def _find_date_in_text(text):
+    """Return the first date found in text as a date object, or None."""
+    # ISO: 2024-08-15
+    m = re.search(r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b', text)
+    if m:
+        try:
+            return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        except ValueError:
+            pass
+
+    # US slashes: 8/15/2024 or 08/15/24
+    m = re.search(r'\b(\d{1,2})/(\d{1,2})/(\d{2,4})\b', text)
+    if m:
+        try:
+            y = int(m.group(3))
+            if y < 100:
+                y += 2000
+            return date(y, int(m.group(1)), int(m.group(2)))
+        except ValueError:
+            pass
+
+    # Long month first: August 15, 2024 / Aug 15 2024
+    m = re.search(
+        r'\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|'
+        r'jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|'
+        r'oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)[.,]?\s+'
+        r'(\d{1,2})[,.]?\s+(\d{4})\b',
+        text, re.IGNORECASE,
+    )
+    if m:
+        try:
+            mon = _MONTH_MAP.get(m.group(1).lower()[:3])
+            if mon:
+                return date(int(m.group(3)), mon, int(m.group(2)))
+        except ValueError:
+            pass
+
+    # Day month year: 15 August 2024
+    m = re.search(
+        r'\b(\d{1,2})\s+(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|'
+        r'jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|'
+        r'oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{4})\b',
+        text, re.IGNORECASE,
+    )
+    if m:
+        try:
+            mon = _MONTH_MAP.get(m.group(2).lower()[:3])
+            if mon:
+                return date(int(m.group(3)), mon, int(m.group(1)))
+        except ValueError:
+            pass
+
+    return None
+
+
+def _parse_checklist_pdf(file_bytes):
+    """
+    Extract date, event name, and task list from a checklist PDF.
+    Returns {'date': date|None, 'event_name': str|None, 'tasks': [str, ...]}.
+    """
+    import pdfplumber
+
+    raw_lines = []
+    try:
+        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+            for page in pdf.pages:
+                text = page.extract_text(x_tolerance=3, y_tolerance=3)
+                if text:
+                    raw_lines.extend(text.splitlines())
+    except Exception:
+        return {'date': None, 'event_name': None, 'tasks': []}
+
+    # Strip and drop empties
+    lines = [l.strip() for l in raw_lines if l.strip()]
+
+    # ── Find date ─────────────────────────────────────────────────────────
+    found_date = None
+    full_text = ' '.join(lines)
+    found_date = _find_date_in_text(full_text)
+
+    # ── Find tasks ────────────────────────────────────────────────────────
+    tasks = []
+    seen = set()
+    for line in lines:
+        m = _TASK_RE.match(line)
+        if m:
+            title = m.group(1).strip()
+            # Skip very short, all-caps headings, or pure number lines
+            if len(title) < 3 or title.isdigit():
+                continue
+            key = title.lower()
+            if key not in seen:
+                seen.add(key)
+                tasks.append(title)
+
+    # ── Find event name ───────────────────────────────────────────────────
+    # First non-task line longer than 3 chars that isn't a date string
+    task_set = set(t.lower() for t in tasks)
+    event_name = None
+    for line in lines[:15]:  # look in the first 15 lines
+        if _TASK_RE.match(line):
+            continue
+        if re.search(r'\d{4}', line) and _find_date_in_text(line):
+            continue  # skip pure date lines
+        if len(line) >= 3 and line.lower() not in task_set:
+            event_name = line
+            break
+
+    return {'date': found_date, 'event_name': event_name, 'tasks': tasks}
+
+
+# =====================================================
+# CHECKLIST PDF IMPORT ROUTES
+# =====================================================
+
+@app.route('/planner/import-pdf', methods=['POST'])
+def planner_import_pdf():
+    """Parse a PDF and show a preview for creating a ChecklistTemplate."""
+    if not (session.get('role') == 'admin' or authorized('manage_day_planner')):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('settings_task_library'))
+
+    f = request.files.get('pdf_file')
+    if not f or not f.filename:
+        flash('No file selected.', 'danger')
+        return redirect(url_for('settings_task_library'))
+    if not f.filename.lower().endswith('.pdf'):
+        flash('Only PDF files are supported.', 'danger')
+        return redirect(url_for('settings_task_library'))
+
+    file_bytes = f.read()
+    if len(file_bytes) > 20 * 1024 * 1024:
+        flash('File too large (max 20 MB).', 'danger')
+        return redirect(url_for('settings_task_library'))
+
+    parsed = _parse_checklist_pdf(file_bytes)
+
+    return render_template('planner_import_preview.html',
+                           parsed=parsed,
+                           filename=secure_filename(f.filename))
+
+
+@app.route('/planner/import-pdf/confirm', methods=['POST'])
+def planner_import_pdf_confirm():
+    """Create a ChecklistTemplate from the parsed PDF data."""
+    if not (session.get('role') == 'admin' or authorized('manage_day_planner')):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('settings_task_library'))
+
+    tmpl_name = request.form.get('template_name', '').strip()
+    tmpl_desc = request.form.get('template_description', '').strip() or None
+    if not tmpl_name:
+        flash('Template name is required.', 'danger')
+        return redirect(url_for('settings_task_library'))
+
+    tmpl = ChecklistTemplate(name=tmpl_name, description=tmpl_desc)
+    db.session.add(tmpl)
+    db.session.flush()
+
+    i = 0
+    order = 0
+    while True:
+        if f'task_title_{i}' not in request.form:
+            break
+        title       = request.form.get(f'task_title_{i}', '').strip()
+        inc_key     = f'task_include_{i}'
+        time_period = request.form.get(f'task_time_period_{i}', '').strip()
+        desc        = request.form.get(f'task_desc_{i}', '').strip() or None
+        if title and inc_key in request.form:
+            db.session.add(ChecklistTemplateTask(
+                template_id=tmpl.id,
+                title=title,
+                description=desc,
+                time_period=time_period,
+                sort_order=order,
+            ))
+            order += 1
+        i += 1
+
+    db.session.commit()
+    log_audit('planner', f'Imported checklist template "{tmpl_name}" from PDF ({order} tasks)')
+    flash(f'Template "{tmpl_name}" created with {order} tasks.', 'success')
+    return redirect(url_for('settings_task_library'))
+
+
+# =====================================================
+# BULK SAVE ROUTES
+# =====================================================
+
+@app.route('/settings/tasks/bulk-save', methods=['POST'])
+def settings_tasks_bulk_save():
+    """Save all task library rows submitted from the inline edit form."""
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    i = 0
+    while True:
+        id_key = f'task_id_{i}'
+        if id_key not in request.form:
+            break
+        task_id    = request.form.get(id_key, '').strip()
+        title      = request.form.get(f'title_{i}', '').strip()
+        category   = request.form.get(f'category_{i}', 'General').strip() or 'General'
+        desc       = request.form.get(f'description_{i}', '').strip()
+        sort_order = int(request.form.get(f'sort_order_{i}', 0) or 0)
+        is_active  = f'is_active_{i}' in request.form
+        to_delete  = f'delete_{i}' in request.form
+
+        if task_id:
+            t = TaskLibrary.query.get(int(task_id))
+            if t:
+                if to_delete:
+                    db.session.delete(t)
+                elif title:
+                    t.title, t.category, t.description = title, category, desc
+                    t.sort_order, t.is_active = sort_order, is_active
+        elif title and not to_delete:
+            db.session.add(TaskLibrary(title=title, category=category,
+                                        description=desc, sort_order=sort_order,
+                                        is_active=is_active))
+        i += 1
+
+    db.session.commit()
+    flash('Task library saved.', 'success')
+    return redirect(url_for('settings_task_library'))
+
+
+@app.route('/settings/checklists/<int:tmpl_id>/save-tasks', methods=['POST'])
+def settings_checklist_save_tasks(tmpl_id):
+    """Replace all tasks for a template in one form submission."""
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    tmpl = ChecklistTemplate.query.get_or_404(tmpl_id)
+
+    # Delete all existing tasks then re-create from form
+    ChecklistTemplateTask.query.filter_by(template_id=tmpl.id).delete()
+    db.session.flush()
+
+    i = 0
+    order = 0
+    while True:
+        if f'tt_title_{i}' not in request.form:
+            break
+        title       = request.form.get(f'tt_title_{i}', '').strip()
+        desc        = request.form.get(f'tt_desc_{i}', '').strip()
+        time_period = request.form.get(f'tt_time_period_{i}', '').strip()
+        to_delete   = f'tt_delete_{i}' in request.form
+        if title and not to_delete:
+            db.session.add(ChecklistTemplateTask(
+                template_id=tmpl.id,
+                title=title,
+                description=desc or None,
+                time_period=time_period,
+                sort_order=order,
+            ))
+            order += 1
+        i += 1
+
+    db.session.commit()
+    flash(f'"{tmpl.name}" saved — {order} tasks.', 'success')
+    return redirect(url_for('settings_task_library') + f'#tmpl-{tmpl_id}')
+
+
+# =====================================================
+# TASK LIBRARY SETTINGS (admin only)
+# =====================================================
+
+@app.route('/settings/tasks')
+def settings_task_library():
+    if session.get('role') != 'admin':
+        flash('Admin access required.', 'danger')
+        return redirect(url_for('home'))
+    tasks     = TaskLibrary.query.order_by(TaskLibrary.category, TaskLibrary.sort_order, TaskLibrary.title).all()
+    templates = ChecklistTemplate.query.order_by(ChecklistTemplate.name).all()
+    lib_tasks = TaskLibrary.query.filter_by(is_active=True)\
+                                  .order_by(TaskLibrary.category, TaskLibrary.sort_order, TaskLibrary.title).all()
+    return render_template('admin_task_library.html',
+                           tasks=tasks,
+                           templates=templates,
+                           lib_tasks=lib_tasks)
+
+
+@app.route('/settings/tasks/add', methods=['POST'])
+def settings_task_add():
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    title    = request.form.get('title', '').strip()
+    desc     = request.form.get('description', '').strip()
+    category = request.form.get('category', 'General').strip() or 'General'
+    order    = int(request.form.get('sort_order', 0) or 0)
+    if not title:
+        flash('Task title is required.', 'danger')
+        return redirect(url_for('settings_task_library'))
+    db.session.add(TaskLibrary(title=title, description=desc, category=category, sort_order=order))
+    db.session.commit()
+    flash(f'Task "{title}" added.', 'success')
+    return redirect(url_for('settings_task_library'))
+
+
+@app.route('/settings/tasks/<int:task_id>/edit', methods=['POST'])
+def settings_task_edit(task_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    t = TaskLibrary.query.get_or_404(task_id)
+    t.title       = request.form.get('title', t.title).strip() or t.title
+    t.description = request.form.get('description', '').strip()
+    t.category    = request.form.get('category', 'General').strip() or 'General'
+    t.sort_order  = int(request.form.get('sort_order', 0) or 0)
+    db.session.commit()
+    flash('Task updated.', 'success')
+    return redirect(url_for('settings_task_library'))
+
+
+@app.route('/settings/tasks/<int:task_id>/toggle', methods=['POST'])
+def settings_task_toggle(task_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    t = TaskLibrary.query.get_or_404(task_id)
+    t.is_active = not t.is_active
+    db.session.commit()
+    return redirect(url_for('settings_task_library'))
+
+
+@app.route('/settings/tasks/<int:task_id>/delete', methods=['POST'])
+def settings_task_delete(task_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    t = TaskLibrary.query.get_or_404(task_id)
+    db.session.delete(t)
+    db.session.commit()
+    flash('Task deleted.', 'success')
+    return redirect(url_for('settings_task_library'))
+
+
+# ── Checklist Templates ────────────────────────────────────────────────────────
+
+@app.route('/settings/checklists/add', methods=['POST'])
+def settings_checklist_add():
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    name = request.form.get('name', '').strip()
+    desc = request.form.get('description', '').strip()
+    if not name:
+        flash('Template name is required.', 'danger')
+        return redirect(url_for('settings_task_library'))
+    db.session.add(ChecklistTemplate(name=name, description=desc))
+    db.session.commit()
+    flash(f'Template "{name}" created.', 'success')
+    return redirect(url_for('settings_task_library'))
+
+
+@app.route('/settings/checklists/<int:tmpl_id>/edit', methods=['POST'])
+def settings_checklist_edit(tmpl_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    t = ChecklistTemplate.query.get_or_404(tmpl_id)
+    t.name        = request.form.get('name', t.name).strip() or t.name
+    t.description = request.form.get('description', '').strip()
+    t.is_active   = 'is_active' in request.form
+    db.session.commit()
+    flash('Template updated.', 'success')
+    return redirect(url_for('settings_task_library'))
+
+
+@app.route('/settings/checklists/<int:tmpl_id>/delete', methods=['POST'])
+def settings_checklist_delete(tmpl_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    t = ChecklistTemplate.query.get_or_404(tmpl_id)
+    db.session.delete(t)
+    db.session.commit()
+    flash('Template deleted.', 'success')
+    return redirect(url_for('settings_task_library'))
+
+
+@app.route('/settings/checklists/<int:tmpl_id>/add-task', methods=['POST'])
+def settings_checklist_add_task(tmpl_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    t = ChecklistTemplate.query.get_or_404(tmpl_id)
+    task_lib_id  = request.form.get('task_lib_id', '').strip()
+    custom_title = request.form.get('custom_title', '').strip()
+    custom_desc  = request.form.get('custom_description', '').strip()
+    next_order   = max((tt.sort_order for tt in t.tasks), default=-1) + 1
+
+    if task_lib_id:
+        lib_task = TaskLibrary.query.get(int(task_lib_id))
+        if lib_task:
+            db.session.add(ChecklistTemplateTask(
+                template_id=t.id,
+                task_lib_id=lib_task.id,
+                title=lib_task.title,
+                description=lib_task.description,
+                sort_order=next_order,
+            ))
+            db.session.commit()
+            flash(f'"{lib_task.title}" added to template.', 'success')
+    elif custom_title:
+        db.session.add(ChecklistTemplateTask(
+            template_id=t.id,
+            title=custom_title,
+            description=custom_desc,
+            sort_order=next_order,
+        ))
+        db.session.commit()
+        flash(f'"{custom_title}" added to template.', 'success')
+    else:
+        flash('Provide a library task or custom title.', 'danger')
+    return redirect(url_for('settings_task_library') + f'#tmpl-{tmpl_id}')
+
+
+@app.route('/settings/checklists/<int:tmpl_id>/task/<int:task_id>/delete', methods=['POST'])
+def settings_checklist_task_delete(tmpl_id, task_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('home'))
+    tt = ChecklistTemplateTask.query.get_or_404(task_id)
+    db.session.delete(tt)
+    db.session.commit()
+    flash('Task removed from template.', 'success')
+    return redirect(url_for('settings_task_library') + f'#tmpl-{tmpl_id}')
+
+
+# =====================================================
+# DAY PLANNER
+# =====================================================
+
+@app.route('/planner')
+def planner_dashboard():
+    if not (session.get('role') == 'admin' or authorized('view_day_planner')):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('home'))
+    today   = date.today()
+    cutoff  = today - timedelta(days=30)
+    plans   = DayPlan.query.filter(DayPlan.plan_date >= cutoff)\
+                            .order_by(DayPlan.plan_date).all()
+    templates = ChecklistTemplate.query.filter_by(is_active=True)\
+                                        .order_by(ChecklistTemplate.name).all()
+    upcoming = [p for p in plans if p.plan_date >= today]
+    past     = list(reversed([p for p in plans if p.plan_date < today]))
+    return render_template('planner_dashboard.html',
+                           upcoming=upcoming, past=past, templates=templates, today=today)
+
+
+@app.route('/planner/create', methods=['POST'])
+def planner_create():
+    if not (session.get('role') == 'admin' or authorized('manage_day_planner')):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('planner_dashboard'))
+    plan_date_str = request.form.get('plan_date', '').strip()
+    tmpl_id       = request.form.get('template_id', '').strip()
+    event_name    = request.form.get('event_name', '').strip()
+    notes         = request.form.get('notes', '').strip()
+    if not plan_date_str:
+        flash('Date is required.', 'danger')
+        return redirect(url_for('planner_dashboard'))
+    try:
+        plan_date = datetime.strptime(plan_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        flash('Invalid date.', 'danger')
+        return redirect(url_for('planner_dashboard'))
+    existing = DayPlan.query.filter_by(plan_date=plan_date).first()
+    if existing:
+        flash(f'A plan already exists for {plan_date_str}. Opening it.', 'info')
+        return redirect(url_for('planner_day', plan_id=existing.id))
+    plan = DayPlan(
+        plan_date=plan_date,
+        event_name=event_name or None,
+        notes=notes or None,
+        created_by_id=session.get('user_id'),
+    )
+    if tmpl_id:
+        tmpl = ChecklistTemplate.query.get(int(tmpl_id))
+        if tmpl:
+            plan.template_id = tmpl.id
+    db.session.add(plan)
+    db.session.flush()
+    if plan.template_id:
+        tmpl = ChecklistTemplate.query.get(plan.template_id)
+        if tmpl:
+            for tt in tmpl.tasks:
+                db.session.add(DayPlanTask(
+                    day_plan_id=plan.id,
+                    title=tt.title,
+                    description=tt.description,
+                    time_period=tt.time_period or '',
+                    sort_order=tt.sort_order,
+                ))
+    db.session.commit()
+    log_audit('planner', f'Created day plan for {plan_date_str}')
+    # JSON response for calendar modal AJAX call
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'ok': True, 'plan_id': plan.id,
+                        'redirect': url_for('planner_day', plan_id=plan.id)})
+    return redirect(url_for('planner_day', plan_id=plan.id))
+
+
+@app.route('/planner/<int:plan_id>')
+def planner_day(plan_id):
+    if not (session.get('role') == 'admin' or authorized('view_day_planner')):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('home'))
+    plan = DayPlan.query.get_or_404(plan_id)
+    lib_tasks = TaskLibrary.query.filter_by(is_active=True)\
+                                  .order_by(TaskLibrary.category, TaskLibrary.sort_order, TaskLibrary.title).all()
+    can_manage = session.get('role') == 'admin' or authorized('manage_day_planner')
+    staff_users = User.query.filter(
+        User.active == True,
+        User.role.in_(['admin', 'staff'])
+    ).order_by(User.first_name, User.last_name).all()
+    return render_template('planner_day.html', plan=plan, lib_tasks=lib_tasks,
+                           can_manage=can_manage, staff_users=staff_users)
+
+
+@app.route('/planner/<int:plan_id>/update', methods=['POST'])
+def planner_day_update(plan_id):
+    if not (session.get('role') == 'admin' or authorized('manage_day_planner')):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    plan = DayPlan.query.get_or_404(plan_id)
+    plan.event_name = request.form.get('event_name', '').strip() or None
+    plan.notes      = request.form.get('notes', '').strip() or None
+    db.session.commit()
+    flash('Plan updated.', 'success')
+    return redirect(url_for('planner_day', plan_id=plan_id))
+
+
+@app.route('/planner/<int:plan_id>/delete', methods=['POST'])
+def planner_day_delete(plan_id):
+    if not (session.get('role') == 'admin' or authorized('manage_day_planner')):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('planner_dashboard'))
+    plan = DayPlan.query.get_or_404(plan_id)
+    db.session.delete(plan)
+    db.session.commit()
+    flash('Day plan deleted.', 'success')
+    return redirect(url_for('planner_dashboard'))
+
+
+@app.route('/planner/<int:plan_id>/task/add', methods=['POST'])
+def planner_task_add(plan_id):
+    if not (session.get('role') == 'admin' or authorized('manage_day_planner')):
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    plan = DayPlan.query.get_or_404(plan_id)
+    task_lib_id  = request.form.get('task_lib_id', '').strip()
+    custom_title = request.form.get('custom_title', '').strip()
+    custom_desc  = request.form.get('custom_description', '').strip()
+    next_order   = max((t.sort_order for t in plan.tasks), default=-1) + 1
+    if task_lib_id:
+        lib = TaskLibrary.query.get(int(task_lib_id))
+        if lib:
+            db.session.add(DayPlanTask(day_plan_id=plan.id, title=lib.title,
+                                        description=lib.description, sort_order=next_order))
+            db.session.commit()
+    elif custom_title:
+        db.session.add(DayPlanTask(day_plan_id=plan.id, title=custom_title,
+                                    description=custom_desc, sort_order=next_order))
+        db.session.commit()
+    return redirect(url_for('planner_day', plan_id=plan_id))
+
+
+@app.route('/planner/<int:plan_id>/task/<int:task_id>/toggle', methods=['POST'])
+def planner_task_toggle(plan_id, task_id):
+    if not (session.get('role') == 'admin' or authorized('view_day_planner')):
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    t = DayPlanTask.query.get_or_404(task_id)
+    if t.day_plan_id != plan_id:
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    t.is_completed = not t.is_completed
+    if t.is_completed:
+        t.completed_by_id = session.get('user_id')
+        t.completed_at    = datetime.utcnow()
+    else:
+        t.completed_by_id = None
+        t.completed_at    = None
+    db.session.commit()
+    return redirect(url_for('planner_day', plan_id=plan_id))
+
+
+@app.route('/planner/<int:plan_id>/task/<int:task_id>/note', methods=['POST'])
+def planner_task_note(plan_id, task_id):
+    if not (session.get('role') == 'admin' or authorized('view_day_planner')):
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    t = DayPlanTask.query.get_or_404(task_id)
+    if t.day_plan_id != plan_id:
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    t.manager_note = request.form.get('manager_note', '').strip() or None
+    db.session.commit()
+    return redirect(url_for('planner_day', plan_id=plan_id))
+
+
+@app.route('/planner/<int:plan_id>/task/<int:task_id>/assign', methods=['POST'])
+def planner_task_assign(plan_id, task_id):
+    if not (session.get('role') == 'admin' or authorized('manage_day_planner')):
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    t = DayPlanTask.query.get_or_404(task_id)
+    if t.day_plan_id != plan_id:
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    assigned_to_id = request.form.get('assigned_to_id', '').strip()
+    t.assigned_to_id = int(assigned_to_id) if assigned_to_id else None
+    db.session.commit()
+    return redirect(url_for('planner_day', plan_id=plan_id))
+
+
+@app.route('/planner/<int:plan_id>/task/<int:task_id>/delete', methods=['POST'])
+def planner_task_delete(plan_id, task_id):
+    if not (session.get('role') == 'admin' or authorized('manage_day_planner')):
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    t = DayPlanTask.query.get_or_404(task_id)
+    if t.day_plan_id != plan_id:
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    db.session.delete(t)
+    db.session.commit()
+    return redirect(url_for('planner_day', plan_id=plan_id))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <!-- Header -->
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <div class="text-muted small mb-1">
+        <a href="{{ url_for('planner_dashboard') }}" class="text-muted text-decoration-none">
+          <i class="fas fa-clipboard-check me-1"></i>Day Planner
+        </a>
+        <i class="fas fa-chevron-right mx-2" style="font-size:.65rem;"></i>
+        {{ plan.plan_date.strftime('%A, %B %d, %Y') }}
+      </div>
+      <h2 class="mb-0">
+        {% if plan.event_name %}
+          {{ plan.event_name }}
+          <span class="text-muted fw-normal fs-5 ms-2">— {{ plan.plan_date.strftime('%b %d') }}</span>
+        {% else %}
+          {{ plan.plan_date.strftime('%A, %B %d, %Y') }}
+        {% endif %}
+      </h2>
+      {% if plan.template %}
+        <span class="badge mt-1" style="background:rgba(139,92,246,.15);color:#8b5cf6;border:1px solid rgba(139,92,246,.25);">
+          <i class="fas fa-layer-group me-1"></i>{{ plan.template.name }}
+        </span>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      {% if can_manage %}
+      <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editPlanModal">
+        <i class="fas fa-pen me-1"></i> Edit Plan
+      </button>
+      <form method="POST" action="{{ url_for('planner_day_delete', plan_id=plan.id) }}"
+            onsubmit="return confirm('Delete this day plan? All tasks and notes will be lost.')">
+        <button type="submit" class="btn btn-outline-danger btn-sm">
+          <i class="fas fa-trash me-1"></i> Delete
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="row g-4">
+
+    <!-- ── Checklist ────────────────────────────────────────────────────── -->
+    <div class="col-lg-8">
+      {% set total = plan.tasks | length %}
+      {% set done = plan.tasks | selectattr('is_completed') | list | length %}
+
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-semibold">
+            <i class="fas fa-tasks me-2"></i>Checklist
+            <span class="text-muted fw-normal ms-1">({{ done }}/{{ total }} done)</span>
+          </span>
+          {% if total > 0 %}
+          <div class="progress" style="width:120px;height:8px;">
+            <div class="progress-bar {% if done == total %}bg-success{% else %}bg-primary{% endif %}"
+                 style="width:{{ (done/total*100)|int if total else 0 }}%;"></div>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if plan.tasks %}
+        <div class="list-group list-group-flush">
+          {% for task in plan.tasks %}
+          <div class="list-group-item px-3 py-3 {% if task.is_completed %}bg-light bg-opacity-50{% endif %}">
+            <div class="d-flex gap-3">
+              <!-- Toggle checkbox -->
+              <form method="POST"
+                    action="{{ url_for('planner_task_toggle', plan_id=plan.id, task_id=task.id) }}"
+                    class="flex-shrink-0 mt-1">
+                <button type="submit" class="btn p-0 border-0 bg-transparent" title="Toggle complete">
+                  {% if task.is_completed %}
+                    <i class="fas fa-check-circle fa-lg text-success"></i>
+                  {% else %}
+                    <i class="far fa-circle fa-lg text-muted"></i>
+                  {% endif %}
+                </button>
+              </form>
+
+              <div class="flex-grow-1">
+                <!-- Task title + description -->
+                <div class="{% if task.is_completed %}text-muted text-decoration-line-through{% else %}fw-semibold{% endif %}">
+                  {{ task.title }}
+                </div>
+                {% if task.description %}
+                <div class="text-muted small mt-1">{{ task.description }}</div>
+                {% endif %}
+
+                <!-- Assignment & completion info -->
+                <div class="d-flex flex-wrap gap-2 mt-1 align-items-center">
+                  {% if task.assigned_to %}
+                  <span class="badge" style="background:rgba(99,102,241,.12);color:#6366f1;border:1px solid rgba(99,102,241,.25);font-size:.72rem;">
+                    <i class="fas fa-user me-1"></i>{{ task.assigned_to.first_name }} {{ task.assigned_to.last_name }}
+                  </span>
+                  {% endif %}
+                  {% if task.is_completed and task.completed_by %}
+                  <span class="text-success small">
+                    <i class="fas fa-check me-1"></i>Done by {{ task.completed_by.first_name }} {{ task.completed_by.last_name }}{% if task.completed_at %} at {{ task.completed_at.strftime('%I:%M %p') }}{% endif %}
+                  </span>
+                  {% endif %}
+                </div>
+
+                <!-- Manager note -->
+                {% if task.manager_note %}
+                <div class="mt-2 p-2 rounded" style="background:rgba(245,180,92,.1);border-left:3px solid var(--accent);">
+                  <small class="text-muted fw-semibold">Note:</small>
+                  <span class="small ms-1">{{ task.manager_note }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Assign to (managers/admin only) -->
+                {% if can_manage %}
+                <div class="mt-2">
+                  <form method="POST"
+                        action="{{ url_for('planner_task_assign', plan_id=plan.id, task_id=task.id) }}"
+                        class="d-inline-flex align-items-center gap-2">
+                    <label class="text-muted small flex-shrink-0">
+                      <i class="fas fa-user-tag me-1"></i>Assign:
+                    </label>
+                    <select name="assigned_to_id" class="form-select form-select-sm"
+                            style="max-width:180px;"
+                            onchange="this.form.submit()">
+                      <option value="">— Unassigned —</option>
+                      {% for u in staff_users %}
+                      <option value="{{ u.id }}"
+                              {% if task.assigned_to_id == u.id %}selected{% endif %}>
+                        {{ u.first_name }} {{ u.last_name }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </form>
+                </div>
+                {% endif %}
+
+                <!-- Note form (collapsed by default) -->
+                <div class="mt-2">
+                  <button class="btn btn-link btn-sm p-0 text-muted"
+                          type="button"
+                          data-bs-toggle="collapse"
+                          data-bs-target="#noteForm{{ task.id }}">
+                    <i class="fas fa-sticky-note me-1"></i>
+                    {% if task.manager_note %}Edit note{% else %}Add note{% endif %}
+                  </button>
+                  <div class="collapse mt-2" id="noteForm{{ task.id }}">
+                    <form method="POST"
+                          action="{{ url_for('planner_task_note', plan_id=plan.id, task_id=task.id) }}">
+                      <textarea name="manager_note" class="form-control form-control-sm mb-2"
+                                rows="2"
+                                placeholder="Add a note about this task…">{{ task.manager_note or '' }}</textarea>
+                      <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                          <i class="fas fa-save me-1"></i> Save Note
+                        </button>
+                        {% if task.manager_note %}
+                        <button type="submit" class="btn btn-outline-secondary btn-sm"
+                                name="manager_note" value="">
+                          Clear
+                        </button>
+                        {% endif %}
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Delete task (managers/admin only) -->
+              {% if can_manage %}
+              <form method="POST"
+                    action="{{ url_for('planner_task_delete', plan_id=plan.id, task_id=task.id) }}"
+                    class="flex-shrink-0"
+                    onsubmit="return confirm('Remove this task from the plan?')">
+                <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-2 mt-1"
+                        title="Remove task">
+                  <i class="fas fa-times" style="font-size:.75rem;"></i>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="card-body text-center text-muted py-5">
+          <i class="fas fa-clipboard fa-2x mb-3 d-block" style="opacity:.3;"></i>
+          No tasks yet. Add tasks below.
+        </div>
+        {% endif %}
+
+        <!-- Add task footer -->
+        {% if can_manage %}
+        <div class="card-footer">
+          <div class="row g-2">
+            <div class="col-12">
+              <p class="small fw-semibold mb-2 text-muted">Add task to this plan</p>
+            </div>
+            {% if lib_tasks %}
+            <div class="col-md-8">
+              <form class="d-flex gap-2" method="POST"
+                    action="{{ url_for('planner_task_add', plan_id=plan.id) }}">
+                <select name="task_lib_id" class="form-select form-select-sm">
+                  <option value="">— pick from library —</option>
+                  {% set ns = namespace(cur_cat='') %}
+                  {% for lt in lib_tasks %}
+                    {% if lt.category != ns.cur_cat %}
+                      {% set ns.cur_cat = lt.category %}
+                      <optgroup label="{{ lt.category }}">
+                    {% endif %}
+                    <option value="{{ lt.id }}">{{ lt.title }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm flex-shrink-0">
+                  <i class="fas fa-plus me-1"></i> Add
+                </button>
+              </form>
+            </div>
+            {% endif %}
+            <div class="col-md-{% if lib_tasks %}4{% else %}12{% endif %}">
+              <form class="d-flex gap-2" method="POST"
+                    action="{{ url_for('planner_task_add', plan_id=plan.id) }}">
+                <input type="text" name="custom_title" class="form-control form-control-sm"
+                       placeholder="Or type custom task…">
+                <button type="submit" class="btn btn-outline-primary btn-sm flex-shrink-0">
+                  <i class="fas fa-plus me-1"></i> Add
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── Plan Info Sidebar ─────────────────────────────────────────────── -->
+    <div class="col-lg-4">
+
+      <!-- Summary card -->
+      <div class="card mb-3">
+        <div class="card-header fw-semibold"><i class="fas fa-info-circle me-2"></i>Plan Summary</div>
+        <div class="card-body">
+          <dl class="mb-0" style="display:grid;grid-template-columns:auto 1fr;gap:.4rem 1rem;">
+            <dt class="text-muted small">Date</dt>
+            <dd class="mb-0">{{ plan.plan_date.strftime('%B %d, %Y') }}</dd>
+            <dt class="text-muted small">Day</dt>
+            <dd class="mb-0">{{ plan.plan_date.strftime('%A') }}</dd>
+            {% if plan.template %}
+            <dt class="text-muted small">Template</dt>
+            <dd class="mb-0">{{ plan.template.name }}</dd>
+            {% endif %}
+            <dt class="text-muted small">Tasks</dt>
+            <dd class="mb-0">{{ done }} of {{ total }} complete</dd>
+            {% if plan.created_by %}
+            <dt class="text-muted small">Created by</dt>
+            <dd class="mb-0">{{ plan.created_by.first_name }} {{ plan.created_by.last_name }}</dd>
+            {% endif %}
+          </dl>
+        </div>
+      </div>
+
+      <!-- Notes card -->
+      {% if plan.notes %}
+      <div class="card mb-3">
+        <div class="card-header fw-semibold"><i class="fas fa-sticky-note me-2"></i>Plan Notes</div>
+        <div class="card-body">
+          <p class="mb-0" style="white-space:pre-wrap;">{{ plan.notes }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Quick stats -->
+      {% if total > 0 %}
+      <div class="card">
+        <div class="card-body text-center py-3">
+          {% if done == total %}
+          <div class="text-success fw-bold fs-5"><i class="fas fa-check-circle me-2"></i>All done!</div>
+          <div class="text-muted small">All {{ total }} tasks completed</div>
+          {% else %}
+          <div class="fw-bold fs-4" style="color:var(--accent);">{{ total - done }}</div>
+          <div class="text-muted small">task{{ 's' if (total - done) != 1 else '' }} remaining</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<!-- Edit Plan Modal -->
+{% if can_manage %}
+<div class="modal fade" id="editPlanModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('planner_day_update', plan_id=plan.id) }}">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Plan — {{ plan.plan_date.strftime('%b %d, %Y') }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Event / Label</label>
+            <input type="text" name="event_name" class="form-control"
+                   value="{{ plan.event_name or '' }}"
+                   placeholder="e.g. Friday Night, Private Buyout">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Notes</label>
+            <textarea name="notes" class="form-control" rows="4"
+                      placeholder="Special instructions, staffing notes, event details…">{{ plan.notes or '' }}</textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -152,6 +152,20 @@
       </a>
     </div>
     {% endif %}
+    {% if current_user.role == 'admin' or authorized('view_day_planner') %}
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('planner_dashboard') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-clipboard-check me-2" style="color:var(--accent);"></i>Day Planner</h5></div>
+      </a>
+    </div>
+    {% endif %}
+    {% if current_user.role == 'admin' %}
+    <div class="col-6 col-md-3">
+      <a href="{{ url_for('settings_task_library') }}" class="text-decoration-none">
+        <div class="portal-card-box"><h5><i class="fas fa-list-check me-2" style="color:var(--accent);"></i>Task Library</h5></div>
+      </a>
+    </div>
+    {% endif %}
   </div>
 
   {% elif current_user.role == 'member' or (current_user.role in ('admin', 'staff') and view_as_member) %}
