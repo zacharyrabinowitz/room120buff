@@ -7995,9 +7995,6 @@ def brief_pdf(brief_id):
         if u:
             gen_by = f'{u.first_name} {u.last_name}'
 
-    cs = ClubSetting.query.filter_by(key='club_name').first()
-    club_name = cs.value if cs else 'Room 120'
-
     staff_on_shift = [s for s in brief.staff_entries if not s.is_backup]
     staff_backup   = [s for s in brief.staff_entries if s.is_backup]
 
@@ -8007,7 +8004,7 @@ def brief_pdf(brief_id):
 
     def table_rows(rows, cols, empty_cols):
         if not rows:
-            return f'<tr><td colspan="{empty_cols}" style="color:#999;font-style:italic;padding:6px 8px;">None listed</td></tr>'
+            return f'<tr><td colspan="{empty_cols}" style="color:#aaa;font-style:italic;padding:5px 6px;">None listed</td></tr>'
         return ''.join(
             '<tr>' + ''.join(f'<td>{esc(col(r))}</td>' for col in cols) + '</tr>'
             for r in rows
@@ -8027,65 +8024,99 @@ def brief_pdf(brief_id):
     assigned = (f'{brief.assigned_to.first_name} {brief.assigned_to.last_name}'
                 if brief.assigned_to else '—')
 
+    day_name   = brief.brief_date.strftime('%A')           # Monday
+    date_fmt   = brief.brief_date.strftime('%m.%d.%Y')    # 08.04.2026
+    date_long  = brief.brief_date.strftime('%A, %B %d, %Y')
+    filename   = f'TDR Daily Operations ({day_name})({date_fmt}).pdf'
+
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>
-body{{font-family:Helvetica,Arial,sans-serif;font-size:10pt;color:#1a1a1a;margin:0;padding:0}}
-.hdr{{background:#1a1a1a;color:#f5b45c;padding:16px 24px 12px}}
-.hdr h1{{margin:0;font-size:17pt;letter-spacing:.5px}}
-.hdr .sub{{font-size:9pt;color:#ccc;margin-top:3px}}
-.meta{{padding:8px 24px;background:#f5f5f5;border-bottom:1px solid #ddd;font-size:8pt;color:#555}}
-.body{{padding:14px 24px}}
-.sec{{margin-bottom:16px}}
-.sec-title{{font-size:10pt;font-weight:bold;border-bottom:2px solid #f5b45c;padding-bottom:2px;margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px}}
-table{{width:100%;border-collapse:collapse;font-size:9pt}}
-th{{background:#efefef;text-align:left;padding:4px 7px;border:1px solid #ddd;font-size:8pt;text-transform:uppercase}}
-td{{padding:4px 7px;border:1px solid #e0e0e0;vertical-align:top}}
-tr:nth-child(even) td{{background:#fafafa}}
-.notes{{border:1px solid #ddd;padding:8px;font-size:9.5pt;min-height:36px;white-space:pre-wrap}}
-.footer{{margin-top:20px;padding-top:8px;border-top:1px solid #eee;font-size:7.5pt;color:#999}}
+@page {{size: letter; margin: 0.65in 0.6in 0.6in 0.6in;}}
+body {{font-family: Helvetica, Arial, sans-serif; font-size: 9.5pt; color: #222; margin: 0; padding: 0;}}
+.hdr {{border-bottom: 2px solid #333; padding-bottom: 6px; margin-bottom: 10px;}}
+.hdr h1 {{margin: 0 0 2px 0; font-size: 14pt; font-weight: bold; color: #111;}}
+.hdr .sub {{font-size: 8.5pt; color: #555;}}
+.meta-row {{display: table; width: 100%; border-collapse: collapse; margin-bottom: 12px;}}
+.meta-cell {{display: table-cell; font-size: 8pt; color: #444; padding: 4px 8px 4px 0;}}
+.sec {{margin-bottom: 13px; page-break-inside: avoid;}}
+.sec-title {{font-size: 9pt; font-weight: bold; text-transform: uppercase;
+             letter-spacing: 0.4px; border-bottom: 1px solid #555;
+             padding-bottom: 2px; margin-bottom: 5px; color: #111;}}
+table {{width: 100%; border-collapse: collapse; font-size: 8.5pt; table-layout: fixed;}}
+col.c-name  {{width: 22%;}}
+col.c-role  {{width: 18%;}}
+col.c-time  {{width: 16%;}}
+col.c-notes {{width: 44%;}}
+col.c-party {{width: 22%;}}
+col.c-size  {{width: 8%;}}
+col.c-arr   {{width: 14%;}}
+col.c-item  {{width: 28%;}}
+col.c-qty   {{width: 8%;}}
+th {{background: #f0f0f0; text-align: left; padding: 3px 5px;
+     border: 1px solid #ccc; font-size: 7.5pt; text-transform: uppercase; font-weight: bold;}}
+td {{padding: 3px 5px; border: 1px solid #ddd; vertical-align: top; word-wrap: break-word;}}
+tr:nth-child(even) td {{background: #f8f8f8;}}
+.notes-box {{border: 1px solid #ccc; padding: 6px 8px; font-size: 9pt;
+             min-height: 32px; white-space: pre-wrap; word-wrap: break-word;}}
+.footer {{margin-top: 14px; padding-top: 6px; border-top: 1px solid #ddd;
+          font-size: 7pt; color: #888;}}
 </style></head><body>
+
 <div class="hdr">
-  <h1>{esc(club_name)} &mdash; Daily Operations Brief</h1>
-  <div class="sub">{brief.brief_date.strftime('%A, %B %d, %Y')}</div>
+  <h1>The Draft Room Daily Operations Guide</h1>
+  <div class="sub">{date_long} &nbsp;&mdash;&nbsp; Assigned Manager: {esc(assigned)}</div>
 </div>
-<div class="meta">
-  <strong>Assigned Manager:</strong> {esc(assigned)} &nbsp;|&nbsp;
-  <strong>Generated:</strong> {gen_str} &nbsp;|&nbsp;
-  <strong>By:</strong> {esc(gen_by)}
+
+<div class="sec">
+  <div class="sec-title">Staff On Shift</div>
+  <table>
+    <colgroup><col class="c-name"><col class="c-role"><col class="c-time"><col class="c-notes"></colgroup>
+    <thead><tr><th>Name</th><th>Role</th><th>Shift Time</th><th>Notes</th></tr></thead>
+    <tbody>{staff_rows}</tbody>
+  </table>
 </div>
-<div class="body">
-  <div class="sec">
-    <div class="sec-title">Staff On Shift</div>
-    <table><thead><tr><th>Name</th><th>Role</th><th>Shift Time</th><th>Notes</th></tr></thead>
-    <tbody>{staff_rows}</tbody></table>
-  </div>
-  <div class="sec">
-    <div class="sec-title">On-Call / Backup Staff</div>
-    <table><thead><tr><th>Name</th><th>Role</th><th>Contact</th><th>Notes</th></tr></thead>
-    <tbody>{backup_rows}</tbody></table>
-  </div>
-  <div class="sec">
-    <div class="sec-title">Expected Reservations &amp; Parties</div>
-    <table><thead><tr><th>Party / Name</th><th>Size</th><th>Arrival</th><th>Notes</th></tr></thead>
-    <tbody>{res_rows}</tbody></table>
-  </div>
-  <div class="sec">
-    <div class="sec-title">Pre-Orders &amp; Special Requests</div>
-    <table><thead><tr><th>Party / Person</th><th>Item</th><th>Qty</th><th>Notes</th></tr></thead>
-    <tbody>{pre_rows}</tbody></table>
-  </div>
-  <div class="sec">
-    <div class="sec-title">General Notes</div>
-    <div class="notes">{esc(brief.general_notes) if brief.general_notes else '<span style="color:#999;font-style:italic">No notes.</span>'}</div>
-  </div>
-  <div class="footer">Generated {gen_str} by {esc(gen_by)} &mdash; {esc(club_name)} internal use only.</div>
+
+<div class="sec">
+  <div class="sec-title">On-Call / Backup Staff</div>
+  <table>
+    <colgroup><col class="c-name"><col class="c-role"><col class="c-time"><col class="c-notes"></colgroup>
+    <thead><tr><th>Name</th><th>Role</th><th>Contact</th><th>Notes</th></tr></thead>
+    <tbody>{backup_rows}</tbody>
+  </table>
 </div>
+
+<div class="sec">
+  <div class="sec-title">Expected Reservations &amp; Parties</div>
+  <table>
+    <colgroup><col class="c-party"><col class="c-size"><col class="c-arr"><col class="c-notes"></colgroup>
+    <thead><tr><th>Party / Name</th><th>Size</th><th>Arrival</th><th>Notes</th></tr></thead>
+    <tbody>{res_rows}</tbody>
+  </table>
+</div>
+
+<div class="sec">
+  <div class="sec-title">Pre-Orders &amp; Special Requests</div>
+  <table>
+    <colgroup><col class="c-party"><col class="c-item"><col class="c-qty"><col class="c-notes"></colgroup>
+    <thead><tr><th>Party / Person</th><th>Item</th><th>Qty</th><th>Notes</th></tr></thead>
+    <tbody>{pre_rows}</tbody>
+  </table>
+</div>
+
+<div class="sec">
+  <div class="sec-title">General Notes</div>
+  <div class="notes-box">{esc(brief.general_notes) if brief.general_notes else ''}</div>
+</div>
+
+<div class="footer">
+  Generated {gen_str} by {esc(gen_by)} &mdash; The Draft Room internal use only.
+</div>
+
 </body></html>"""
 
     buf = BytesIO()
     pisa.CreatePDF(html, dest=buf)
     buf.seek(0)
-    filename = f"brief_{brief.brief_date.isoformat()}.pdf"
     return app.response_class(
         buf.getvalue(),
         mimetype='application/pdf',
