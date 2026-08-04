@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid px-4 mt-4">
+
+  <!-- Header -->
+  <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4">
+    <div>
+      <div class="text-muted small mb-1">
+        <a href="{{ url_for('brief_dashboard') }}" class="text-muted text-decoration-none">
+          <i class="fas fa-newspaper me-1"></i>Daily Brief
+        </a>
+        <i class="fas fa-chevron-right mx-2" style="font-size:.65rem;"></i>
+        {{ brief.brief_date.strftime('%A, %B %d, %Y') }}
+      </div>
+      <h2 class="mb-0">{{ brief.brief_date.strftime('%A, %B %d, %Y') }}</h2>
+      {% if brief.assigned_to %}
+        <span class="badge mt-1" style="background:rgba(99,102,241,.12);color:#6366f1;border:1px solid rgba(99,102,241,.25);">
+          <i class="fas fa-user me-1"></i>{{ brief.assigned_to.first_name }} {{ brief.assigned_to.last_name }}
+        </span>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('brief_pdf', brief_id=brief.id) }}"
+         class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-file-pdf me-1"></i> Download PDF
+      </a>
+      {% if can_manage %}
+      <form method="POST" action="{{ url_for('brief_delete', brief_id=brief.id) }}"
+            onsubmit="return confirm('Delete this brief? All data will be lost.')">
+        <button type="submit" class="btn btn-outline-danger btn-sm">
+          <i class="fas fa-trash me-1"></i> Delete
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+        {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST" action="{{ url_for('brief_save', brief_id=brief.id) }}" id="briefForm">
+
+    <!-- Hidden count fields updated by JS before submit -->
+    <input type="hidden" name="staff_count"  id="staffCount"  value="{{ staff_on_shift | length }}">
+    <input type="hidden" name="backup_count" id="backupCount" value="{{ staff_backup | length }}">
+    <input type="hidden" name="res_count"    id="resCount"    value="{{ brief.reservations | length }}">
+    <input type="hidden" name="pre_count"    id="preCount"    value="{{ brief.preorders | length }}">
+
+    <div class="row g-4">
+
+      <!-- ── Left column ─────────────────────────────────────── -->
+      <div class="col-lg-8">
+
+        <!-- Staff On Shift -->
+        <div class="card mb-4">
+          <div class="card-header fw-semibold">
+            <i class="fas fa-id-badge me-2" style="color:var(--accent);"></i>Staff On Shift
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Name <span class="text-danger">*</span></th>
+                  <th style="width:130px;">Role / Position</th>
+                  <th style="width:120px;">Shift Time</th>
+                  <th>Notes</th>
+                  {% if can_manage %}<th style="width:36px;"></th>{% endif %}
+                </tr>
+              </thead>
+              <tbody id="staffBody">
+                {% for i, s in enumerate(staff_on_shift) %}
+                <tr class="data-row">
+                  <td><input type="text" name="staff_name_{{ i }}" class="form-control form-control-sm"
+                             value="{{ s.name }}" placeholder="Name" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="text" name="staff_role_{{ i }}" class="form-control form-control-sm"
+                             value="{{ s.role or '' }}" placeholder="e.g. Server" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="text" name="staff_time_{{ i }}" class="form-control form-control-sm"
+                             value="{{ s.shift_time or '' }}" placeholder="e.g. 5–11pm" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="text" name="staff_notes_{{ i }}" class="form-control form-control-sm"
+                             value="{{ s.notes or '' }}" placeholder="Any notes" {% if not can_manage %}disabled{% endif %}></td>
+                  {% if can_manage %}
+                  <td><button type="button" class="btn btn-outline-danger btn-sm py-0 px-2"
+                              onclick="removeRow(this,'staffBody','staffCount')" title="Remove">
+                        <i class="fas fa-times" style="font-size:.7rem;"></i></button></td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if can_manage %}
+          <div class="card-footer">
+            <button type="button" class="btn btn-outline-primary btn-sm"
+                    onclick="addRow('staffBody','staffCount','staff')">
+              <i class="fas fa-plus me-1"></i> Add Staff
+            </button>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- On-Call / Backup Staff -->
+        <div class="card mb-4">
+          <div class="card-header fw-semibold">
+            <i class="fas fa-phone me-2" style="color:var(--accent);"></i>On-Call / Backup Staff
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Name <span class="text-danger">*</span></th>
+                  <th style="width:130px;">Role / Position</th>
+                  <th style="width:140px;">Contact / Phone</th>
+                  <th>Notes</th>
+                  {% if can_manage %}<th style="width:36px;"></th>{% endif %}
+                </tr>
+              </thead>
+              <tbody id="backupBody">
+                {% for i, s in enumerate(staff_backup) %}
+                <tr class="data-row">
+                  <td><input type="text" name="backup_name_{{ i }}" class="form-control form-control-sm"
+                             value="{{ s.name }}" placeholder="Name" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="text" name="backup_role_{{ i }}" class="form-control form-control-sm"
+                             value="{{ s.role or '' }}" placeholder="e.g. Bartender" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="text" name="backup_contact_{{ i }}" class="form-control form-control-sm"
+                             value="{{ s.shift_time or '' }}" placeholder="Phone or contact" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="text" name="backup_notes_{{ i }}" class="form-control form-control-sm"
+                             value="{{ s.notes or '' }}" placeholder="Availability, notes" {% if not can_manage %}disabled{% endif %}></td>
+                  {% if can_manage %}
+                  <td><button type="button" class="btn btn-outline-danger btn-sm py-0 px-2"
+                              onclick="removeRow(this,'backupBody','backupCount')" title="Remove">
+                        <i class="fas fa-times" style="font-size:.7rem;"></i></button></td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if can_manage %}
+          <div class="card-footer">
+            <button type="button" class="btn btn-outline-primary btn-sm"
+                    onclick="addRow('backupBody','backupCount','backup')">
+              <i class="fas fa-plus me-1"></i> Add On-Call
+            </button>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Expected Reservations & Parties -->
+        <div class="card mb-4">
+          <div class="card-header fw-semibold">
+            <i class="fas fa-calendar-check me-2" style="color:var(--accent);"></i>Expected Reservations &amp; Parties
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Party / Name <span class="text-danger">*</span></th>
+                  <th style="width:80px;" class="text-center">Size</th>
+                  <th style="width:110px;">Arrival Time</th>
+                  <th>Notes</th>
+                  {% if can_manage %}<th style="width:36px;"></th>{% endif %}
+                </tr>
+              </thead>
+              <tbody id="resBody">
+                {% for i, r in enumerate(brief.reservations) %}
+                <tr class="data-row">
+                  <td><input type="text" name="res_name_{{ i }}" class="form-control form-control-sm"
+                             value="{{ r.party_name }}" placeholder="Party or member name" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="number" name="res_size_{{ i }}" class="form-control form-control-sm text-center"
+                             value="{{ r.party_size or '' }}" placeholder="—" min="1" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="text" name="res_time_{{ i }}" class="form-control form-control-sm"
+                             value="{{ r.arrival_time or '' }}" placeholder="e.g. 7:30pm" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="text" name="res_notes_{{ i }}" class="form-control form-control-sm"
+                             value="{{ r.notes or '' }}" placeholder="Seating, occasion, requests…" {% if not can_manage %}disabled{% endif %}></td>
+                  {% if can_manage %}
+                  <td><button type="button" class="btn btn-outline-danger btn-sm py-0 px-2"
+                              onclick="removeRow(this,'resBody','resCount')" title="Remove">
+                        <i class="fas fa-times" style="font-size:.7rem;"></i></button></td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if can_manage %}
+          <div class="card-footer">
+            <button type="button" class="btn btn-outline-primary btn-sm"
+                    onclick="addRow('resBody','resCount','res')">
+              <i class="fas fa-plus me-1"></i> Add Reservation
+            </button>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Pre-Orders & Special Requests -->
+        <div class="card mb-4">
+          <div class="card-header fw-semibold">
+            <i class="fas fa-cocktail me-2" style="color:var(--accent);"></i>Pre-Orders &amp; Special Requests
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width:160px;">Party / Person</th>
+                  <th>Item / Drink <span class="text-danger">*</span></th>
+                  <th style="width:70px;" class="text-center">Qty</th>
+                  <th>Notes</th>
+                  {% if can_manage %}<th style="width:36px;"></th>{% endif %}
+                </tr>
+              </thead>
+              <tbody id="preBody">
+                {% for i, p in enumerate(brief.preorders) %}
+                <tr class="data-row">
+                  <td><input type="text" name="pre_party_{{ i }}" class="form-control form-control-sm"
+                             value="{{ p.party_name or '' }}" placeholder="Who it's for" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="text" name="pre_item_{{ i }}" class="form-control form-control-sm"
+                             value="{{ p.item }}" placeholder="Bottle, cocktail, dish…" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="number" name="pre_qty_{{ i }}" class="form-control form-control-sm text-center"
+                             value="{{ p.quantity }}" min="1" {% if not can_manage %}disabled{% endif %}></td>
+                  <td><input type="text" name="pre_notes_{{ i }}" class="form-control form-control-sm"
+                             value="{{ p.notes or '' }}" placeholder="Timing, allergies, details…" {% if not can_manage %}disabled{% endif %}></td>
+                  {% if can_manage %}
+                  <td><button type="button" class="btn btn-outline-danger btn-sm py-0 px-2"
+                              onclick="removeRow(this,'preBody','preCount')" title="Remove">
+                        <i class="fas fa-times" style="font-size:.7rem;"></i></button></td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if can_manage %}
+          <div class="card-footer">
+            <button type="button" class="btn btn-outline-primary btn-sm"
+                    onclick="addRow('preBody','preCount','pre')">
+              <i class="fas fa-plus me-1"></i> Add Pre-Order
+            </button>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- General Notes -->
+        <div class="card mb-4">
+          <div class="card-header fw-semibold">
+            <i class="fas fa-sticky-note me-2" style="color:var(--accent);"></i>General Notes
+          </div>
+          <div class="card-body">
+            <textarea name="general_notes" class="form-control" rows="5"
+                      placeholder="Any other info for the shift — weather, staffing concerns, special events, reminders…"
+                      {% if not can_manage %}disabled{% endif %}>{{ brief.general_notes or '' }}</textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Right sidebar ───────────────────────────────────── -->
+      <div class="col-lg-4">
+
+        <!-- Assigned Manager -->
+        <div class="card mb-3">
+          <div class="card-header fw-semibold"><i class="fas fa-user-tie me-2"></i>Assigned Manager</div>
+          <div class="card-body">
+            {% if can_manage %}
+            <select name="assigned_to_id" class="form-select">
+              <option value="">— Unassigned —</option>
+              {% for mgr in managers %}
+              <option value="{{ mgr.id }}"
+                      {% if brief.assigned_to_id == mgr.id %}selected{% endif %}>
+                {{ mgr.first_name }} {{ mgr.last_name }}
+              </option>
+              {% endfor %}
+            </select>
+            {% else %}
+              <p class="mb-0">
+                {% if brief.assigned_to %}
+                  {{ brief.assigned_to.first_name }} {{ brief.assigned_to.last_name }}
+                {% else %}
+                  <span class="text-muted">Unassigned</span>
+                {% endif %}
+              </p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Save -->
+        {% if can_manage %}
+        <div class="d-grid mb-3">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save me-2"></i> Save Brief
+          </button>
+        </div>
+        {% endif %}
+
+        <!-- PDF -->
+        <div class="d-grid mb-3">
+          <a href="{{ url_for('brief_pdf', brief_id=brief.id) }}"
+             class="btn btn-outline-secondary">
+            <i class="fas fa-file-pdf me-2"></i> Download PDF
+          </a>
+        </div>
+
+        <!-- Summary -->
+        <div class="card mb-3">
+          <div class="card-header fw-semibold"><i class="fas fa-info-circle me-2"></i>Summary</div>
+          <div class="card-body p-3">
+            <dl class="mb-0" style="display:grid;grid-template-columns:auto 1fr;gap:.4rem 1rem;font-size:.9rem;">
+              <dt class="text-muted small">Date</dt>
+              <dd class="mb-0">{{ brief.brief_date.strftime('%b %d, %Y') }}</dd>
+              <dt class="text-muted small">Staff on shift</dt>
+              <dd class="mb-0">{{ staff_on_shift | length }}</dd>
+              <dt class="text-muted small">On-call</dt>
+              <dd class="mb-0">{{ staff_backup | length }}</dd>
+              <dt class="text-muted small">Reservations</dt>
+              <dd class="mb-0">{{ brief.reservations | length }}</dd>
+              <dt class="text-muted small">Pre-orders</dt>
+              <dd class="mb-0">{{ brief.preorders | length }}</dd>
+              {% if brief.created_by %}
+              <dt class="text-muted small">Created by</dt>
+              <dd class="mb-0">{{ brief.created_by.first_name }} {{ brief.created_by.last_name }}</dd>
+              {% endif %}
+              {% if brief.updated_at %}
+              <dt class="text-muted small">Last saved</dt>
+              <dd class="mb-0 small">{{ brief.updated_at.strftime('%b %d, %I:%M %p') }}</dd>
+              {% endif %}
+            </dl>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+/* Row counter maximums — track the highest index used so new rows get unique names */
+let staffMax  = {{ staff_on_shift | length }};
+let backupMax = {{ staff_backup | length }};
+let resMax    = {{ brief.reservations | length }};
+let preMax    = {{ brief.preorders | length }};
+
+const maxMap = { staffCount: 'staffMax', backupCount: 'backupMax', resCount: 'resMax', preCount: 'preMax' };
+
+/* Column definitions for each section */
+const colDefs = {
+  staff: [
+    {name:'staff_name',  ph:'Name',          type:'text'},
+    {name:'staff_role',  ph:'e.g. Server',   type:'text'},
+    {name:'staff_time',  ph:'e.g. 5–11pm',   type:'text'},
+    {name:'staff_notes', ph:'Any notes',     type:'text'},
+  ],
+  backup: [
+    {name:'backup_name',    ph:'Name',                type:'text'},
+    {name:'backup_role',    ph:'e.g. Bartender',      type:'text'},
+    {name:'backup_contact', ph:'Phone or contact',    type:'text'},
+    {name:'backup_notes',   ph:'Availability, notes', type:'text'},
+  ],
+  res: [
+    {name:'res_name',  ph:'Party or member name',         type:'text'},
+    {name:'res_size',  ph:'—',                            type:'number'},
+    {name:'res_time',  ph:'e.g. 7:30pm',                  type:'text'},
+    {name:'res_notes', ph:'Seating, occasion, requests…', type:'text'},
+  ],
+  pre: [
+    {name:'pre_party', ph:'Who it\'s for',              type:'text'},
+    {name:'pre_item',  ph:'Bottle, cocktail, dish…',    type:'text'},
+    {name:'pre_qty',   ph:'1',                          type:'number'},
+    {name:'pre_notes', ph:'Timing, allergies, details…',type:'text'},
+  ],
+};
+
+/* counter vars keyed by countId */
+const counters = {
+  staffCount:  {{ staff_on_shift | length }},
+  backupCount: {{ staff_backup | length }},
+  resCount:    {{ brief.reservations | length }},
+  preCount:    {{ brief.preorders | length }},
+};
+
+function addRow(bodyId, countId, prefix) {
+  const idx  = counters[countId]++;
+  document.getElementById(countId).value = counters[countId];
+  const tbody = document.getElementById(bodyId);
+  const defs  = colDefs[prefix];
+  const tr    = document.createElement('tr');
+  tr.className = 'data-row';
+  let cells = defs.map(d => {
+    const input = `<input type="${d.type}" name="${d.name}_${idx}" class="form-control form-control-sm${d.type==='number'?' text-center':''}" placeholder="${d.ph}"${d.type==='number'?' min="1"':''}>`;
+    return `<td>${input}</td>`;
+  }).join('');
+  cells += `<td><button type="button" class="btn btn-outline-danger btn-sm py-0 px-2"
+    onclick="removeRow(this,'${bodyId}','${countId}')" title="Remove">
+    <i class="fas fa-times" style="font-size:.7rem;"></i></button></td>`;
+  tr.innerHTML = cells;
+  tbody.appendChild(tr);
+  tr.querySelector('input').focus();
+}
+
+function removeRow(btn, bodyId, countId) {
+  btn.closest('tr').remove();
+}
+</script>
+{% endblock %}

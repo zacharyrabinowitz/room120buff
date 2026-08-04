@@ -67,6 +67,7 @@
             <li class="nav-item"><a class="nav-link" href="{{ url_for('import_members') }}">Import</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('sales_dashboard') }}">Sales &amp; Labor</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('planner_dashboard') }}">Planner</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('brief_dashboard') }}">Brief</a></li>
           {% elif session.get('role') == 'staff' %}
             {% if authorized('view_members') %}
             <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_members') }}">Members</a></li>
@@ -85,6 +86,9 @@
             {% endif %}
             {% if authorized('view_day_planner') %}
             <li class="nav-item"><a class="nav-link" href="{{ url_for('planner_dashboard') }}">Planner</a></li>
+            {% endif %}
+            {% if authorized('view_daily_brief') %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('brief_dashboard') }}">Brief</a></li>
             {% endif %}
           {% endif %}
 

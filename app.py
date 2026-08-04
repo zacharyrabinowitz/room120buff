@@ -699,6 +699,67 @@ class DayPlanTask(db.Model):
     assigned_to      = db.relationship('User', foreign_keys=[assigned_to_id])
 
 
+# ── Daily Brief ──────────────────────────────────────────────────────────────
+
+class DailyBrief(db.Model):
+    __tablename__ = 'daily_brief'
+    id             = db.Column(db.Integer, primary_key=True)
+    brief_date     = db.Column(db.Date, nullable=False, unique=True)
+    assigned_to_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    general_notes  = db.Column(db.Text)
+    created_at     = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at     = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by_id  = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    assigned_to    = db.relationship('User', foreign_keys=[assigned_to_id])
+    created_by     = db.relationship('User', foreign_keys=[created_by_id])
+    staff_entries  = db.relationship('BriefStaff', back_populates='brief',
+                                     cascade='all, delete-orphan',
+                                     order_by='BriefStaff.sort_order')
+    reservations   = db.relationship('BriefReservation', back_populates='brief',
+                                     cascade='all, delete-orphan',
+                                     order_by='BriefReservation.sort_order')
+    preorders      = db.relationship('BriefPreorder', back_populates='brief',
+                                     cascade='all, delete-orphan',
+                                     order_by='BriefPreorder.sort_order')
+
+
+class BriefStaff(db.Model):
+    __tablename__ = 'brief_staff'
+    id         = db.Column(db.Integer, primary_key=True)
+    brief_id   = db.Column(db.Integer, db.ForeignKey('daily_brief.id'), nullable=False)
+    name       = db.Column(db.String(200), nullable=False)
+    role       = db.Column(db.String(100))
+    shift_time = db.Column(db.String(100))
+    is_backup  = db.Column(db.Boolean, default=False)
+    notes      = db.Column(db.Text)
+    sort_order = db.Column(db.Integer, default=0)
+    brief      = db.relationship('DailyBrief', back_populates='staff_entries')
+
+
+class BriefReservation(db.Model):
+    __tablename__ = 'brief_reservation'
+    id           = db.Column(db.Integer, primary_key=True)
+    brief_id     = db.Column(db.Integer, db.ForeignKey('daily_brief.id'), nullable=False)
+    party_name   = db.Column(db.String(200), nullable=False)
+    party_size   = db.Column(db.Integer)
+    arrival_time = db.Column(db.String(100))
+    notes        = db.Column(db.Text)
+    sort_order   = db.Column(db.Integer, default=0)
+    brief        = db.relationship('DailyBrief', back_populates='reservations')
+
+
+class BriefPreorder(db.Model):
+    __tablename__ = 'brief_preorder'
+    id         = db.Column(db.Integer, primary_key=True)
+    brief_id   = db.Column(db.Integer, db.ForeignKey('daily_brief.id'), nullable=False)
+    party_name = db.Column(db.String(200))
+    item       = db.Column(db.String(300), nullable=False)
+    quantity   = db.Column(db.Integer, default=1)
+    notes      = db.Column(db.Text)
+    sort_order = db.Column(db.Integer, default=0)
+    brief      = db.relationship('DailyBrief', back_populates='preorders')
+
+
 BACKUP_ADMIN_USERNAME = "backupadmin"
 BACKUP_ADMIN_PASSWORD = "room120secure"
 
@@ -926,6 +987,10 @@ PERMISSIONS = {
     'Day Planner': {
         'view_day_planner':   'View day plans & check off tasks',
         'manage_day_planner': 'Create, edit & delete day plans',
+    },
+    'Daily Brief': {
+        'view_daily_brief':   'View daily briefing sheets',
+        'manage_daily_brief': 'Create, edit & delete daily briefing sheets',
     },
     'Settings & System': {
         'view_settings':           'View settings page',
@@ -7758,6 +7823,274 @@ def planner_task_delete(plan_id, task_id):
     db.session.delete(t)
     db.session.commit()
     return redirect(url_for('planner_day', plan_id=plan_id))
+
+
+# =====================================================
+# DAILY BRIEF
+# =====================================================
+
+@app.route('/brief/')
+def brief_dashboard():
+    if not (session.get('role') == 'admin' or authorized('view_daily_brief')):
+        return redirect(url_for('home'))
+    from datetime import date as _date
+    today = _date.today()
+    thirty_ago = today - timedelta(days=30)
+    upcoming = DailyBrief.query.filter(DailyBrief.brief_date >= today)\
+        .order_by(DailyBrief.brief_date).all()
+    past = DailyBrief.query.filter(
+        DailyBrief.brief_date >= thirty_ago,
+        DailyBrief.brief_date < today
+    ).order_by(DailyBrief.brief_date.desc()).all()
+    managers = User.query.filter(User.active == True, User.role.in_(['admin', 'staff']))\
+        .order_by(User.first_name, User.last_name).all()
+    return render_template('brief_dashboard.html', upcoming=upcoming, past=past,
+                           today=today, managers=managers)
+
+
+@app.route('/brief/create', methods=['POST'])
+def brief_create():
+    if not (session.get('role') == 'admin' or authorized('manage_daily_brief')):
+        return redirect(url_for('brief_dashboard'))
+    from datetime import date as _date
+    date_str = request.form.get('brief_date', '').strip()
+    try:
+        brief_date = _date.fromisoformat(date_str)
+    except ValueError:
+        flash('Invalid date.', 'danger')
+        return redirect(url_for('brief_dashboard'))
+    existing = DailyBrief.query.filter_by(brief_date=brief_date).first()
+    if existing:
+        return redirect(url_for('brief_day', brief_id=existing.id))
+    brief = DailyBrief(
+        brief_date     = brief_date,
+        assigned_to_id = request.form.get('assigned_to_id') or None,
+        general_notes  = request.form.get('general_notes', '').strip(),
+        created_by_id  = session.get('user_id'),
+    )
+    db.session.add(brief)
+    db.session.commit()
+    return redirect(url_for('brief_day', brief_id=brief.id))
+
+
+@app.route('/brief/<int:brief_id>')
+def brief_day(brief_id):
+    brief = DailyBrief.query.get_or_404(brief_id)
+    if not (session.get('role') == 'admin' or authorized('view_daily_brief')):
+        return redirect(url_for('home'))
+    can_manage = session.get('role') == 'admin' or authorized('manage_daily_brief')
+    managers = User.query.filter(User.active == True, User.role.in_(['admin', 'staff']))\
+        .order_by(User.first_name, User.last_name).all()
+    staff_on_shift = [s for s in brief.staff_entries if not s.is_backup]
+    staff_backup   = [s for s in brief.staff_entries if s.is_backup]
+    return render_template('brief_day.html', brief=brief,
+                           staff_on_shift=staff_on_shift, staff_backup=staff_backup,
+                           managers=managers, can_manage=can_manage)
+
+
+@app.route('/brief/<int:brief_id>/save', methods=['POST'])
+def brief_save(brief_id):
+    brief = DailyBrief.query.get_or_404(brief_id)
+    if not (session.get('role') == 'admin' or authorized('manage_daily_brief')):
+        return redirect(url_for('brief_day', brief_id=brief_id))
+
+    brief.assigned_to_id = request.form.get('assigned_to_id') or None
+    brief.general_notes  = request.form.get('general_notes', '').strip()
+    brief.updated_at     = datetime.utcnow()
+
+    for entry in list(brief.staff_entries):
+        db.session.delete(entry)
+    for res in list(brief.reservations):
+        db.session.delete(res)
+    for pre in list(brief.preorders):
+        db.session.delete(pre)
+    db.session.flush()
+
+    staff_count = int(request.form.get('staff_count', 0))
+    for i in range(staff_count):
+        name = request.form.get(f'staff_name_{i}', '').strip()
+        if name:
+            db.session.add(BriefStaff(
+                brief_id=brief.id, name=name,
+                role=request.form.get(f'staff_role_{i}', '').strip(),
+                shift_time=request.form.get(f'staff_time_{i}', '').strip(),
+                is_backup=False,
+                notes=request.form.get(f'staff_notes_{i}', '').strip(),
+                sort_order=i,
+            ))
+
+    backup_count = int(request.form.get('backup_count', 0))
+    for i in range(backup_count):
+        name = request.form.get(f'backup_name_{i}', '').strip()
+        if name:
+            db.session.add(BriefStaff(
+                brief_id=brief.id, name=name,
+                role=request.form.get(f'backup_role_{i}', '').strip(),
+                shift_time=request.form.get(f'backup_contact_{i}', '').strip(),
+                is_backup=True,
+                notes=request.form.get(f'backup_notes_{i}', '').strip(),
+                sort_order=i,
+            ))
+
+    res_count = int(request.form.get('res_count', 0))
+    for i in range(res_count):
+        name = request.form.get(f'res_name_{i}', '').strip()
+        if name:
+            size_str = request.form.get(f'res_size_{i}', '').strip()
+            db.session.add(BriefReservation(
+                brief_id=brief.id, party_name=name,
+                party_size=int(size_str) if size_str.isdigit() else None,
+                arrival_time=request.form.get(f'res_time_{i}', '').strip(),
+                notes=request.form.get(f'res_notes_{i}', '').strip(),
+                sort_order=i,
+            ))
+
+    pre_count = int(request.form.get('pre_count', 0))
+    for i in range(pre_count):
+        item = request.form.get(f'pre_item_{i}', '').strip()
+        if item:
+            qty_str = request.form.get(f'pre_qty_{i}', '1').strip()
+            db.session.add(BriefPreorder(
+                brief_id=brief.id,
+                party_name=request.form.get(f'pre_party_{i}', '').strip(),
+                item=item,
+                quantity=int(qty_str) if qty_str.isdigit() else 1,
+                notes=request.form.get(f'pre_notes_{i}', '').strip(),
+                sort_order=i,
+            ))
+
+    db.session.commit()
+    flash('Brief saved.', 'success')
+    return redirect(url_for('brief_day', brief_id=brief_id))
+
+
+@app.route('/brief/<int:brief_id>/delete', methods=['POST'])
+def brief_delete(brief_id):
+    brief = DailyBrief.query.get_or_404(brief_id)
+    if not (session.get('role') == 'admin' or authorized('manage_daily_brief')):
+        return redirect(url_for('brief_dashboard'))
+    db.session.delete(brief)
+    db.session.commit()
+    flash('Brief deleted.', 'success')
+    return redirect(url_for('brief_dashboard'))
+
+
+@app.route('/brief/<int:brief_id>/pdf')
+def brief_pdf(brief_id):
+    brief = DailyBrief.query.get_or_404(brief_id)
+    if not (session.get('role') == 'admin' or authorized('view_daily_brief')):
+        return redirect(url_for('home'))
+
+    from zoneinfo import ZoneInfo
+    from io import BytesIO
+    from xhtml2pdf import pisa
+
+    est_now = datetime.now(ZoneInfo('America/New_York'))
+    gen_str = est_now.strftime('%B %d, %Y at %I:%M %p EST')
+
+    uid = session.get('user_id')
+    gen_by = 'Unknown'
+    if uid:
+        u = User.query.get(uid)
+        if u:
+            gen_by = f'{u.first_name} {u.last_name}'
+
+    cs = ClubSetting.query.filter_by(key='club_name').first()
+    club_name = cs.value if cs else 'Room 120'
+
+    staff_on_shift = [s for s in brief.staff_entries if not s.is_backup]
+    staff_backup   = [s for s in brief.staff_entries if s.is_backup]
+
+    def esc(s):
+        if not s: return ''
+        return str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+    def table_rows(rows, cols, empty_cols):
+        if not rows:
+            return f'<tr><td colspan="{empty_cols}" style="color:#999;font-style:italic;padding:6px 8px;">None listed</td></tr>'
+        return ''.join(
+            '<tr>' + ''.join(f'<td>{esc(col(r))}</td>' for col in cols) + '</tr>'
+            for r in rows
+        )
+
+    staff_rows  = table_rows(staff_on_shift, [
+        lambda r: r.name, lambda r: r.role, lambda r: r.shift_time, lambda r: r.notes], 4)
+    backup_rows = table_rows(staff_backup, [
+        lambda r: r.name, lambda r: r.role, lambda r: r.shift_time, lambda r: r.notes], 4)
+    res_rows    = table_rows(brief.reservations, [
+        lambda r: r.party_name, lambda r: r.party_size or '—',
+        lambda r: r.arrival_time, lambda r: r.notes], 4)
+    pre_rows    = table_rows(brief.preorders, [
+        lambda r: r.party_name, lambda r: r.item,
+        lambda r: r.quantity, lambda r: r.notes], 4)
+
+    assigned = (f'{brief.assigned_to.first_name} {brief.assigned_to.last_name}'
+                if brief.assigned_to else '—')
+
+    html = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>
+body{{font-family:Helvetica,Arial,sans-serif;font-size:10pt;color:#1a1a1a;margin:0;padding:0}}
+.hdr{{background:#1a1a1a;color:#f5b45c;padding:16px 24px 12px}}
+.hdr h1{{margin:0;font-size:17pt;letter-spacing:.5px}}
+.hdr .sub{{font-size:9pt;color:#ccc;margin-top:3px}}
+.meta{{padding:8px 24px;background:#f5f5f5;border-bottom:1px solid #ddd;font-size:8pt;color:#555}}
+.body{{padding:14px 24px}}
+.sec{{margin-bottom:16px}}
+.sec-title{{font-size:10pt;font-weight:bold;border-bottom:2px solid #f5b45c;padding-bottom:2px;margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px}}
+table{{width:100%;border-collapse:collapse;font-size:9pt}}
+th{{background:#efefef;text-align:left;padding:4px 7px;border:1px solid #ddd;font-size:8pt;text-transform:uppercase}}
+td{{padding:4px 7px;border:1px solid #e0e0e0;vertical-align:top}}
+tr:nth-child(even) td{{background:#fafafa}}
+.notes{{border:1px solid #ddd;padding:8px;font-size:9.5pt;min-height:36px;white-space:pre-wrap}}
+.footer{{margin-top:20px;padding-top:8px;border-top:1px solid #eee;font-size:7.5pt;color:#999}}
+</style></head><body>
+<div class="hdr">
+  <h1>{esc(club_name)} &mdash; Daily Operations Brief</h1>
+  <div class="sub">{brief.brief_date.strftime('%A, %B %d, %Y')}</div>
+</div>
+<div class="meta">
+  <strong>Assigned Manager:</strong> {esc(assigned)} &nbsp;|&nbsp;
+  <strong>Generated:</strong> {gen_str} &nbsp;|&nbsp;
+  <strong>By:</strong> {esc(gen_by)}
+</div>
+<div class="body">
+  <div class="sec">
+    <div class="sec-title">Staff On Shift</div>
+    <table><thead><tr><th>Name</th><th>Role</th><th>Shift Time</th><th>Notes</th></tr></thead>
+    <tbody>{staff_rows}</tbody></table>
+  </div>
+  <div class="sec">
+    <div class="sec-title">On-Call / Backup Staff</div>
+    <table><thead><tr><th>Name</th><th>Role</th><th>Contact</th><th>Notes</th></tr></thead>
+    <tbody>{backup_rows}</tbody></table>
+  </div>
+  <div class="sec">
+    <div class="sec-title">Expected Reservations &amp; Parties</div>
+    <table><thead><tr><th>Party / Name</th><th>Size</th><th>Arrival</th><th>Notes</th></tr></thead>
+    <tbody>{res_rows}</tbody></table>
+  </div>
+  <div class="sec">
+    <div class="sec-title">Pre-Orders &amp; Special Requests</div>
+    <table><thead><tr><th>Party / Person</th><th>Item</th><th>Qty</th><th>Notes</th></tr></thead>
+    <tbody>{pre_rows}</tbody></table>
+  </div>
+  <div class="sec">
+    <div class="sec-title">General Notes</div>
+    <div class="notes">{esc(brief.general_notes) if brief.general_notes else '<span style="color:#999;font-style:italic">No notes.</span>'}</div>
+  </div>
+  <div class="footer">Generated {gen_str} by {esc(gen_by)} &mdash; {esc(club_name)} internal use only.</div>
+</div>
+</body></html>"""
+
+    buf = BytesIO()
+    pisa.CreatePDF(html, dest=buf)
+    buf.seek(0)
+    filename = f"brief_{brief.brief_date.isoformat()}.pdf"
+    return app.response_class(
+        buf.getvalue(),
+        mimetype='application/pdf',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'},
+    )
 
 
 if __name__ == "__main__":
