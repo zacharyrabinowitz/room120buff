@@ -8042,12 +8042,10 @@ body {{font-family: Helvetica, Arial, sans-serif; font-size: 9.5pt; color: #222;
 .sec-title {{font-size: 9pt; font-weight: bold; text-transform: uppercase;
              letter-spacing: 0.4px; border-bottom: 1px solid #555;
              padding-bottom: 2px; margin-bottom: 5px; color: #111;}}
-table {{width: 100%; border-collapse: collapse; font-size: 8.5pt;}}
+table {{width: 100%; border-collapse: collapse; font-size: 8.5pt; table-layout: fixed;}}
 th {{background: #f0f0f0; text-align: left; padding: 3px 6px;
-     border: 1px solid #ccc; font-size: 7.5pt; text-transform: uppercase; font-weight: bold;
-     overflow: hidden;}}
-td {{padding: 3px 6px; border: 1px solid #ddd; vertical-align: top;
-     word-wrap: break-word; overflow: hidden;}}
+     border: 1px solid #ccc; font-size: 7.5pt; text-transform: uppercase; font-weight: bold;}}
+td {{padding: 3px 6px; border: 1px solid #ddd; vertical-align: top; word-wrap: break-word;}}
 tr:nth-child(even) td {{background: #f8f8f8;}}
 .notes-box {{border: 1px solid #ccc; padding: 6px 8px; font-size: 9pt;
              min-height: 32px; white-space: pre-wrap; word-wrap: break-word;}}
@@ -8064,10 +8062,10 @@ tr:nth-child(even) td {{background: #f8f8f8;}}
   <div class="sec-title">Staff On Shift</div>
   <table>
     <thead><tr>
-      <th style="width:22%">Name</th>
-      <th style="width:17%">Role</th>
-      <th style="width:19%">Shift Time</th>
-      <th>Notes</th>
+      <th style="width:22%;">Name</th>
+      <th style="width:17%;">Role</th>
+      <th style="width:19%;">Shift Time</th>
+      <th style="width:42%;">Notes</th>
     </tr></thead>
     <tbody>{staff_rows}</tbody>
   </table>
@@ -8077,10 +8075,10 @@ tr:nth-child(even) td {{background: #f8f8f8;}}
   <div class="sec-title">On-Call / Backup Staff</div>
   <table>
     <thead><tr>
-      <th style="width:22%">Name</th>
-      <th style="width:17%">Role</th>
-      <th style="width:19%">Contact</th>
-      <th>Notes</th>
+      <th style="width:22%;">Name</th>
+      <th style="width:17%;">Role</th>
+      <th style="width:19%;">Contact</th>
+      <th style="width:42%;">Notes</th>
     </tr></thead>
     <tbody>{backup_rows}</tbody>
   </table>
@@ -8090,10 +8088,10 @@ tr:nth-child(even) td {{background: #f8f8f8;}}
   <div class="sec-title">Expected Reservations &amp; Parties</div>
   <table>
     <thead><tr>
-      <th style="width:24%">Party / Name</th>
-      <th style="width:8%">Size</th>
-      <th style="width:15%">Arrival</th>
-      <th>Notes</th>
+      <th style="width:24%;">Party / Name</th>
+      <th style="width:8%;">Size</th>
+      <th style="width:15%;">Arrival</th>
+      <th style="width:53%;">Notes</th>
     </tr></thead>
     <tbody>{res_rows}</tbody>
   </table>
@@ -8103,10 +8101,10 @@ tr:nth-child(even) td {{background: #f8f8f8;}}
   <div class="sec-title">Pre-Orders &amp; Special Requests</div>
   <table>
     <thead><tr>
-      <th style="width:22%">Party / Person</th>
-      <th style="width:26%">Item</th>
-      <th style="width:7%">Qty</th>
-      <th>Notes</th>
+      <th style="width:22%;">Party / Person</th>
+      <th style="width:26%;">Item</th>
+      <th style="width:7%;">Qty</th>
+      <th style="width:45%;">Notes</th>
     </tr></thead>
     <tbody>{pre_rows}</tbody>
   </table>
