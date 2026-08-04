@@ -94,11 +94,18 @@
             </table>
           </div>
           {% if can_manage %}
-          <div class="card-footer">
+          <div class="card-footer d-flex align-items-center gap-2 flex-wrap">
             <button type="button" class="btn btn-outline-primary btn-sm"
                     onclick="addRow('staffBody','staffCount','staff')">
               <i class="fas fa-plus me-1"></i> Add Staff
             </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                    onclick="triggerRosterImport()">
+              <i class="fas fa-file-upload me-1"></i> Import Roster CSV
+            </button>
+            <input type="file" id="rosterCsvInput" accept=".csv" class="d-none"
+                   onchange="importRosterCsv(this)">
+            <span class="text-muted small">Fills staff from a roster export</span>
           </div>
           {% endif %}
         </div>
@@ -403,6 +410,105 @@ function addRow(bodyId, countId, prefix) {
 
 function removeRow(btn, bodyId, countId) {
   btn.closest('tr').remove();
+}
+
+/* ── Roster CSV import ───────────────────────────────────────── */
+function triggerRosterImport() {
+  const existing = document.querySelectorAll('#staffBody tr.data-row').length;
+  if (existing > 0 &&
+      !confirm('This will replace the current staff list with the CSV data. Continue?')) {
+    return;
+  }
+  document.getElementById('rosterCsvInput').click();
+}
+
+function importRosterCsv(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const rows = parseCSV(e.target.result);
+    if (rows.length < 2) { alert('No data found in CSV.'); return; }
+
+    const hdrs = rows[0].map(h => h.trim().toUpperCase());
+    const col = key => hdrs.findIndex(h => h.includes(key));
+
+    const nameIdx  = col('EMPLOYEE');
+    const roleIdx  = col('POSITION');
+    const timeIdx  = col('SHIFT');
+    const notesIdx = col('TAG');
+
+    if (nameIdx === -1) {
+      alert('Could not find an EMPLOYEES column in this CSV.');
+      return;
+    }
+
+    const tbody = document.getElementById('staffBody');
+    tbody.innerHTML = '';
+    counters.staffCount = 0;
+    document.getElementById('staffCount').value = 0;
+
+    let added = 0;
+    for (let i = 1; i < rows.length; i++) {
+      const r    = rows[i];
+      const name = clean(r[nameIdx]);
+      if (!name) continue;
+
+      const role  = roleIdx  >= 0 ? clean(r[roleIdx])  : '';
+      const time  = timeIdx  >= 0 ? clean(r[timeIdx])  : '';
+      const notes = notesIdx >= 0 ? clean(r[notesIdx]) : '';
+
+      const idx = counters.staffCount++;
+      document.getElementById('staffCount').value = counters.staffCount;
+
+      const tr = document.createElement('tr');
+      tr.className = 'data-row';
+      tr.innerHTML =
+        `<td><input type="text" name="staff_name_${idx}" class="form-control form-control-sm" value="${he(name)}" placeholder="Name"></td>` +
+        `<td><input type="text" name="staff_role_${idx}" class="form-control form-control-sm" value="${he(role)}" placeholder="e.g. Server"></td>` +
+        `<td><input type="text" name="staff_time_${idx}" class="form-control form-control-sm" value="${he(time)}" placeholder="e.g. 5–11pm"></td>` +
+        `<td><input type="text" name="staff_notes_${idx}" class="form-control form-control-sm" value="${he(notes)}" placeholder="Any notes"></td>` +
+        `<td><button type="button" class="btn btn-outline-danger btn-sm py-0 px-2"
+             onclick="removeRow(this,'staffBody','staffCount')" title="Remove">
+             <i class="fas fa-times" style="font-size:.7rem;"></i></button></td>`;
+      tbody.appendChild(tr);
+      added++;
+    }
+
+    input.value = '';  // allow re-selecting same file
+    if (added === 0) alert('No staff rows found in CSV.');
+  };
+  reader.readAsText(file);
+}
+
+/* Strip leading/trailing whitespace and replace bare "-" with empty string */
+function clean(val) {
+  const s = (val || '').trim();
+  return s === '-' ? '' : s;
+}
+
+/* Minimal HTML escaping for injecting values into input fields */
+function he(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* Simple CSV parser — handles quoted fields */
+function parseCSV(text) {
+  const result = [];
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    const cols = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { cols.push(cur); cur = ''; }
+      else { cur += c; }
+    }
+    cols.push(cur);
+    result.push(cols);
+  }
+  return result;
 }
 </script>
 {% endblock %}
