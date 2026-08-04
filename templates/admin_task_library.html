@@ -233,20 +233,21 @@
                         data-bs-target="#editTmplModal{{ tmpl.id }}">
                   <i class="fas fa-pen me-1"></i> Rename
                 </button>
-                <form method="POST"
-                      action="{{ url_for('settings_checklist_delete', tmpl_id=tmpl.id) }}"
-                      style="display:inline;"
-                      onsubmit="return confirm('Delete template \'{{ tmpl.name }}\'?')">
-                  <button type="submit" class="btn btn-outline-danger btn-sm">
-                    <i class="fas fa-trash me-1"></i> Delete
-                  </button>
-                </form>
+                <button type="button" class="btn btn-outline-danger btn-sm"
+                        onclick="deleteTmpl({{ tmpl.id }}, '{{ tmpl.name | replace("'", "\\'") }}')">
+                  <i class="fas fa-trash me-1"></i> Delete
+                </button>
                 <button type="submit" class="btn btn-success btn-sm px-4">
                   <i class="fas fa-save me-1"></i> Save Template
                 </button>
               </div>
             </div>
           </form>
+
+          <!-- Delete form lives outside the save form to avoid nested-form issues -->
+          <form id="deleteTmplForm{{ tmpl.id }}" method="POST"
+                action="{{ url_for('settings_checklist_delete', tmpl_id=tmpl.id) }}"
+                style="display:none;"></form>
         </div>
       </div>
     </div>
@@ -418,6 +419,13 @@ function addTmplRow(tmplId) {
     </td>`;
   body.appendChild(tr);
   tr.querySelector('input[type=text]').focus();
+}
+
+/* ── Delete template ─────────────────────────────────────────── */
+function deleteTmpl(tmplId, tmplName) {
+  if (confirm('Delete template \'' + tmplName + '\'? This cannot be undone.')) {
+    document.getElementById('deleteTmplForm' + tmplId).submit();
+  }
 }
 
 /* ── Auto-open accordion from URL fragment ───────────────────── */
