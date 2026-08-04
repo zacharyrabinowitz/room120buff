@@ -8002,11 +8002,23 @@ def brief_pdf(brief_id):
         if not s: return ''
         return str(s).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
+    # Inline styles — defined here so f-string can reference them
+    _td = 'padding:3px 5px;border:1px solid #ddd;vertical-align:top;word-wrap:break-word;'
+    _th = 'padding:3px 5px;border:1px solid #ccc;background:#f0f0f0;font-size:7pt;text-transform:uppercase;font-weight:bold;'
+
+    def cell(content):
+        val = esc(content)
+        return f'<td style="{_td}">{val if val else "&nbsp;"}</td>'
+
+    def hdr(width_px, label):
+        return f'<td width="{width_px}" style="{_th}">{label}</td>'
+
     def table_rows(rows, cols, empty_cols):
         if not rows:
-            return f'<tr><td colspan="{empty_cols}" style="color:#aaa;font-style:italic;padding:5px 6px;">None listed</td></tr>'
+            return (f'<tr><td colspan="{empty_cols}" '
+                    f'style="{_td}color:#aaa;font-style:italic;">None listed</td></tr>')
         return ''.join(
-            '<tr>' + ''.join(f'<td>{esc(col(r))}</td>' for col in cols) + '</tr>'
+            '<tr>' + ''.join(cell(col(r)) for col in cols) + '</tr>'
             for r in rows
         )
 
@@ -8029,8 +8041,8 @@ def brief_pdf(brief_id):
     date_long  = brief.brief_date.strftime('%A, %B %d, %Y')
     filename   = f'TDR Daily Operations ({day_name})({date_fmt}).pdf'
 
-    # Inline th widths — xhtml2pdf only respects widths on th/td, not col/colgroup
-    W = 'style="width:'
+    # Column widths in px (content area ≈ 690px at 96dpi on letter with 0.65in margins)
+    # Using HTML width attribute on first-row td — more reliable than CSS in xhtml2pdf
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>
 @page {{size: letter; margin: 0.7in 0.65in 0.65in 0.65in;}}
@@ -8042,11 +8054,7 @@ body {{font-family: Helvetica, Arial, sans-serif; font-size: 9.5pt; color: #222;
 .sec-title {{font-size: 9pt; font-weight: bold; text-transform: uppercase;
              letter-spacing: 0.4px; border-bottom: 1px solid #555;
              padding-bottom: 2px; margin-bottom: 5px; color: #111;}}
-table {{width: 100%; border-collapse: collapse; font-size: 8.5pt;}}
-th {{background: #f0f0f0; text-align: left; padding: 3px 6px;
-     border: 1px solid #ccc; font-size: 7.5pt; text-transform: uppercase; font-weight: bold;}}
-td {{padding: 3px 6px; border: 1px solid #ddd; vertical-align: top; word-wrap: break-word;}}
-tr:nth-child(even) td {{background: #f8f8f8;}}
+table {{border-collapse: collapse; font-size: 8.5pt;}}
 .notes-box {{border: 1px solid #ccc; padding: 6px 8px; font-size: 9pt;
              min-height: 32px; white-space: pre-wrap; word-wrap: break-word;}}
 .footer {{margin-top: 14px; padding-top: 6px; border-top: 1px solid #ddd;
@@ -8060,53 +8068,33 @@ tr:nth-child(even) td {{background: #f8f8f8;}}
 
 <div class="sec">
   <div class="sec-title">Staff On Shift</div>
-  <table>
-    <thead><tr>
-      <th style="width:22%;">Name</th>
-      <th style="width:17%;">Role</th>
-      <th style="width:19%;">Shift Time</th>
-      <th>Notes</th>
-    </tr></thead>
-    <tbody>{staff_rows}</tbody>
+  <table width="690" cellpadding="0" cellspacing="0">
+    <tr>{hdr(152,'Name')}{hdr(117,'Role')}{hdr(131,'Shift Time')}{hdr(290,'Notes')}</tr>
+    {staff_rows}
   </table>
 </div>
 
 <div class="sec">
   <div class="sec-title">On-Call / Backup Staff</div>
-  <table>
-    <thead><tr>
-      <th style="width:22%;">Name</th>
-      <th style="width:17%;">Role</th>
-      <th style="width:19%;">Contact</th>
-      <th>Notes</th>
-    </tr></thead>
-    <tbody>{backup_rows}</tbody>
+  <table width="690" cellpadding="0" cellspacing="0">
+    <tr>{hdr(152,'Name')}{hdr(117,'Role')}{hdr(131,'Contact')}{hdr(290,'Notes')}</tr>
+    {backup_rows}
   </table>
 </div>
 
 <div class="sec">
   <div class="sec-title">Expected Reservations &amp; Parties</div>
-  <table>
-    <thead><tr>
-      <th style="width:24%;">Party / Name</th>
-      <th style="width:8%;">Size</th>
-      <th style="width:15%;">Arrival</th>
-      <th>Notes</th>
-    </tr></thead>
-    <tbody>{res_rows}</tbody>
+  <table width="690" cellpadding="0" cellspacing="0">
+    <tr>{hdr(166,'Party / Name')}{hdr(55,'Size')}{hdr(104,'Arrival')}{hdr(365,'Notes')}</tr>
+    {res_rows}
   </table>
 </div>
 
 <div class="sec">
   <div class="sec-title">Pre-Orders &amp; Special Requests</div>
-  <table>
-    <thead><tr>
-      <th style="width:22%;">Party / Person</th>
-      <th style="width:26%;">Item</th>
-      <th style="width:7%;">Qty</th>
-      <th>Notes</th>
-    </tr></thead>
-    <tbody>{pre_rows}</tbody>
+  <table width="690" cellpadding="0" cellspacing="0">
+    <tr>{hdr(152,'Party / Person')}{hdr(179,'Item')}{hdr(48,'Qty')}{hdr(311,'Notes')}</tr>
+    {pre_rows}
   </table>
 </div>
 
