@@ -8029,32 +8029,25 @@ def brief_pdf(brief_id):
     date_long  = brief.brief_date.strftime('%A, %B %d, %Y')
     filename   = f'TDR Daily Operations ({day_name})({date_fmt}).pdf'
 
+    # Inline th widths — xhtml2pdf only respects widths on th/td, not col/colgroup
+    W = 'style="width:'
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>
-@page {{size: letter; margin: 0.65in 0.6in 0.6in 0.6in;}}
+@page {{size: letter; margin: 0.7in 0.65in 0.65in 0.65in;}}
 body {{font-family: Helvetica, Arial, sans-serif; font-size: 9.5pt; color: #222; margin: 0; padding: 0;}}
 .hdr {{border-bottom: 2px solid #333; padding-bottom: 6px; margin-bottom: 10px;}}
 .hdr h1 {{margin: 0 0 2px 0; font-size: 14pt; font-weight: bold; color: #111;}}
 .hdr .sub {{font-size: 8.5pt; color: #555;}}
-.meta-row {{display: table; width: 100%; border-collapse: collapse; margin-bottom: 12px;}}
-.meta-cell {{display: table-cell; font-size: 8pt; color: #444; padding: 4px 8px 4px 0;}}
-.sec {{margin-bottom: 13px; page-break-inside: avoid;}}
+.sec {{margin-bottom: 14px; page-break-inside: avoid;}}
 .sec-title {{font-size: 9pt; font-weight: bold; text-transform: uppercase;
              letter-spacing: 0.4px; border-bottom: 1px solid #555;
              padding-bottom: 2px; margin-bottom: 5px; color: #111;}}
-table {{width: 100%; border-collapse: collapse; font-size: 8.5pt; table-layout: fixed;}}
-col.c-name  {{width: 22%;}}
-col.c-role  {{width: 18%;}}
-col.c-time  {{width: 16%;}}
-col.c-notes {{width: 44%;}}
-col.c-party {{width: 22%;}}
-col.c-size  {{width: 8%;}}
-col.c-arr   {{width: 14%;}}
-col.c-item  {{width: 28%;}}
-col.c-qty   {{width: 8%;}}
-th {{background: #f0f0f0; text-align: left; padding: 3px 5px;
-     border: 1px solid #ccc; font-size: 7.5pt; text-transform: uppercase; font-weight: bold;}}
-td {{padding: 3px 5px; border: 1px solid #ddd; vertical-align: top; word-wrap: break-word;}}
+table {{width: 100%; border-collapse: collapse; font-size: 8.5pt;}}
+th {{background: #f0f0f0; text-align: left; padding: 3px 6px;
+     border: 1px solid #ccc; font-size: 7.5pt; text-transform: uppercase; font-weight: bold;
+     overflow: hidden;}}
+td {{padding: 3px 6px; border: 1px solid #ddd; vertical-align: top;
+     word-wrap: break-word; overflow: hidden;}}
 tr:nth-child(even) td {{background: #f8f8f8;}}
 .notes-box {{border: 1px solid #ccc; padding: 6px 8px; font-size: 9pt;
              min-height: 32px; white-space: pre-wrap; word-wrap: break-word;}}
@@ -8070,8 +8063,12 @@ tr:nth-child(even) td {{background: #f8f8f8;}}
 <div class="sec">
   <div class="sec-title">Staff On Shift</div>
   <table>
-    <colgroup><col class="c-name"><col class="c-role"><col class="c-time"><col class="c-notes"></colgroup>
-    <thead><tr><th>Name</th><th>Role</th><th>Shift Time</th><th>Notes</th></tr></thead>
+    <thead><tr>
+      <th style="width:22%">Name</th>
+      <th style="width:17%">Role</th>
+      <th style="width:19%">Shift Time</th>
+      <th>Notes</th>
+    </tr></thead>
     <tbody>{staff_rows}</tbody>
   </table>
 </div>
@@ -8079,8 +8076,12 @@ tr:nth-child(even) td {{background: #f8f8f8;}}
 <div class="sec">
   <div class="sec-title">On-Call / Backup Staff</div>
   <table>
-    <colgroup><col class="c-name"><col class="c-role"><col class="c-time"><col class="c-notes"></colgroup>
-    <thead><tr><th>Name</th><th>Role</th><th>Contact</th><th>Notes</th></tr></thead>
+    <thead><tr>
+      <th style="width:22%">Name</th>
+      <th style="width:17%">Role</th>
+      <th style="width:19%">Contact</th>
+      <th>Notes</th>
+    </tr></thead>
     <tbody>{backup_rows}</tbody>
   </table>
 </div>
@@ -8088,8 +8089,12 @@ tr:nth-child(even) td {{background: #f8f8f8;}}
 <div class="sec">
   <div class="sec-title">Expected Reservations &amp; Parties</div>
   <table>
-    <colgroup><col class="c-party"><col class="c-size"><col class="c-arr"><col class="c-notes"></colgroup>
-    <thead><tr><th>Party / Name</th><th>Size</th><th>Arrival</th><th>Notes</th></tr></thead>
+    <thead><tr>
+      <th style="width:24%">Party / Name</th>
+      <th style="width:8%">Size</th>
+      <th style="width:15%">Arrival</th>
+      <th>Notes</th>
+    </tr></thead>
     <tbody>{res_rows}</tbody>
   </table>
 </div>
@@ -8097,8 +8102,12 @@ tr:nth-child(even) td {{background: #f8f8f8;}}
 <div class="sec">
   <div class="sec-title">Pre-Orders &amp; Special Requests</div>
   <table>
-    <colgroup><col class="c-party"><col class="c-item"><col class="c-qty"><col class="c-notes"></colgroup>
-    <thead><tr><th>Party / Person</th><th>Item</th><th>Qty</th><th>Notes</th></tr></thead>
+    <thead><tr>
+      <th style="width:22%">Party / Person</th>
+      <th style="width:26%">Item</th>
+      <th style="width:7%">Qty</th>
+      <th>Notes</th>
+    </tr></thead>
     <tbody>{pre_rows}</tbody>
   </table>
 </div>
