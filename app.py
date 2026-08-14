@@ -104,7 +104,7 @@ UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'upload
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024  # 32 MB — covers PDFs and CSVs
+app.config['MAX_CONTENT_LENGTH'] = 256 * 1024 * 1024  # 256 MB — covers large backup files
 
 @app.errorhandler(413)
 def request_entity_too_large(e):
