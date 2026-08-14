@@ -2402,7 +2402,18 @@ def export_backup():
         ToastTransactionItem.__tablename__:    _dump(ToastTransactionItem),
         ToastMemberSpending.__tablename__:     _dump(ToastMemberSpending),
         ToastSyncLog.__tablename__:            _dump(ToastSyncLog),
+        WeeklySalesReport.__tablename__:       _dump(WeeklySalesReport),
+        LaborReport.__tablename__:             _dump(LaborReport),
         SetupToken.__tablename__:              _dump(SetupToken),
+        TaskLibrary.__tablename__:             _dump(TaskLibrary),
+        ChecklistTemplate.__tablename__:       _dump(ChecklistTemplate),
+        ChecklistTemplateTask.__tablename__:   _dump(ChecklistTemplateTask),
+        DayPlan.__tablename__:                 _dump(DayPlan),
+        DayPlanTask.__tablename__:             _dump(DayPlanTask),
+        DailyBrief.__tablename__:              _dump(DailyBrief),
+        BriefStaff.__tablename__:              _dump(BriefStaff),
+        BriefReservation.__tablename__:        _dump(BriefReservation),
+        BriefPreorder.__tablename__:           _dump(BriefPreorder),
     }
 
     fname = f'room120_backup_{datetime.utcnow().strftime("%Y%m%d_%H%M%S")}.json'
@@ -2443,7 +2454,11 @@ def import_backup():
         Order, OrderItem, Invoice, InvoiceLineItem,
         Table, LayoutItem, SeatingItem, SeatingReservation,
         ToastTransaction, ToastTransactionItem, ToastMemberSpending, ToastSyncLog,
+        WeeklySalesReport, LaborReport,
         SetupToken,
+        TaskLibrary, ChecklistTemplate, ChecklistTemplateTask,
+        DayPlan, DayPlanTask,
+        DailyBrief, BriefStaff, BriefReservation, BriefPreorder,
     ]
 
     try:
