@@ -667,7 +667,8 @@ class DayPlan(db.Model):
     """A specific date's operational plan."""
     __tablename__ = 'day_plan'
     id            = db.Column(db.Integer, primary_key=True)
-    plan_date     = db.Column(db.Date, nullable=False, unique=True)
+    plan_date     = db.Column(db.Date, nullable=False)
+    label         = db.Column(db.String(200))
     template_id   = db.Column(db.Integer, db.ForeignKey('checklist_template.id'), nullable=True)
     event_name    = db.Column(db.String(200))
     notes         = db.Column(db.Text)
@@ -5117,6 +5118,36 @@ def run_migrations():
             conn.execute(db.text("ALTER TABLE user ADD COLUMN allergies VARCHAR(500)"))
         if 'preferences_notes' not in cols:
             conn.execute(db.text("ALTER TABLE user ADD COLUMN preferences_notes TEXT"))
+
+        # Migrate day_plan: add label column, remove unique constraint on plan_date
+        dp_cols = {row[1] for row in conn.execute(db.text("PRAGMA table_info('day_plan')"))}
+        if 'label' not in dp_cols:
+            try:
+                conn.execute(db.text("PRAGMA foreign_keys = OFF"))
+                conn.execute(db.text("""
+                    CREATE TABLE day_plan_v2 (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        plan_date DATE NOT NULL,
+                        label VARCHAR(200),
+                        template_id INTEGER REFERENCES checklist_template(id),
+                        event_name VARCHAR(200),
+                        notes TEXT,
+                        created_at DATETIME,
+                        created_by_id INTEGER REFERENCES user(id)
+                    )
+                """))
+                conn.execute(db.text("""
+                    INSERT INTO day_plan_v2
+                        (id, plan_date, template_id, event_name, notes, created_at, created_by_id)
+                    SELECT id, plan_date, template_id, event_name, notes, created_at, created_by_id
+                    FROM day_plan
+                """))
+                conn.execute(db.text("DROP TABLE day_plan"))
+                conn.execute(db.text("ALTER TABLE day_plan_v2 RENAME TO day_plan"))
+                conn.execute(db.text("PRAGMA foreign_keys = ON"))
+            except Exception as _e:
+                logger.error(f'day_plan migration error: {_e}')
+
         conn.commit()
 
 
@@ -7644,7 +7675,7 @@ def planner_dashboard():
     today   = date.today()
     cutoff  = today - timedelta(days=30)
     plans   = DayPlan.query.filter(DayPlan.plan_date >= cutoff)\
-                            .order_by(DayPlan.plan_date).all()
+                            .order_by(DayPlan.plan_date, DayPlan.id).all()
     templates = ChecklistTemplate.query.filter_by(is_active=True)\
                                         .order_by(ChecklistTemplate.name).all()
     upcoming = [p for p in plans if p.plan_date >= today]
@@ -7660,6 +7691,7 @@ def planner_create():
         return redirect(url_for('planner_dashboard'))
     plan_date_str = request.form.get('plan_date', '').strip()
     tmpl_id       = request.form.get('template_id', '').strip()
+    label         = request.form.get('label', '').strip()
     event_name    = request.form.get('event_name', '').strip()
     notes         = request.form.get('notes', '').strip()
     if not plan_date_str:
@@ -7670,12 +7702,9 @@ def planner_create():
     except ValueError:
         flash('Invalid date.', 'danger')
         return redirect(url_for('planner_dashboard'))
-    existing = DayPlan.query.filter_by(plan_date=plan_date).first()
-    if existing:
-        flash(f'A plan already exists for {plan_date_str}. Opening it.', 'info')
-        return redirect(url_for('planner_day', plan_id=existing.id))
     plan = DayPlan(
         plan_date=plan_date,
+        label=label or None,
         event_name=event_name or None,
         notes=notes or None,
         created_by_id=session.get('user_id'),
@@ -7698,8 +7727,7 @@ def planner_create():
                     sort_order=tt.sort_order,
                 ))
     db.session.commit()
-    log_audit('planner', f'Created day plan for {plan_date_str}')
-    # JSON response for calendar modal AJAX call
+    log_audit('planner', f'Created day plan for {plan_date_str}' + (f' [{label}]' if label else ''))
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return jsonify({'ok': True, 'plan_id': plan.id,
                         'redirect': url_for('planner_day', plan_id=plan.id)})
@@ -7719,8 +7747,10 @@ def planner_day(plan_id):
         User.active == True,
         User.role.in_(['admin', 'staff'])
     ).order_by(User.first_name, User.last_name).all()
+    templates = ChecklistTemplate.query.filter_by(is_active=True)\
+                                        .order_by(ChecklistTemplate.name).all()
     return render_template('planner_day.html', plan=plan, lib_tasks=lib_tasks,
-                           can_manage=can_manage, staff_users=staff_users)
+                           can_manage=can_manage, staff_users=staff_users, templates=templates)
 
 
 @app.route('/planner/<int:plan_id>/update', methods=['POST'])
@@ -7729,10 +7759,65 @@ def planner_day_update(plan_id):
         flash('Access denied.', 'danger')
         return redirect(url_for('planner_day', plan_id=plan_id))
     plan = DayPlan.query.get_or_404(plan_id)
+    plan.label      = request.form.get('label', '').strip() or None
     plan.event_name = request.form.get('event_name', '').strip() or None
     plan.notes      = request.form.get('notes', '').strip() or None
     db.session.commit()
     flash('Plan updated.', 'success')
+    return redirect(url_for('planner_day', plan_id=plan_id))
+
+
+@app.route('/planner/<int:plan_id>/apply-template', methods=['POST'])
+def planner_apply_template(plan_id):
+    if not (session.get('role') == 'admin' or authorized('manage_day_planner')):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    plan   = DayPlan.query.get_or_404(plan_id)
+    tmpl_id = request.form.get('template_id', '').strip()
+    if not tmpl_id:
+        flash('No template selected.', 'warning')
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    tmpl = ChecklistTemplate.query.get(int(tmpl_id))
+    if not tmpl:
+        flash('Template not found.', 'danger')
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    next_order = max((t.sort_order for t in plan.tasks), default=-1) + 1
+    for tt in tmpl.tasks:
+        db.session.add(DayPlanTask(
+            day_plan_id=plan.id,
+            title=tt.title,
+            description=tt.description,
+            time_period=tt.time_period or '',
+            sort_order=next_order,
+        ))
+        next_order += 1
+    db.session.commit()
+    flash(f'Applied template "{tmpl.name}" — {len(tmpl.tasks)} task(s) added.', 'success')
+    return redirect(url_for('planner_day', plan_id=plan_id))
+
+
+@app.route('/planner/<int:plan_id>/bulk-assign', methods=['POST'])
+def planner_bulk_assign(plan_id):
+    if not (session.get('role') == 'admin' or authorized('manage_day_planner')):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('planner_day', plan_id=plan_id))
+    plan           = DayPlan.query.get_or_404(plan_id)
+    task_ids       = request.form.getlist('task_ids')
+    assigned_to_id = request.form.get('assigned_to_id', '').strip()
+    uid = int(assigned_to_id) if assigned_to_id else None
+    count = 0
+    for tid in task_ids:
+        t = DayPlanTask.query.get(int(tid))
+        if t and t.day_plan_id == plan_id:
+            t.assigned_to_id = uid
+            count += 1
+    db.session.commit()
+    if uid:
+        u = User.query.get(uid)
+        name = f'{u.first_name} {u.last_name}' if u else 'selected user'
+        flash(f'Assigned {count} task(s) to {name}.', 'success')
+    else:
+        flash(f'Unassigned {count} task(s).', 'success')
     return redirect(url_for('planner_day', plan_id=plan_id))
 
 

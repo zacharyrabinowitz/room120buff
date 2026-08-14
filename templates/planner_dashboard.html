@@ -45,6 +45,7 @@
             <tr>
               <th>Date</th>
               <th>Day</th>
+              <th>Label</th>
               <th>Event / Label</th>
               <th>Template</th>
               <th class="text-center">Progress</th>
@@ -52,17 +53,30 @@
             </tr>
           </thead>
           <tbody>
+            {% set ns = namespace(prev_date=None) %}
             {% for plan in upcoming %}
             {% set total = plan.tasks | length %}
             {% set done = plan.tasks | selectattr('is_completed') | list | length %}
             <tr class="{% if plan.plan_date == today %}table-warning{% endif %}">
               <td class="fw-semibold">
-                {{ plan.plan_date.strftime('%b %d, %Y') }}
-                {% if plan.plan_date == today %}
-                  <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem;">Today</span>
+                {% if plan.plan_date != ns.prev_date %}
+                  {{ plan.plan_date.strftime('%b %d, %Y') }}
+                  {% if plan.plan_date == today %}
+                    <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem;">Today</span>
+                  {% endif %}
+                  {% set ns.prev_date = plan.plan_date %}
                 {% endif %}
               </td>
               <td class="text-muted">{{ plan.plan_date.strftime('%A') }}</td>
+              <td>
+                {% if plan.label %}
+                  <span class="badge" style="background:rgba(16,185,129,.12);color:#059669;border:1px solid rgba(16,185,129,.25);">
+                    {{ plan.label }}
+                  </span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
               <td>{{ plan.event_name or '—' }}</td>
               <td>
                 {% if plan.template %}
@@ -122,6 +136,7 @@
             <tr>
               <th>Date</th>
               <th>Day</th>
+              <th>Label</th>
               <th>Event / Label</th>
               <th class="text-center">Progress</th>
               <th class="text-center">Actions</th>
@@ -134,6 +149,15 @@
             <tr>
               <td>{{ plan.plan_date.strftime('%b %d, %Y') }}</td>
               <td class="text-muted">{{ plan.plan_date.strftime('%A') }}</td>
+              <td>
+                {% if plan.label %}
+                  <span class="badge" style="background:rgba(16,185,129,.12);color:#059669;border:1px solid rgba(16,185,129,.25);">
+                    {{ plan.label }}
+                  </span>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
               <td>{{ plan.event_name or '—' }}</td>
               <td class="text-center">
                 {% if total > 0 %}
@@ -212,6 +236,12 @@
             <label class="form-label fw-semibold">Date <span class="text-danger">*</span></label>
             <input type="date" name="plan_date" class="form-control"
                    value="{{ today.isoformat() }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Label</label>
+            <input type="text" name="label" class="form-control"
+                   placeholder="e.g. Manager, Employee, Bar Staff…">
+            <div class="form-text">Distinguishes multiple plans for the same day.</div>
           </div>
           <div class="mb-3">
             <label class="form-label fw-semibold">Checklist Template</label>

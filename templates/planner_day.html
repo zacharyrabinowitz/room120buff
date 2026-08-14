@@ -20,14 +20,24 @@
           {{ plan.plan_date.strftime('%A, %B %d, %Y') }}
         {% endif %}
       </h2>
-      {% if plan.template %}
-        <span class="badge mt-1" style="background:rgba(139,92,246,.15);color:#8b5cf6;border:1px solid rgba(139,92,246,.25);">
-          <i class="fas fa-layer-group me-1"></i>{{ plan.template.name }}
-        </span>
-      {% endif %}
+      <div class="d-flex flex-wrap gap-2 mt-1">
+        {% if plan.label %}
+          <span class="badge" style="background:rgba(16,185,129,.12);color:#059669;border:1px solid rgba(16,185,129,.25);">
+            <i class="fas fa-tag me-1"></i>{{ plan.label }}
+          </span>
+        {% endif %}
+        {% if plan.template %}
+          <span class="badge" style="background:rgba(139,92,246,.15);color:#8b5cf6;border:1px solid rgba(139,92,246,.25);">
+            <i class="fas fa-layer-group me-1"></i>{{ plan.template.name }}
+          </span>
+        {% endif %}
+      </div>
     </div>
     <div class="d-flex gap-2 flex-wrap">
       {% if can_manage %}
+      <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#applyTemplateModal">
+        <i class="fas fa-layer-group me-1"></i> Apply Template
+      </button>
       <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editPlanModal">
         <i class="fas fa-pen me-1"></i> Edit Plan
       </button>
@@ -56,11 +66,44 @@
       {% set total = plan.tasks | length %}
       {% set done = plan.tasks | selectattr('is_completed') | list | length %}
 
+      <!-- Bulk-assign bar (hidden until checkboxes checked) -->
+      {% if can_manage and plan.tasks %}
+      <form method="POST" action="{{ url_for('planner_bulk_assign', plan_id=plan.id) }}" id="bulkAssignForm">
+        <div id="bulkBar" class="card mb-3 border-primary" style="display:none;">
+          <div class="card-body py-2 px-3 d-flex flex-wrap align-items-center gap-3">
+            <span class="fw-semibold text-primary" id="bulkCount">0 selected</span>
+            <div class="d-flex align-items-center gap-2 flex-grow-1">
+              <label class="text-muted small flex-shrink-0 mb-0">Assign to:</label>
+              <select name="assigned_to_id" class="form-select form-select-sm" style="max-width:220px;">
+                <option value="">— Unassign —</option>
+                {% for u in staff_users %}
+                <option value="{{ u.id }}">{{ u.first_name }} {{ u.last_name }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fas fa-user-tag me-1"></i> Apply
+              </button>
+            </div>
+            <button type="button" class="btn btn-link btn-sm text-muted p-0" onclick="clearAllChecks()">
+              Clear selection
+            </button>
+          </div>
+        </div>
+        <div id="bulkTaskIds"></div>
+      </form>
+      {% endif %}
+
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span class="fw-semibold">
-            <i class="fas fa-tasks me-2"></i>Checklist
-            <span class="text-muted fw-normal ms-1">({{ done }}/{{ total }} done)</span>
+          <span class="fw-semibold d-flex align-items-center gap-2">
+            {% if can_manage and plan.tasks %}
+            <input type="checkbox" id="selectAllChk" class="form-check-input m-0"
+                   title="Select all" onchange="toggleSelectAll(this.checked)">
+            {% endif %}
+            <span>
+              <i class="fas fa-tasks me-2"></i>Checklist
+              <span class="text-muted fw-normal ms-1">({{ done }}/{{ total }} done)</span>
+            </span>
           </span>
           {% if total > 0 %}
           <div class="progress" style="width:120px;height:8px;">
@@ -75,11 +118,19 @@
           {% for task in plan.tasks %}
           <div class="list-group-item px-3 py-3 {% if task.is_completed %}bg-light bg-opacity-50{% endif %}">
             <div class="d-flex gap-3">
-              <!-- Toggle checkbox -->
+
+              <!-- Bulk-select checkbox -->
+              {% if can_manage %}
+              <div class="flex-shrink-0 mt-1 d-flex flex-column gap-2 align-items-center">
+                <input type="checkbox" class="form-check-input task-chk m-0"
+                       value="{{ task.id }}" onchange="onTaskCheck()">
+              {% endif %}
+
+              <!-- Toggle complete checkbox -->
               <form method="POST"
                     action="{{ url_for('planner_task_toggle', plan_id=plan.id, task_id=task.id) }}"
-                    class="flex-shrink-0 mt-1">
-                <button type="submit" class="btn p-0 border-0 bg-transparent" title="Toggle complete">
+                    class="flex-shrink-0">
+                <button type="submit" class="btn p-0 border-0 bg-transparent mt-1" title="Toggle complete">
                   {% if task.is_completed %}
                     <i class="fas fa-check-circle fa-lg text-success"></i>
                   {% else %}
@@ -87,6 +138,10 @@
                   {% endif %}
                 </button>
               </form>
+
+              {% if can_manage %}
+              </div>
+              {% endif %}
 
               <div class="flex-grow-1">
                 <!-- Task title + description -->
@@ -119,7 +174,7 @@
                 </div>
                 {% endif %}
 
-                <!-- Assign to (managers/admin only) -->
+                <!-- Assign to (managers/admin only) — single task -->
                 {% if can_manage %}
                 <div class="mt-2">
                   <form method="POST"
@@ -186,6 +241,7 @@
                 </button>
               </form>
               {% endif %}
+
             </div>
           </div>
           {% endfor %}
@@ -193,7 +249,7 @@
         {% else %}
         <div class="card-body text-center text-muted py-5">
           <i class="fas fa-clipboard fa-2x mb-3 d-block" style="opacity:.3;"></i>
-          No tasks yet. Add tasks below.
+          No tasks yet. Add tasks below or apply a template.
         </div>
         {% endif %}
 
@@ -253,6 +309,10 @@
             <dd class="mb-0">{{ plan.plan_date.strftime('%B %d, %Y') }}</dd>
             <dt class="text-muted small">Day</dt>
             <dd class="mb-0">{{ plan.plan_date.strftime('%A') }}</dd>
+            {% if plan.label %}
+            <dt class="text-muted small">Label</dt>
+            <dd class="mb-0">{{ plan.label }}</dd>
+            {% endif %}
             {% if plan.template %}
             <dt class="text-muted small">Template</dt>
             <dd class="mb-0">{{ plan.template.name }}</dd>
@@ -296,8 +356,43 @@
   </div>
 </div>
 
-<!-- Edit Plan Modal -->
+<!-- Apply Template Modal -->
 {% if can_manage %}
+<div class="modal fade" id="applyTemplateModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('planner_apply_template', plan_id=plan.id) }}">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-layer-group me-2"></i>Apply Template</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">
+            Tasks from the selected template will be <strong>appended</strong> to this plan.
+            Existing tasks are not removed.
+          </p>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Template <span class="text-danger">*</span></label>
+            <select name="template_id" class="form-select" required>
+              <option value="">— Select a template —</option>
+              {% for tmpl in templates %}
+              <option value="{{ tmpl.id }}">{{ tmpl.name }} ({{ tmpl.tasks | length }} tasks)</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Append Tasks
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Plan Modal -->
 <div class="modal fade" id="editPlanModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -307,6 +402,13 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Label</label>
+            <input type="text" name="label" class="form-control"
+                   value="{{ plan.label or '' }}"
+                   placeholder="e.g. Manager, Employee, Bar Staff…">
+            <div class="form-text">Distinguishes multiple plans for the same day.</div>
+          </div>
           <div class="mb-3">
             <label class="form-label fw-semibold">Event / Label</label>
             <input type="text" name="event_name" class="form-control"
@@ -328,4 +430,47 @@
   </div>
 </div>
 {% endif %}
+
+<script>
+function onTaskCheck() {
+  const checks = document.querySelectorAll('.task-chk');
+  const checked = [...checks].filter(c => c.checked);
+  const bar = document.getElementById('bulkBar');
+  const countEl = document.getElementById('bulkCount');
+  const idsContainer = document.getElementById('bulkTaskIds');
+
+  if (checked.length > 0) {
+    bar.style.display = '';
+    countEl.textContent = checked.length + ' selected';
+    idsContainer.innerHTML = '';
+    checked.forEach(c => {
+      const inp = document.createElement('input');
+      inp.type = 'hidden';
+      inp.name = 'task_ids';
+      inp.value = c.value;
+      idsContainer.appendChild(inp);
+    });
+  } else {
+    bar.style.display = 'none';
+  }
+
+  const allChk = document.getElementById('selectAllChk');
+  if (allChk) {
+    allChk.indeterminate = checked.length > 0 && checked.length < checks.length;
+    allChk.checked = checks.length > 0 && checked.length === checks.length;
+  }
+}
+
+function toggleSelectAll(checked) {
+  document.querySelectorAll('.task-chk').forEach(c => c.checked = checked);
+  onTaskCheck();
+}
+
+function clearAllChecks() {
+  document.querySelectorAll('.task-chk').forEach(c => c.checked = false);
+  const allChk = document.getElementById('selectAllChk');
+  if (allChk) { allChk.checked = false; allChk.indeterminate = false; }
+  onTaskCheck();
+}
+</script>
 {% endblock %}
