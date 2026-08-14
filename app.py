@@ -2461,38 +2461,52 @@ def import_backup():
         DailyBrief, BriefStaff, BriefReservation, BriefPreorder,
     ]
 
+    import sqlite3 as _sqlite3
+
+    db_path = db.engine.url.database
+    _conn = _sqlite3.connect(db_path)
     try:
-        with db.engine.connect() as conn:
-            conn.execute(db.text('PRAGMA foreign_keys = OFF'))
+        # PRAGMA must be set before any DML; raw sqlite3 guarantees this
+        _conn.execute("PRAGMA foreign_keys = OFF")
 
-            # Wipe all tables in reverse order to avoid FK constraint errors
-            for model_cls in reversed(INSERT_ORDER):
-                tbl = model_cls.__tablename__
-                conn.execute(db.text(f'DELETE FROM "{tbl}"'))
+        # Wipe tables children-first (reverse of INSERT_ORDER)
+        for model_cls in reversed(INSERT_ORDER):
+            tbl = model_cls.__tablename__
+            _conn.execute(f'DELETE FROM "{tbl}"')
 
-            # Re-insert everything in dependency order
-            for model_cls in INSERT_ORDER:
-                tbl = model_cls.__tablename__
-                rows = data.get(tbl, [])
-                for row in rows:
-                    if not row:
-                        continue
-                    cols = ', '.join(f'"{k}"' for k in row)
-                    params = {f'p{i}': v for i, v in enumerate(row.values())}
-                    placeholders = ', '.join(f':p{i}' for i in range(len(row)))
-                    conn.execute(
-                        db.text(f'INSERT INTO "{tbl}" ({cols}) VALUES ({placeholders})'),
-                        params,
+        # Re-insert in dependency order; skip tables absent from the backup
+        for model_cls in INSERT_ORDER:
+            tbl = model_cls.__tablename__
+            rows = data.get(tbl, [])
+            for row in rows:
+                if not row:
+                    continue
+                cols         = ', '.join(f'"{k}"' for k in row)
+                placeholders = ', '.join('?' for _ in row)
+                try:
+                    _conn.execute(
+                        f'INSERT INTO "{tbl}" ({cols}) VALUES ({placeholders})',
+                        list(row.values()),
                     )
+                except Exception as row_exc:
+                    logger.error(f'Backup restore — failed row in {tbl}: {row_exc} | row={row}')
+                    raise Exception(f'Insert failed in table "{tbl}": {row_exc}') from row_exc
 
-            conn.execute(db.text('PRAGMA foreign_keys = ON'))
-            conn.commit()
+        _conn.execute("PRAGMA foreign_keys = ON")
+        _conn.commit()
 
+        # Flush SQLAlchemy's cache so it reads the restored data
+        db.session.expire_all()
+        db.engine.dispose()
+
+        flash('Database fully restored from backup. All data has been replaced.', 'success')
         log_audit('system', 'Full database restored from backup',
                   f'Backup dated {meta.get("exported_at", "unknown")}')
-        flash('Database fully restored from backup. All data has been replaced.', 'success')
     except Exception as exc:
+        _conn.rollback()
         flash(f'Restore failed: {exc}', 'danger')
+    finally:
+        _conn.close()
 
     return redirect(url_for('import_members'))
 
