@@ -216,6 +216,45 @@
     {% endif %}
   </div>
 
+  <!-- ── Room 120 Bartender Stations ─────────────────────────── -->
+  <div class="card mb-5">
+    <div class="card-header fw-semibold"><i class="fas fa-cocktail me-2"></i>Shift Planner Room 120 Bartender Stations</div>
+    {% if can_manage_room120_bartender_sections %}
+    <form method="POST" action="{{ url_for('save_room120_bartender_sections') }}">
+      <div class="card-body">
+        <p class="text-muted small mb-3">Configure stations and bartender preferences for roster entries labeled “Room 120 Bartender”. These staff are assigned separately from regular bartenders.</p>
+        <div id="room120BartenderStationRows">
+          {% for section in room120_bartender_sections %}
+          <div class="row g-2 align-items-start mb-3 room120-bartender-station-row">
+            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="room120_bartender_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Room 120 Bar"></div>
+            <div class="col-md-7"><label class="form-label small">Preferred Room 120 bartenders</label><textarea name="section_room120_bartenders" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee">{{ section.room120_bartenders | join(', ') }}</textarea></div>
+            <div class="col-md-1 pt-md-4">
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRoom120BartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRoom120BartenderStation(this, 1)" title="Move later (less busy)" aria-label="Move station later"><i class="fas fa-arrow-down"></i></button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRoom120BartenderStation(this)" aria-label="Remove station"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          {% else %}
+          <div class="row g-2 align-items-start mb-3 room120-bartender-station-row">
+            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="room120_bartender_section_name" class="form-control" placeholder="e.g. Room 120 Bar"></div>
+            <div class="col-md-7"><label class="form-label small">Preferred Room 120 bartenders</label><textarea name="section_room120_bartenders" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea></div>
+            <div class="col-md-1 pt-md-4">
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRoom120BartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRoom120BartenderStation(this, 1)" title="Move later (less busy)" aria-label="Move station later"><i class="fas fa-arrow-down"></i></button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRoom120BartenderStation(this)" aria-label="Remove station"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="addRoom120BartenderStationBtn"><i class="fas fa-plus me-1"></i>Add Room 120 Bartender Station</button>
+      </div>
+      <div class="card-footer text-end"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save Room 120 Bartender Stations</button></div>
+    </form>
+    {% else %}
+    <div class="card-body text-muted small">You can view settings, but need the <strong>Configure Room 120 bartender stations &amp; preferences</strong> permission to edit these preferences.</div>
+    {% endif %}
+  </div>
+
   <!-- ── Server Sections ─────────────────────────────────────── -->
   <div class="card mb-5">
     <div class="card-header fw-semibold">
@@ -838,6 +877,30 @@ function removeBartenderStation(button) { button.closest('.bartender-station-row
 
 function moveBartenderStation(button, direction) {
   const row = button.closest('.bartender-station-row');
+  const sibling = direction < 0 ? row.previousElementSibling : row.nextElementSibling;
+  if (!sibling) return;
+  if (direction < 0) row.parentNode.insertBefore(row, sibling);
+  else row.parentNode.insertBefore(sibling, row);
+}
+
+document.getElementById('addRoom120BartenderStationBtn')?.addEventListener('click', function() {
+  const row = document.createElement('div');
+  row.className = 'row g-2 align-items-start mb-3 room120-bartender-station-row';
+  row.innerHTML = `
+    <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="room120_bartender_section_name" class="form-control" placeholder="e.g. Room 120 Bar"></div>
+    <div class="col-md-7"><label class="form-label small">Preferred Room 120 bartenders</label><textarea name="section_room120_bartenders" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea></div>
+    <div class="col-md-1 pt-md-4">
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRoom120BartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRoom120BartenderStation(this, 1)" title="Move later (less busy)" aria-label="Move station later"><i class="fas fa-arrow-down"></i></button>
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRoom120BartenderStation(this)" aria-label="Remove station"><i class="fas fa-times"></i></button>
+    </div>`;
+  document.getElementById('room120BartenderStationRows').appendChild(row);
+});
+
+function removeRoom120BartenderStation(button) { button.closest('.room120-bartender-station-row').remove(); }
+
+function moveRoom120BartenderStation(button, direction) {
+  const row = button.closest('.room120-bartender-station-row');
   const sibling = direction < 0 ? row.previousElementSibling : row.nextElementSibling;
   if (!sibling) return;
   if (direction < 0) row.parentNode.insertBefore(row, sibling);

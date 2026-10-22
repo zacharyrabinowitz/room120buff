@@ -79,6 +79,35 @@
     </div>
   </div>
 
+  <!-- ── Room 120 Bartender Assignments ───────────────────────── -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold"><i class="fas fa-cocktail me-2" style="color:var(--accent);"></i>Room 120 Bartender Assignments</div>
+    <div class="card-body">
+      <p class="text-muted small mb-3">These roster entries are managed separately from the regular bartenders.</p>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 assignment-table" id="room120BartenderAssignmentTable" data-assignment-kind="room120_bartenders">
+          <thead><tr>
+            {% for section in plan.get('room120_bartender_sections', []) %}
+            <th><input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold assignment-section-name" value="{{ section.name }}" aria-label="Room 120 bartender station name"></th>
+            {% endfor %}
+          </tr></thead>
+          <tbody>
+            {% set max_rows = plan.get('room120_bartender_sections', []) | map(attribute='room120_bartenders') | map('length') | max if plan.get('room120_bartender_sections') else 0 %}
+            {% for row_index in range(max_rows) %}
+            <tr>
+              {% for section in plan.get('room120_bartender_sections', []) %}
+              <td><div class="assignment-cell"><input type="text" class="form-control form-control-sm assignment-person-name" value="{{ section.room120_bartenders[row_index] if row_index < section.room120_bartenders|length else '' }}" aria-label="Room 120 bartender"><button type="button" class="btn btn-outline-danger btn-xs assignment-cell-delete" onclick="clearAssignmentCell(this)" aria-label="Clear Room 120 bartender cell" title="Clear this bartender"><i class="fas fa-times"></i></button></div></td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addAssignmentColumn('room120BartenderAssignmentTable', 'Room 120 station')"><i class="fas fa-columns me-1"></i>Add Station</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addAssignmentRow('room120BartenderAssignmentTable', 'Room 120 Bartender')"><i class="fas fa-plus me-1"></i>Add Row</button>
+    </div>
+  </div>
+
   <!-- ── Server Sections ─────────────────────────────────────── -->
   <div class="card mb-4">
     <div class="card-header fw-semibold">
@@ -425,6 +454,7 @@ function addAssignmentColumn(tableId, placeholder) {
     input.className = 'form-control form-control-sm assignment-person-name';
     const staffLabel = table.dataset.assignmentKind === 'cooks' ? 'Cook' :
                table.dataset.assignmentKind === 'bartenders' ? 'Bartender' :
+                       table.dataset.assignmentKind === 'room120_bartenders' ? 'Room 120 Bartender' :
                table.dataset.assignmentKind === 'runners' ? 'Runner' : 'Server';
     input.setAttribute('aria-label', staffLabel);
     const wrapper = document.createElement('div');
@@ -498,6 +528,7 @@ function addAssignmentGroup(kind) {
 function collectAssignmentGroups(kind) {
   const tableId = kind === 'cooks' ? 'cookAssignmentTable' :
                   kind === 'bartenders' ? 'barAssignmentTable' :
+                  kind === 'room120_bartenders' ? 'room120BartenderAssignmentTable' :
                   kind === 'runners' ? 'runnerAssignmentTable' : 'serverAssignmentTable';
   const table = document.getElementById(tableId);
   const names = Array.from(table.tHead.querySelectorAll('.assignment-section-name'));
@@ -580,6 +611,7 @@ function collectPlan() {
     venue          : document.getElementById('ev_venue').value,
     date           : document.getElementById('ev_date').value,
     bar: { sections: collectAssignmentGroups('bartenders') },
+    room120_bartender_sections: collectAssignmentGroups('room120_bartenders'),
     server_sections: collectAssignmentGroups('servers'),
     cook_sections: collectAssignmentGroups('cooks'),
     runner_sections: collectAssignmentGroups('runners'),

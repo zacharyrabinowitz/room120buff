@@ -110,6 +110,20 @@
   </table>
   {% endif %}
 
+  <!-- Room 120 Bartender Sections -->
+  {% if plan.get('room120_bartender_sections') %}
+  <div class="section-header">Room 120 Bartenders</div>
+  <table class="bar-table">
+    <thead><tr>{% for section in plan.get('room120_bartender_sections', []) %}<th>{{ section.name }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      {% set max_rows = plan.get('room120_bartender_sections', []) | map(attribute='room120_bartenders') | map('length') | max %}
+      {% for i in range(max_rows) %}
+      <tr>{% for section in plan.get('room120_bartender_sections', []) %}<td>{{ section.room120_bartenders[i] if i < section.room120_bartenders|length else '' }}</td>{% endfor %}</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
   <!-- Server Sections -->
   {% if plan.get('server_sections') %}
   <div class="section-header">Server Sections</div>

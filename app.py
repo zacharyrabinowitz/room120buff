@@ -985,6 +985,7 @@ PERMISSIONS = {
         'view_shift_planner': 'View & use the shift planner',
         'edit_shift_planner': 'Edit shift plans & download PDFs',
         'manage_bartender_sections': 'Configure bartender stations & preferences',
+        'manage_room120_bartender_sections': 'Configure Room 120 bartender stations & preferences',
         'manage_server_sections':    'Configure server sections & preferences',
         'manage_cook_sections':      'Configure cook stations & preferences',
         'manage_runner_sections':    'Configure runner sections & preferences',
@@ -4985,6 +4986,12 @@ def admin_settings():
     except (TypeError, ValueError):
         bartender_sections = []
     try:
+        room120_bartender_sections = json.loads(get_setting('room120_bartender_sections', '[]'))
+        if not isinstance(room120_bartender_sections, list):
+            room120_bartender_sections = []
+    except (TypeError, ValueError):
+        room120_bartender_sections = []
+    try:
         runner_sections = json.loads(get_setting('runner_sections', '[]'))
         if not isinstance(runner_sections, list):
             runner_sections = []
@@ -4995,11 +5002,13 @@ def admin_settings():
         staff_roles=staff_roles, permissions=PERMISSIONS,
         server_sections=server_sections, cook_sections=cook_sections,
         bartender_sections=bartender_sections,
+        room120_bartender_sections=room120_bartender_sections,
         runner_sections=runner_sections,
         can_edit_settings=authorized('edit_settings'),
         can_manage_server_sections=authorized('edit_settings') or authorized('manage_server_sections'),
         can_manage_cook_sections=authorized('edit_settings') or authorized('manage_cook_sections'),
         can_manage_bartender_sections=authorized('edit_settings') or authorized('manage_bartender_sections'),
+        can_manage_room120_bartender_sections=authorized('edit_settings') or authorized('manage_room120_bartender_sections'),
         can_manage_runner_sections=authorized('edit_settings') or authorized('manage_runner_sections'))
 
 
@@ -5099,6 +5108,39 @@ def save_bartender_sections():
     if old_value != new_value:
         log_audit('settings', 'Bartender stations updated', f'{len(sections)} station(s) configured')
     flash('Bartender stations saved. New roster uploads will use these assignments.', 'success')
+    return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/room120-bartender-sections', methods=['POST'])
+def save_room120_bartender_sections():
+    if not (authorized('edit_settings') or authorized('manage_room120_bartender_sections')):
+        return redirect(url_for('home'))
+
+    sections = []
+    assigned_names = set()
+    names = request.form.getlist('room120_bartender_section_name')
+    bartender_lists = request.form.getlist('section_room120_bartenders')
+    for index, raw_name in enumerate(names):
+        name = raw_name.strip()
+        if not name:
+            continue
+        raw_bartenders = bartender_lists[index] if index < len(bartender_lists) else ''
+        bartenders = []
+        for raw_bartender in re.split(r'[,\n]+', raw_bartenders):
+            bartender = raw_bartender.strip()
+            key = bartender.casefold()
+            if bartender and key not in assigned_names:
+                bartenders.append(bartender)
+                assigned_names.add(key)
+        sections.append({'name': name, 'room120_bartenders': bartenders})
+
+    old_value = get_setting('room120_bartender_sections', '[]')
+    new_value = json.dumps(sections)
+    set_setting('room120_bartender_sections', new_value)
+    db.session.commit()
+    if old_value != new_value:
+        log_audit('settings', 'Room 120 bartender stations updated', f'{len(sections)} station(s) configured')
+    flash('Room 120 bartender stations saved. New roster uploads will use these assignments.', 'success')
     return redirect(url_for('admin_settings'))
 
 
@@ -5625,6 +5667,7 @@ def shift_planner_upload():
             employee
             for position, staff in employees.items()
             if 'bartender' in position.strip().casefold()
+            and 'room 120 bartender' not in position.strip().casefold()
             for employee in staff
         ]
         try:
@@ -5650,10 +5693,31 @@ def shift_planner_upload():
                 {'name': 'Lower Bar', 'bartenders': late},
             ] if bartenders else []
 
+        room120_bartenders = [
+            employee
+            for position, staff in employees.items()
+            if 'room 120 bartender' in position.strip().casefold()
+            for employee in staff
+        ]
+        try:
+            configured_room120_stations = json.loads(get_setting('room120_bartender_sections', '[]'))
+            if not isinstance(configured_room120_stations, list):
+                configured_room120_stations = []
+        except (TypeError, ValueError):
+            configured_room120_stations = []
+        room120_bartender_sections = _assign_roster_to_sections(
+            room120_bartenders, configured_room120_stations, 'room120_bartenders')
+
         # Auto-generate break rotations for roles with 2+ late-shift people
         break_sections = []
-        for pos, label in [('Bartender', 'Bartender'), ('Cook', 'Cook'), ('Server', 'Server')]:
-            late_staff = [e['name'] for e in employees.get(pos, []) if _shift_end_hour(e['shift']) >= 22]
+        break_roles = [
+            ('Bartender', bartenders),
+            ('Room 120 Bartender', room120_bartenders),
+            ('Cook', [employee for pos, staff in employees.items() if pos.strip().casefold() in ('cook', 'cooks') for employee in staff]),
+            ('Server', [employee for pos, staff in employees.items() if pos.strip().casefold() in ('server', 'servers') for employee in staff]),
+        ]
+        for label, staff in break_roles:
+            late_staff = [e['name'] for e in staff if _shift_end_hour(e['shift']) >= 22]
             if len(late_staff) >= 2:
                 break_sections.append({
                     'name': f'{label} Break Rotation',
@@ -5713,6 +5777,7 @@ def shift_planner_upload():
             'venue':          venue,
             'date':           plan_date,
             'bar': {'sections': bartender_sections},
+            'room120_bartender_sections': room120_bartender_sections,
             'break_sections': break_sections,
             'server_sections': server_sections,
             'cook_sections': cook_sections,
@@ -5763,6 +5828,25 @@ def shift_planner_edit():
     # Older processed plans may predate editable station groups. Seed visible
     # editable groups from the roster already saved with those plans.
     all_employees = plan.get('all_employees', {})
+    room120_bartender_names = [
+        name
+        for position, names in all_employees.items()
+        if 'room 120 bartender' in position.strip().casefold()
+        for name in names
+    ]
+    room120_name_keys = {name.strip().casefold() for name in room120_bartender_names}
+    # Older plans included Room 120 Bartenders in the combined bar groups.
+    # Move those names out so they appear only in their dedicated section.
+    for section in bar.get('sections', []):
+        section['bartenders'] = [
+            name for name in section.get('bartenders', [])
+            if name.strip().casefold() not in room120_name_keys
+        ]
+    if not plan.get('room120_bartender_sections') and room120_bartender_names:
+        plan['room120_bartender_sections'] = [{
+            'name': 'Room 120 Bartenders',
+            'room120_bartenders': room120_bartender_names,
+        }]
     if not plan.get('server_sections'):
         servers = [
             name
