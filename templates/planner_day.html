@@ -34,6 +34,20 @@
       </div>
     </div>
     <div class="d-flex gap-2 flex-wrap">
+      {% if matching_shift_plans %}
+      <form method="GET" action="{{ url_for('planner_shift_plan_pdf', plan_id=plan.id) }}" class="d-flex align-items-center gap-2">
+        <select name="filename" class="form-select form-select-sm" aria-label="Choose shift plan" style="max-width:260px;">
+          {% for shift_plan in matching_shift_plans %}
+          <option value="{{ shift_plan.filename }}">{{ shift_plan.event_name or 'Shift Plan' }}{% if shift_plan.venue %} — {{ shift_plan.venue }}{% endif %}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-outline-primary btn-sm text-nowrap">
+          <i class="fas fa-file-pdf me-1"></i>Download Shift PDF
+        </button>
+      </form>
+      {% elif can_view_shift_plans %}
+      <span class="text-muted small align-self-center">No saved shift-plan PDF for this date yet.</span>
+      {% endif %}
       {% if can_manage %}
       <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#applyTemplateModal">
         <i class="fas fa-layer-group me-1"></i> Apply Template

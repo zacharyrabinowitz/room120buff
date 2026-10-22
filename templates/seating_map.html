@@ -132,6 +132,9 @@
     padding: 2px 7px;
     max-width: 130px;
 }
+.table-item[data-kind="bar-seat"].bar-label-hidden .table-label {
+    visibility: hidden;
+}
 
 .wall-item .table-label { pointer-events: none; }
 
@@ -435,6 +438,7 @@ textarea.popup-input { min-height: 50px; resize: vertical; }
                  data-timeslots="{{ res.timeslots if res else '' }}"
                  data-notes="{{ res.notes if res else '' }}"
                  data-seats-occupied="{{ res.seats_occupied if res and res.seats_occupied else 1 }}"
+                 data-label-text="{{ ns.label if res and (res.member_id or res.guest_name) else '' }}"
                  data-original-label="{{ item.label }}"
                  style="
                      left: {{ item.x }}px;
@@ -713,6 +717,8 @@ function applyTableChange() {
             displayLabel.replace(/ ×\d+$/, ""));
     }
 
+    consolidateBarSeatLabels();
+
     closePopup();
 }
 
@@ -761,6 +767,8 @@ function clearSeatEl(el) {
     el.classList.remove("occupied");
     const s = el.querySelector(".table-label");
     if (s) s.textContent = "";
+    el.dataset.labelText = "";
+    consolidateBarSeatLabels();
 }
 
 function applySeatLabel(el, memberId, guestName, numGuests, timeslots, notes, seatsOccupied, displayLabel) {
@@ -770,6 +778,7 @@ function applySeatLabel(el, memberId, guestName, numGuests, timeslots, notes, se
     el.dataset.timeslots     = timeslots     || "";
     el.dataset.notes         = notes         || "";
     el.dataset.seatsOccupied = seatsOccupied || 1;
+    el.dataset.labelText     = displayLabel   || "";
     const span = el.querySelector(".table-label");
     if (memberId || guestName) {
         el.classList.add("occupied");
@@ -778,6 +787,37 @@ function applySeatLabel(el, memberId, guestName, numGuests, timeslots, notes, se
         el.classList.remove("occupied");
         if (span) span.textContent = "";
     }
+}
+
+// A multi-seat bar reservation is stored on every occupied seat. Show its
+// name once, on the primary seat, rather than stacking identical badges.
+function consolidateBarSeatLabels() {
+    const seats = Array.from(document.querySelectorAll('.table-item[data-kind="bar-seat"]'))
+        .sort((a, b) => {
+            const dx = (parseInt(a.style.left) || 0) - (parseInt(b.style.left) || 0);
+            return dx !== 0 ? dx : (parseInt(a.style.top) || 0) - (parseInt(b.style.top) || 0);
+        });
+
+    seats.forEach(seat => seat.classList.remove("bar-label-hidden"));
+
+    seats.forEach((primarySeat, primaryIndex) => {
+        const count = parseInt(primarySeat.dataset.seatsOccupied) || 1;
+        if (count < 2 || !primarySeat.dataset.labelText) return;
+
+        const leftCount = Math.floor((count - 1) / 2);
+        const rightCount = count - 1 - leftCount;
+        for (let offset = -leftCount; offset <= rightCount; offset++) {
+            if (offset === 0) continue;
+            const adjacentSeat = seats[primaryIndex + offset];
+            if (!adjacentSeat) continue;
+            const sameReservation =
+                adjacentSeat.dataset.memberId === primarySeat.dataset.memberId &&
+                adjacentSeat.dataset.guestName === primarySeat.dataset.guestName;
+            if (sameReservation && adjacentSeat.dataset.labelText) {
+                adjacentSeat.classList.add("bar-label-hidden");
+            }
+        }
+    });
 }
 
 // ── Adjacent bar-seat spreading (buffered, no fetch) ─────────────────────
@@ -817,6 +857,8 @@ document.querySelectorAll(".table-item").forEach(el => {
         openPopupForElement(el);
     });
 });
+
+consolidateBarSeatLabels();
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

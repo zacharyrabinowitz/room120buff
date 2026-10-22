@@ -85,25 +85,73 @@
 
   <!-- Bar Assignments -->
   <div class="section-header">Bar Assignments</div>
+  {% if plan.bar.get('sections') %}
   <table class="bar-table">
     <thead>
-      <tr>
-        <th>{{ plan.bar.main_label }}</th>
-        <th>{{ plan.bar.lower_label }}</th>
-      </tr>
+      <tr>{% for section in plan.bar.sections %}<th>{{ section.name }}</th>{% endfor %}</tr>
     </thead>
     <tbody>
-      {% set mains  = plan.bar.main %}
-      {% set lowers = plan.bar.lower %}
-      {% set max_rows = [mains|length, lowers|length]|max %}
+      {% set max_rows = plan.bar.sections | map(attribute='bartenders') | map('length') | max %}
       {% for i in range(max_rows) %}
       <tr>
-        <td>{{ mains[i] if i < mains|length else '' }}</td>
-        <td>{{ lowers[i] if i < lowers|length else '' }}</td>
+        {% for section in plan.bar.sections %}<td>{{ section.bartenders[i] if i < section.bartenders|length else '' }}</td>{% endfor %}
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  {% elif plan.bar.get('main_label') or plan.bar.get('lower_label') %}
+  <table class="bar-table">
+    <thead><tr><th>{{ plan.bar.main_label }}</th><th>{{ plan.bar.lower_label }}</th></tr></thead>
+    <tbody>
+      {% set mains = plan.bar.main %}{% set lowers = plan.bar.lower %}
+      {% set max_rows = [mains|length, lowers|length]|max %}
+      {% for i in range(max_rows) %}<tr><td>{{ mains[i] if i < mains|length else '' }}</td><td>{{ lowers[i] if i < lowers|length else '' }}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- Server Sections -->
+  {% if plan.get('server_sections') %}
+  <div class="section-header">Server Sections</div>
+  <table>
+    <thead><tr><th style="width:32%;">Section</th><th>Servers</th></tr></thead>
+    <tbody>
+      {% for section in plan.get('server_sections', []) %}
+      <tr>
+        <td>{{ section.name }}</td><td>{{ section.servers | join(', ') if section.servers else 'No servers assigned' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- Cook Stations -->
+  {% if plan.get('cook_sections') %}
+  <div class="section-header">Cook Stations</div>
+  <table>
+    <thead><tr><th style="width:32%;">Station</th><th>Cooks</th></tr></thead>
+    <tbody>
+      {% for section in plan.get('cook_sections', []) %}
+      <tr>
+        <td>{{ section.name }}</td><td>{{ section.cooks | join(', ') if section.cooks else 'No cooks assigned' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- Runner Sections -->
+  {% if plan.get('runner_sections') %}
+  <div class="section-header">Runner Sections</div>
+  <table>
+    <thead><tr><th style="width:32%;">Section</th><th>Runners</th></tr></thead>
+    <tbody>
+      {% for section in plan.get('runner_sections', []) %}
+      <tr><td>{{ section.name }}</td><td>{{ section.runners | join(', ') if section.runners else 'No runners assigned' }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
 
   <!-- Break Sections -->
   {% for section in plan.break_sections %}

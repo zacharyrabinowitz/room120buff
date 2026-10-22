@@ -177,6 +177,221 @@
     </div>
   </form>
 
+  <!-- ── Bartender Stations ───────────────────────────────────── -->
+  <div class="card mb-5">
+    <div class="card-header fw-semibold"><i class="fas fa-glass-martini-alt me-2"></i>Shift Planner Bartender Stations</div>
+    {% if can_manage_bartender_sections %}
+    <form method="POST" action="{{ url_for('save_bartender_sections') }}">
+      <div class="card-body">
+        <p class="text-muted small mb-3">Put bar stations in busiest-to-least-busy order. Bartenders listed for a station are always preferred there; remaining bartenders are assigned by earliest shift start in this order.</p>
+        <div id="bartenderStationRows">
+          {% for section in bartender_sections %}
+          <div class="row g-2 align-items-start mb-3 bartender-station-row">
+            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="bartender_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Main Bar"></div>
+            <div class="col-md-7"><label class="form-label small">Preferred bartenders</label><textarea name="section_bartenders" class="form-control" rows="2" placeholder="John Doe, Jane Smith">{{ section.bartenders | join(', ') }}</textarea></div>
+            <div class="col-md-1 pt-md-4">
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveBartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveBartenderStation(this, 1)" title="Move later (less busy)" aria-label="Move station later"><i class="fas fa-arrow-down"></i></button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeBartenderStation(this)" aria-label="Remove station"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          {% else %}
+          <div class="row g-2 align-items-start mb-3 bartender-station-row">
+            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="bartender_section_name" class="form-control" placeholder="e.g. Main Bar"></div>
+            <div class="col-md-7"><label class="form-label small">Preferred bartenders</label><textarea name="section_bartenders" class="form-control" rows="2" placeholder="John Doe, Jane Smith"></textarea></div>
+            <div class="col-md-1 pt-md-4">
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveBartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveBartenderStation(this, 1)" title="Move later (less busy)" aria-label="Move station later"><i class="fas fa-arrow-down"></i></button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeBartenderStation(this)" aria-label="Remove station"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="addBartenderStationBtn"><i class="fas fa-plus me-1"></i>Add Bartender Station</button>
+      </div>
+      <div class="card-footer text-end"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save Bartender Stations</button></div>
+    </form>
+    {% else %}
+    <div class="card-body text-muted small">You can view settings, but need the <strong>Configure bartender stations &amp; preferences</strong> permission to edit these preferences.</div>
+    {% endif %}
+  </div>
+
+  <!-- ── Server Sections ─────────────────────────────────────── -->
+  <div class="card mb-5">
+    <div class="card-header fw-semibold">
+      <i class="fas fa-users me-2"></i>Shift Planner Server Sections
+    </div>
+    {% if can_manage_server_sections %}
+    <form method="POST" action="{{ url_for('save_server_sections') }}">
+      <div class="card-body">
+        <p class="text-muted small mb-3">
+          Put sections in busiest-to-least-busy order using the arrows. Names listed in a section are
+          always preferred there when they appear on the roster. Other servers are sorted by shift
+          start time and assigned in section order, cycling from busiest to least busy. Use commas or
+          new lines between names.
+        </p>
+        <div id="serverSectionRows">
+          {% for section in server_sections %}
+          <div class="row g-2 align-items-start mb-3 server-section-row">
+            <div class="col-md-4">
+              <label class="form-label small">Section name</label>
+              <input type="text" name="section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Main Dining Room">
+            </div>
+            <div class="col-md-7">
+              <label class="form-label small">Servers</label>
+              <textarea name="section_servers" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee">{{ section.servers | join(', ') }}</textarea>
+            </div>
+            <div class="col-md-1 pt-md-4">
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveServerSection(this, -1)" aria-label="Move section earlier" title="Move earlier (busier)">
+                <i class="fas fa-arrow-up"></i>
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveServerSection(this, 1)" aria-label="Move section later" title="Move later (less busy)">
+                <i class="fas fa-arrow-down"></i>
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeServerSection(this)" aria-label="Remove section">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+          {% else %}
+          <div class="row g-2 align-items-start mb-3 server-section-row">
+            <div class="col-md-4">
+              <label class="form-label small">Section name</label>
+              <input type="text" name="section_name" class="form-control" placeholder="e.g. Main Dining Room">
+            </div>
+            <div class="col-md-7">
+              <label class="form-label small">Servers</label>
+              <textarea name="section_servers" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea>
+            </div>
+            <div class="col-md-1 pt-md-4">
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveServerSection(this, -1)" aria-label="Move section earlier" title="Move earlier (busier)">
+                <i class="fas fa-arrow-up"></i>
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveServerSection(this, 1)" aria-label="Move section later" title="Move later (less busy)">
+                <i class="fas fa-arrow-down"></i>
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeServerSection(this)" aria-label="Remove section">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="addServerSectionBtn">
+          <i class="fas fa-plus me-1"></i>Add Section
+        </button>
+      </div>
+      <div class="card-footer text-end">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save me-1"></i>Save Server Sections
+        </button>
+      </div>
+    </form>
+    {% else %}
+    <div class="card-body text-muted small">
+      You can view settings, but need the <strong>Configure server sections &amp; preferences</strong> permission to edit these preferences.
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Runner Sections ─────────────────────────────────────── -->
+  <div class="card mb-5">
+    <div class="card-header fw-semibold"><i class="fas fa-person-running me-2"></i>Shift Planner Runner Sections</div>
+    {% if can_manage_runner_sections %}
+    <form method="POST" action="{{ url_for('save_runner_sections') }}">
+      <div class="card-body">
+        <p class="text-muted small mb-3">Put runner sections in busiest-to-least-busy order. Runners listed under a section are preferred there; remaining runners are assigned by earliest shift start in this order.</p>
+        <div id="runnerSectionRows">
+          {% for section in runner_sections %}
+          <div class="row g-2 align-items-start mb-3 runner-section-row">
+            <div class="col-md-4"><label class="form-label small">Section name</label><input type="text" name="runner_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Main Floor"></div>
+            <div class="col-md-7"><label class="form-label small">Preferred runners</label><textarea name="section_runners" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee">{{ section.runners | join(', ') }}</textarea></div>
+            <div class="col-md-1 pt-md-4">
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRunnerSection(this, -1)" title="Move earlier (busier)" aria-label="Move section earlier"><i class="fas fa-arrow-up"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRunnerSection(this, 1)" title="Move later (less busy)" aria-label="Move section later"><i class="fas fa-arrow-down"></i></button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRunnerSection(this)" aria-label="Remove section"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          {% else %}
+          <div class="row g-2 align-items-start mb-3 runner-section-row">
+            <div class="col-md-4"><label class="form-label small">Section name</label><input type="text" name="runner_section_name" class="form-control" placeholder="e.g. Main Floor"></div>
+            <div class="col-md-7"><label class="form-label small">Preferred runners</label><textarea name="section_runners" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea></div>
+            <div class="col-md-1 pt-md-4">
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRunnerSection(this, -1)" title="Move earlier (busier)" aria-label="Move section earlier"><i class="fas fa-arrow-up"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRunnerSection(this, 1)" title="Move later (less busy)" aria-label="Move section later"><i class="fas fa-arrow-down"></i></button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRunnerSection(this)" aria-label="Remove section"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="addRunnerSectionBtn"><i class="fas fa-plus me-1"></i>Add Runner Section</button>
+      </div>
+      <div class="card-footer text-end"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save Runner Sections</button></div>
+    </form>
+    {% else %}
+    <div class="card-body text-muted small">You can view settings, but need the <strong>Configure runner sections &amp; preferences</strong> permission to edit these preferences.</div>
+    {% endif %}
+  </div>
+
+  <!-- ── Cook Stations ───────────────────────────────────────── -->
+  <div class="card mb-5">
+    <div class="card-header fw-semibold">
+      <i class="fas fa-utensils me-2"></i>Shift Planner Cook Stations
+    </div>
+    {% if can_manage_cook_sections %}
+    <form method="POST" action="{{ url_for('save_cook_sections') }}">
+      <div class="card-body">
+        <p class="text-muted small mb-3">
+          Add kitchen stations in busiest-to-least-busy order. Cooks listed under a station are
+          preferred there; remaining cooks are assigned by earliest shift start, cycling through
+          stations in this order. Use commas or new lines between names.
+        </p>
+        <div id="cookStationRows">
+          {% for section in cook_sections %}
+          <div class="row g-2 align-items-start mb-3 cook-station-row">
+            <div class="col-md-4">
+              <label class="form-label small">Station name</label>
+              <input type="text" name="cook_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Grill">
+            </div>
+            <div class="col-md-7">
+              <label class="form-label small">Preferred cooks</label>
+              <textarea name="section_cooks" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee">{{ section.cooks | join(', ') }}</textarea>
+            </div>
+            <div class="col-md-1 pt-md-4">
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveStation(this, 1)" title="Move later (less busy)" aria-label="Move station later"><i class="fas fa-arrow-down"></i></button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeStation(this)" aria-label="Remove station"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          {% else %}
+          <div class="row g-2 align-items-start mb-3 cook-station-row">
+            <div class="col-md-4">
+              <label class="form-label small">Station name</label>
+              <input type="text" name="cook_section_name" class="form-control" placeholder="e.g. Grill">
+            </div>
+            <div class="col-md-7">
+              <label class="form-label small">Preferred cooks</label>
+              <textarea name="section_cooks" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea>
+            </div>
+            <div class="col-md-1 pt-md-4">
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
+              <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveStation(this, 1)" title="Move later (less busy)" aria-label="Move station later"><i class="fas fa-arrow-down"></i></button>
+              <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeStation(this)" aria-label="Remove station"><i class="fas fa-times"></i></button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="addCookStationBtn"><i class="fas fa-plus me-1"></i>Add Cook Station</button>
+      </div>
+      <div class="card-footer text-end">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save Cook Stations</button>
+      </div>
+    </form>
+    {% else %}
+    <div class="card-body text-muted small">You can view settings, but need the <strong>Configure cook stations &amp; preferences</strong> permission to edit these preferences.</div>
+    {% endif %}
+  </div>
+
   <!-- ── Membership Types ─────────────────────────────────────── -->
   <div class="card mb-5">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -569,6 +784,120 @@
 </div>
 
 <script>
+document.getElementById('addServerSectionBtn')?.addEventListener('click', function() {
+  const row = document.createElement('div');
+  row.className = 'row g-2 align-items-start mb-3 server-section-row';
+  row.innerHTML = `
+    <div class="col-md-4">
+      <label class="form-label small">Section name</label>
+      <input type="text" name="section_name" class="form-control" placeholder="e.g. Main Dining Room">
+    </div>
+    <div class="col-md-7">
+      <label class="form-label small">Servers</label>
+      <textarea name="section_servers" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea>
+    </div>
+    <div class="col-md-1 pt-md-4">
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveServerSection(this, -1)" aria-label="Move section earlier" title="Move earlier (busier)">
+        <i class="fas fa-arrow-up"></i>
+      </button>
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveServerSection(this, 1)" aria-label="Move section later" title="Move later (less busy)">
+        <i class="fas fa-arrow-down"></i>
+      </button>
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeServerSection(this)" aria-label="Remove section">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>`;
+  document.getElementById('serverSectionRows').appendChild(row);
+});
+
+function removeServerSection(btn) { btn.closest('.server-section-row').remove(); }
+
+function moveServerSection(btn, direction) {
+  const row = btn.closest('.server-section-row');
+  const sibling = direction < 0 ? row.previousElementSibling : row.nextElementSibling;
+  if (!sibling) return;
+  if (direction < 0) row.parentNode.insertBefore(row, sibling);
+  else row.parentNode.insertBefore(sibling, row);
+}
+
+document.getElementById('addBartenderStationBtn')?.addEventListener('click', function() {
+  const row = document.createElement('div');
+  row.className = 'row g-2 align-items-start mb-3 bartender-station-row';
+  row.innerHTML = `
+    <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="bartender_section_name" class="form-control" placeholder="e.g. Main Bar"></div>
+    <div class="col-md-7"><label class="form-label small">Preferred bartenders</label><textarea name="section_bartenders" class="form-control" rows="2" placeholder="John Doe, Jane Smith"></textarea></div>
+    <div class="col-md-1 pt-md-4">
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveBartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveBartenderStation(this, 1)" title="Move later (less busy)" aria-label="Move station later"><i class="fas fa-arrow-down"></i></button>
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeBartenderStation(this)" aria-label="Remove station"><i class="fas fa-times"></i></button>
+    </div>`;
+  document.getElementById('bartenderStationRows').appendChild(row);
+});
+
+function removeBartenderStation(button) { button.closest('.bartender-station-row').remove(); }
+
+function moveBartenderStation(button, direction) {
+  const row = button.closest('.bartender-station-row');
+  const sibling = direction < 0 ? row.previousElementSibling : row.nextElementSibling;
+  if (!sibling) return;
+  if (direction < 0) row.parentNode.insertBefore(row, sibling);
+  else row.parentNode.insertBefore(sibling, row);
+}
+
+document.getElementById('addRunnerSectionBtn')?.addEventListener('click', function() {
+  const row = document.createElement('div');
+  row.className = 'row g-2 align-items-start mb-3 runner-section-row';
+  row.innerHTML = `
+    <div class="col-md-4"><label class="form-label small">Section name</label><input type="text" name="runner_section_name" class="form-control" placeholder="e.g. Main Floor"></div>
+    <div class="col-md-7"><label class="form-label small">Preferred runners</label><textarea name="section_runners" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea></div>
+    <div class="col-md-1 pt-md-4">
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRunnerSection(this, -1)" title="Move earlier (busier)" aria-label="Move section earlier"><i class="fas fa-arrow-up"></i></button>
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRunnerSection(this, 1)" title="Move later (less busy)" aria-label="Move section later"><i class="fas fa-arrow-down"></i></button>
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeRunnerSection(this)" aria-label="Remove section"><i class="fas fa-times"></i></button>
+    </div>`;
+  document.getElementById('runnerSectionRows').appendChild(row);
+});
+
+function removeRunnerSection(button) { button.closest('.runner-section-row').remove(); }
+
+function moveRunnerSection(button, direction) {
+  const row = button.closest('.runner-section-row');
+  const sibling = direction < 0 ? row.previousElementSibling : row.nextElementSibling;
+  if (!sibling) return;
+  if (direction < 0) row.parentNode.insertBefore(row, sibling);
+  else row.parentNode.insertBefore(sibling, row);
+}
+
+document.getElementById('addCookStationBtn')?.addEventListener('click', function() {
+  const row = document.createElement('div');
+  row.className = 'row g-2 align-items-start mb-3 cook-station-row';
+  row.innerHTML = `
+    <div class="col-md-4">
+      <label class="form-label small">Station name</label>
+      <input type="text" name="cook_section_name" class="form-control" placeholder="e.g. Grill">
+    </div>
+    <div class="col-md-7">
+      <label class="form-label small">Preferred cooks</label>
+      <textarea name="section_cooks" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea>
+    </div>
+    <div class="col-md-1 pt-md-4">
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
+      <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveStation(this, 1)" title="Move later (less busy)" aria-label="Move station later"><i class="fas fa-arrow-down"></i></button>
+      <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeStation(this)" aria-label="Remove station"><i class="fas fa-times"></i></button>
+    </div>`;
+  document.getElementById('cookStationRows').appendChild(row);
+});
+
+function removeStation(btn) { btn.closest('.cook-station-row').remove(); }
+
+function moveStation(btn, direction) {
+  const row = btn.closest('.cook-station-row');
+  const sibling = direction < 0 ? row.previousElementSibling : row.nextElementSibling;
+  if (!sibling) return;
+  if (direction < 0) row.parentNode.insertBefore(row, sibling);
+  else row.parentNode.insertBefore(sibling, row);
+}
+
 document.getElementById('addDisplayName').addEventListener('input', function() {
   const slug = document.getElementById('newSlug');
   if (!slug._userEdited) {

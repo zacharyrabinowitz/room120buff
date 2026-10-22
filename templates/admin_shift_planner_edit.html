@@ -51,57 +51,127 @@
   <div class="card mb-4">
     <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
       <span><i class="fas fa-glass-martini-alt me-2" style="color:var(--accent);"></i>Bar Assignments</span>
-      <button class="btn btn-outline-secondary btn-xs py-0 px-2" id="addBarRowBtn" style="font-size:.75rem;">
-        <i class="fas fa-plus me-1"></i>Add Row
-      </button>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-sm mb-0" id="barTable">
+        <table class="table table-sm mb-0 assignment-table" id="barAssignmentTable" data-assignment-kind="bartenders">
           <thead>
-            <tr>
-              <th style="width:47%;">
-                <input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold"
-                       id="bar_main_label" value="{{ plan.bar.main_label }}">
-              </th>
-              <th style="width:47%;">
-                <input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold"
-                       id="bar_lower_label" value="{{ plan.bar.lower_label }}">
-              </th>
-              <th style="width:36px;"></th>
-            </tr>
+            <tr>{% for section in plan.bar.get('sections', []) %}
+              <th><input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold assignment-section-name" value="{{ section.name }}" aria-label="Bar station name"></th>
+            {% endfor %}</tr>
           </thead>
-          <tbody id="barTbody">
-            {% set mains  = plan.bar.main %}
-            {% set lowers = plan.bar.lower %}
-            {% set max_rows = [mains|length, lowers|length]|max %}
-            {% for i in range(max_rows) %}
+          <tbody>
+            {% set max_rows = plan.bar.get('sections', []) | map(attribute='bartenders') | map('length') | max if plan.bar.get('sections') else 0 %}
+            {% for row_index in range(max_rows) %}
             <tr>
-              <td>
-                <input type="text" class="form-control form-control-sm bar-cell"
-                       value="{{ mains[i] if i < mains|length else '' }}">
-              </td>
-              <td>
-                <input type="text" class="form-control form-control-sm bar-cell"
-                       value="{{ lowers[i] if i < lowers|length else '' }}">
-              </td>
-              <td>
-                <button type="button" class="btn btn-outline-danger btn-xs py-0 px-1" onclick="removeRow(this)">
-                  <i class="fas fa-times"></i>
-                </button>
-              </td>
+              {% for section in plan.bar.get('sections', []) %}
+              <td><div class="assignment-cell"><input type="text" class="form-control form-control-sm assignment-person-name" value="{{ section.bartenders[row_index] if row_index < section.bartenders|length else '' }}" aria-label="Bartender"><button type="button" class="btn btn-outline-danger btn-xs assignment-cell-delete" onclick="clearAssignmentCell(this)" aria-label="Clear bartender cell" title="Clear this bartender"><i class="fas fa-times"></i></button></div></td>
+              {% endfor %}
             </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
+      <div class="p-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addAssignmentColumn('barAssignmentTable', 'Bar station')"><i class="fas fa-columns me-1"></i>Add Station</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addAssignmentRow('barAssignmentTable', 'Bartender')"><i class="fas fa-plus me-1"></i>Add Row</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Server Sections ─────────────────────────────────────── -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold">
+      <i class="fas fa-users me-2" style="color:var(--accent);"></i>Edit Server Assignments
+    </div>
+    <div class="card-body">
+      <p class="text-muted small mb-3">Edit the section names and server names below. Use the Save button to keep your changes in this shift plan.</p>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 assignment-table" id="serverAssignmentTable" data-assignment-kind="servers">
+          <thead><tr>
+            {% for section in plan.get('server_sections', []) %}
+            <th><input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold assignment-section-name" value="{{ section.name }}" aria-label="Server section name"></th>
+            {% endfor %}
+          </tr></thead>
+          <tbody>
+            {% set max_rows = plan.get('server_sections', []) | map(attribute='servers') | map('length') | max if plan.get('server_sections') else 0 %}
+            {% for row_index in range(max_rows) %}
+            <tr>
+              {% for section in plan.get('server_sections', []) %}
+              <td><div class="assignment-cell"><input type="text" class="form-control form-control-sm assignment-person-name" value="{{ section.servers[row_index] if row_index < section.servers|length else '' }}" aria-label="Server"><button type="button" class="btn btn-outline-danger btn-xs assignment-cell-delete" onclick="clearAssignmentCell(this)" aria-label="Remove server from this cell" title="Clear this server"><i class="fas fa-times"></i></button></div></td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addAssignmentColumn('serverAssignmentTable', 'Server section')"><i class="fas fa-columns me-1"></i>Add Section</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addAssignmentRow('serverAssignmentTable', 'Server')"><i class="fas fa-plus me-1"></i>Add Row</button>
+    </div>
+  </div>
+
+  <!-- ── Cook Stations ───────────────────────────────────────── -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold"><i class="fas fa-utensils me-2" style="color:var(--accent);"></i>Edit Cook Station Assignments</div>
+    <div class="card-body">
+      <p class="text-muted small mb-3">Edit the station names and cook names below. Use the Save button to keep your changes in this shift plan.</p>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 assignment-table" id="cookAssignmentTable" data-assignment-kind="cooks">
+          <thead><tr>
+            {% for section in plan.get('cook_sections', []) %}
+            <th><input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold assignment-section-name" value="{{ section.name }}" aria-label="Cook station name"></th>
+            {% endfor %}
+          </tr></thead>
+          <tbody>
+            {% set max_rows = plan.get('cook_sections', []) | map(attribute='cooks') | map('length') | max if plan.get('cook_sections') else 0 %}
+            {% for row_index in range(max_rows) %}
+            <tr>
+              {% for section in plan.get('cook_sections', []) %}
+              <td><div class="assignment-cell"><input type="text" class="form-control form-control-sm assignment-person-name" value="{{ section.cooks[row_index] if row_index < section.cooks|length else '' }}" aria-label="Cook"><button type="button" class="btn btn-outline-danger btn-xs assignment-cell-delete" onclick="clearAssignmentCell(this)" aria-label="Remove cook from this cell" title="Clear this cook"><i class="fas fa-times"></i></button></div></td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addAssignmentColumn('cookAssignmentTable', 'Cook station')"><i class="fas fa-columns me-1"></i>Add Station</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addAssignmentRow('cookAssignmentTable', 'Cook')"><i class="fas fa-plus me-1"></i>Add Row</button>
+    </div>
+  </div>
+
+  <!-- ── Runner Sections ──────────────────────────────────────── -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold"><i class="fas fa-person-running me-2" style="color:var(--accent);"></i>Edit Runner Assignments</div>
+    <div class="card-body">
+      <p class="text-muted small mb-3">Edit runner sections and assignments. Use the Save button to keep your changes in this shift plan.</p>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 assignment-table" id="runnerAssignmentTable" data-assignment-kind="runners">
+          <thead><tr>
+            {% for section in plan.get('runner_sections', []) %}
+            <th><input type="text" class="form-control form-control-sm border-0 bg-transparent fw-semibold assignment-section-name" value="{{ section.name }}" aria-label="Runner section name"></th>
+            {% endfor %}
+          </tr></thead>
+          <tbody>
+            {% set max_rows = plan.get('runner_sections', []) | map(attribute='runners') | map('length') | max if plan.get('runner_sections') else 0 %}
+            {% for row_index in range(max_rows) %}
+            <tr>
+              {% for section in plan.get('runner_sections', []) %}
+              <td><div class="assignment-cell"><input type="text" class="form-control form-control-sm assignment-person-name" value="{{ section.runners[row_index] if row_index < section.runners|length else '' }}" aria-label="Runner"><button type="button" class="btn btn-outline-danger btn-xs assignment-cell-delete" onclick="clearAssignmentCell(this)" aria-label="Clear runner cell" title="Clear this runner"><i class="fas fa-times"></i></button></div></td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addAssignmentColumn('runnerAssignmentTable', 'Runner section')"><i class="fas fa-columns me-1"></i>Add Section</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="addAssignmentRow('runnerAssignmentTable', 'Runner')"><i class="fas fa-plus me-1"></i>Add Row</button>
     </div>
   </div>
 
   <!-- ── Break Rotation Sections ──────────────────────────────── -->
   <div id="breakSections">
     {% for section in plan.break_sections %}
-    <div class="card mb-4 break-section">
+    <div class="card mb-4 break-section" data-staff='{{ section.get("staff", []) | tojson }}'>
       <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
         <span>
           <i class="fas fa-coffee me-2" style="color:var(--accent);"></i>
@@ -110,13 +180,14 @@
         </span>
         <div class="d-flex align-items-center gap-2">
           <span class="text-muted small">First break after</span>
-          <input type="text" class="form-control form-control-sm"
-                 style="width:110px;" value="{{ section.break_after }}">
+             <input type="text" class="form-control form-control-sm break-after-input"
+               style="width:120px;" value="{{ section.break_after }}" placeholder="7:30 PM or 730" aria-label="First break start time">
           <button class="btn btn-outline-secondary btn-xs py-0 px-2" style="font-size:.75rem;" onclick="addBreakRow(this)">
             <i class="fas fa-plus me-1"></i>Row
           </button>
         </div>
       </div>
+      <div class="break-time-status small px-3 py-1" aria-live="polite"></div>
       <div class="card-body p-0">
         <div class="table-responsive">
           <table class="table table-sm mb-0 break-table">
@@ -174,17 +245,6 @@
 </form>
 
 <script>
-// ── Add bar row ──────────────────────────────────────────────────
-document.getElementById('addBarRowBtn').addEventListener('click', function () {
-  const tbody = document.getElementById('barTbody');
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><input type="text" class="form-control form-control-sm bar-cell" value=""></td>
-    <td><input type="text" class="form-control form-control-sm bar-cell" value=""></td>
-    <td><button type="button" class="btn btn-outline-danger btn-xs py-0 px-1" onclick="removeRow(this)"><i class="fas fa-times"></i></button></td>`;
-  tbody.appendChild(tr);
-});
-
 // ── Add break row ────────────────────────────────────────────────
 function addBreakRow(btn) {
   const tbody = btn.closest('.card').querySelector('tbody');
@@ -197,14 +257,271 @@ function addBreakRow(btn) {
   tbody.appendChild(tr);
 }
 
+function parseBreakStart(value) {
+  const text = value.trim().toUpperCase();
+  let hour, minute, period = null;
+  const compact = text.match(/^(\d{3,4})\s*(AM|PM)?$/);
+  if (compact) {
+    const digits = compact[1];
+    hour = parseInt(digits.slice(0, -2), 10);
+    minute = parseInt(digits.slice(-2), 10);
+    period = compact[2] || null;
+  } else {
+    const match = text.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/);
+    if (!match) return null;
+    hour = parseInt(match[1], 10);
+    minute = parseInt(match[2] || "0", 10);
+    period = match[3] || null;
+  }
+
+  if (minute > 59 || hour > (period ? 12 : 23) || (period && hour < 1)) return null;
+  if (period === "PM" && hour !== 12) hour += 12;
+  else if (period === "AM" && hour === 12) hour = 0;
+  else if (!period && hour > 0 && hour < 12) hour += 12; // default ambiguous times to evening
+  return hour * 60 + minute;
+}
+
+function formatBreakTime(totalMinutes) {
+  const hour24 = Math.floor(totalMinutes / 60) % 24;
+  const minute = totalMinutes % 60;
+  const period = hour24 < 12 ? "AM" : "PM";
+  const hour12 = hour24 % 12 || 12;
+  return `${hour12}:${String(minute).padStart(2, "0")} ${period}`;
+}
+
+function getBreakStaff(section) {
+  try {
+    const staff = JSON.parse(section.dataset.staff || "[]");
+    if (Array.isArray(staff) && staff.length) return staff;
+  } catch (_) { /* fall through to extracting names from the visible rows */ }
+
+  const staff = [];
+  const seen = new Set();
+  const addNames = (value, separator) => value.split(separator).forEach(raw => {
+    const name = raw.trim();
+    const key = name.toLowerCase();
+    if (name && !seen.has(key)) { seen.add(key); staff.push(name); }
+  });
+  section.querySelectorAll('.break-table tbody tr').forEach(row => {
+    const onBreak = row.querySelectorAll('input')[1]?.value || "";
+    addNames(onBreak, /\s*&\s*/);
+  });
+  section.querySelectorAll('.break-table tbody tr').forEach(row => {
+    const onFloor = row.querySelectorAll('input')[2]?.value || "";
+    addNames(onFloor, /\s*,\s*/);
+  });
+  section.dataset.staff = JSON.stringify(staff);
+  return staff;
+}
+
+function regenerateBreakRows(section, startMinutes) {
+  const staff = getBreakStaff(section);
+  if (!staff.length) return false;
+
+  const tbody = section.querySelector('.break-table tbody');
+  tbody.replaceChildren();
+  let minute = startMinutes;
+  for (let index = 0; index < staff.length;) {
+    const onBreak = [staff[index++]];
+    if (staff.length > 3 && index < staff.length) onBreak.push(staff[index++]);
+    const onFloor = staff.filter(name => !onBreak.includes(name));
+    const endMinute = minute + 30;
+    const row = document.createElement('tr');
+    const values = [`${formatBreakTime(minute)} – ${formatBreakTime(endMinute)}`, onBreak.join(' & '), onFloor.join(', ')];
+    values.forEach(value => {
+      const cell = document.createElement('td');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'form-control form-control-sm';
+      input.value = value;
+      cell.appendChild(input);
+      row.appendChild(cell);
+    });
+    const actionCell = document.createElement('td');
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'btn btn-outline-danger btn-xs py-0 px-1';
+    removeButton.innerHTML = '<i class="fas fa-times"></i>';
+    removeButton.addEventListener('click', () => removeRow(removeButton));
+    actionCell.appendChild(removeButton);
+    row.appendChild(actionCell);
+    tbody.appendChild(row);
+    minute = endMinute;
+  }
+  return true;
+}
+
+document.addEventListener('change', function(event) {
+  if (!event.target.matches('.break-after-input')) return;
+  const section = event.target.closest('.break-section');
+  const status = section.querySelector('.break-time-status');
+  const startMinutes = parseBreakStart(event.target.value);
+  event.target.classList.toggle('is-invalid', startMinutes === null);
+  if (startMinutes === null) {
+    status.textContent = 'Enter a time such as 7, 7:30 PM, or 730.';
+    status.classList.add('text-danger');
+    return;
+  }
+  event.target.value = formatBreakTime(startMinutes);
+  if (regenerateBreakRows(section, startMinutes)) {
+    status.textContent = 'Break times and assignments updated.';
+    status.classList.remove('text-danger');
+    status.classList.add('text-success');
+  } else {
+    status.textContent = 'Could not find the staff assigned to this rotation.';
+    status.classList.add('text-danger');
+  }
+});
+
 // ── Remove row ────────────────────────────────────────────────────
 function removeRow(btn) { btn.closest('tr').remove(); }
+
+function clearAssignmentCell(button) {
+  const input = button.closest('.assignment-cell').querySelector('.assignment-person-name');
+  if (input) input.value = '';
+}
+
+function addAssignmentRow(tableId, placeholder) {
+  const table = document.getElementById(tableId);
+  const row = table.tBodies[0].insertRow();
+  const sectionCount = table.tHead.rows[0].querySelectorAll('.assignment-section-name').length;
+  for (let index = 0; index < sectionCount; index++) {
+    const cell = row.insertCell();
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-control form-control-sm assignment-person-name';
+    input.placeholder = placeholder;
+    input.setAttribute('aria-label', placeholder);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'assignment-cell';
+    const clearButton = document.createElement('button');
+    clearButton.type = 'button';
+    clearButton.className = 'btn btn-outline-danger btn-xs assignment-cell-delete';
+    clearButton.setAttribute('aria-label', `Clear ${placeholder} cell`);
+    clearButton.title = `Clear this ${placeholder.toLowerCase()}`;
+    clearButton.innerHTML = '<i class="fas fa-times"></i>';
+    clearButton.addEventListener('click', () => clearAssignmentCell(clearButton));
+    wrapper.append(input, clearButton);
+    cell.appendChild(wrapper);
+  }
+}
+
+function addAssignmentColumn(tableId, placeholder) {
+  const table = document.getElementById(tableId);
+  const headerCell = document.createElement('th');
+  const sectionName = document.createElement('input');
+  sectionName.type = 'text';
+  sectionName.className = 'form-control form-control-sm border-0 bg-transparent fw-semibold assignment-section-name';
+  sectionName.placeholder = placeholder;
+  sectionName.setAttribute('aria-label', placeholder);
+  headerCell.appendChild(sectionName);
+  const headerRow = table.tHead.rows[0];
+  headerRow.appendChild(headerCell);
+
+  Array.from(table.tBodies[0].rows).forEach(row => {
+    const cell = row.insertCell();
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'form-control form-control-sm assignment-person-name';
+    const staffLabel = table.dataset.assignmentKind === 'cooks' ? 'Cook' :
+               table.dataset.assignmentKind === 'bartenders' ? 'Bartender' :
+               table.dataset.assignmentKind === 'runners' ? 'Runner' : 'Server';
+    input.setAttribute('aria-label', staffLabel);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'assignment-cell';
+    const clearButton = document.createElement('button');
+    clearButton.type = 'button';
+    clearButton.className = 'btn btn-outline-danger btn-xs assignment-cell-delete';
+    clearButton.setAttribute('aria-label', 'Clear assignment cell');
+    clearButton.title = 'Clear this assignment';
+    clearButton.innerHTML = '<i class="fas fa-times"></i>';
+    clearButton.addEventListener('click', () => clearAssignmentCell(clearButton));
+    wrapper.append(input, clearButton);
+    cell.appendChild(wrapper);
+  });
+  sectionName.focus();
+}
+
+function addAssignmentPerson(button) {
+  const people = button.closest('.assignment-card').querySelector('.assignment-people');
+  const person = document.createElement('div');
+  person.className = 'assignment-person';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'form-control form-control-sm assignment-person-name';
+  input.setAttribute('aria-label', 'Staff name');
+  input.placeholder = 'Staff name';
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'btn btn-sm btn-link text-danger';
+  remove.setAttribute('aria-label', 'Remove staff member');
+  remove.innerHTML = '<i class="fas fa-times"></i>';
+  remove.addEventListener('click', () => removeAssignmentPerson(remove));
+  person.append(input, remove);
+  people.appendChild(person);
+  input.focus();
+}
+
+function removeAssignmentPerson(button) {
+  button.closest('.assignment-person').remove();
+}
+
+function addAssignmentGroup(kind) {
+  const container = document.querySelector(`.assignment-groups[data-assignment-kind="${kind}"]`);
+  const group = document.createElement('div');
+  group.className = 'col-md-6 col-lg-4 assignment-group';
+  const card = document.createElement('div');
+  card.className = 'assignment-card h-100';
+  const title = document.createElement('div');
+  title.className = 'assignment-card-title';
+  const icon = document.createElement('i');
+  icon.className = kind === 'cooks' ? 'fas fa-fire' : 'fas fa-map-marker-alt';
+  const name = document.createElement('input');
+  name.type = 'text';
+  name.className = 'form-control form-control-sm assignment-section-name';
+  name.placeholder = kind === 'cooks' ? 'Station name' : 'Section name';
+  name.setAttribute('aria-label', name.placeholder);
+  title.append(icon, name);
+  const people = document.createElement('div');
+  people.className = 'assignment-people';
+  const addButton = document.createElement('button');
+  addButton.type = 'button';
+  addButton.className = 'btn btn-sm btn-outline-secondary mt-2';
+  addButton.innerHTML = `<i class="fas fa-plus me-1"></i>Add ${kind === 'cooks' ? 'cook' : 'server'}`;
+  addButton.addEventListener('click', () => addAssignmentPerson(addButton));
+  card.append(title, people, addButton);
+  group.appendChild(card);
+  container.appendChild(group);
+  name.focus();
+}
+
+function collectAssignmentGroups(kind) {
+  const tableId = kind === 'cooks' ? 'cookAssignmentTable' :
+                  kind === 'bartenders' ? 'barAssignmentTable' :
+                  kind === 'runners' ? 'runnerAssignmentTable' : 'serverAssignmentTable';
+  const table = document.getElementById(tableId);
+  const names = Array.from(table.tHead.querySelectorAll('.assignment-section-name'));
+  const assignments = names.map(nameInput => ({
+    name: nameInput.value.trim(),
+    [kind]: [],
+  }));
+
+  Array.from(table.tBodies[0].rows).forEach(row => {
+    assignments.forEach((assignment, index) => {
+      const input = row.cells[index]?.querySelector('.assignment-person-name');
+      const name = input?.value.trim();
+      if (name) assignment[kind].push(name);
+    });
+  });
+  return assignments.filter(assignment => assignment.name);
+}
 
 // ── Add break section ─────────────────────────────────────────────
 document.getElementById('addSectionBtn').addEventListener('click', function () {
   const container = document.getElementById('breakSections');
   const div = document.createElement('div');
   div.className = 'card mb-4 break-section';
+  div.dataset.staff = '[]';
   div.innerHTML = `
     <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
       <span>
@@ -214,12 +531,13 @@ document.getElementById('addSectionBtn').addEventListener('click', function () {
       </span>
       <div class="d-flex align-items-center gap-2">
         <span class="text-muted small">First break after</span>
-        <input type="text" class="form-control form-control-sm" style="width:110px;" value="7:00 PM">
+        <input type="text" class="form-control form-control-sm break-after-input" style="width:120px;" value="7:00 PM" placeholder="7:30 PM or 730" aria-label="First break start time">
         <button class="btn btn-outline-secondary btn-xs py-0 px-2" style="font-size:.75rem;" onclick="addBreakRow(this)">
           <i class="fas fa-plus me-1"></i>Row
         </button>
       </div>
     </div>
+    <div class="break-time-status small px-3 py-1" aria-live="polite"></div>
     <div class="card-body p-0">
       <div class="table-responsive">
         <table class="table table-sm mb-0 break-table">
@@ -247,30 +565,26 @@ document.getElementById('addSectionBtn').addEventListener('click', function () {
 
 // ── Collect plan data — empty rows stripped automatically ─────────
 function collectPlan() {
+  for (const timeInput of document.querySelectorAll('.break-after-input')) {
+    if (parseBreakStart(timeInput.value) === null) {
+      timeInput.classList.add('is-invalid');
+      timeInput.focus();
+      alert('Please enter a valid first-break time, such as 7:30 PM or 730.');
+      return null;
+    }
+  }
+
   const plan = {
     location_title : document.getElementById('ev_location').value,
     event_name     : document.getElementById('ev_name').value,
     venue          : document.getElementById('ev_venue').value,
     date           : document.getElementById('ev_date').value,
-    bar: {
-      main_label  : document.getElementById('bar_main_label').value,
-      lower_label : document.getElementById('bar_lower_label').value,
-      main        : [],
-      lower       : [],
-    },
+    bar: { sections: collectAssignmentGroups('bartenders') },
+    server_sections: collectAssignmentGroups('servers'),
+    cook_sections: collectAssignmentGroups('cooks'),
+    runner_sections: collectAssignmentGroups('runners'),
     break_sections : [],
   };
-
-  // Bar rows — skip rows where both cells are blank
-  document.querySelectorAll('#barTbody tr').forEach(tr => {
-    const cells = tr.querySelectorAll('input.bar-cell');
-    const main  = cells[0] ? cells[0].value.trim() : '';
-    const lower = cells[1] ? cells[1].value.trim() : '';
-    if (main || lower) {
-      plan.bar.main.push(main);
-      plan.bar.lower.push(lower);
-    }
-  });
 
   // Break sections — skip rows where all three cells are blank
   document.querySelectorAll('.break-section').forEach(sec => {
@@ -289,6 +603,7 @@ function collectPlan() {
     plan.break_sections.push({
       name        : nameInput  ? nameInput.value  : '',
       break_after : afterInput ? afterInput.value : '',
+      staff       : getBreakStaff(sec),
       rows,
     });
   });
@@ -297,12 +612,15 @@ function collectPlan() {
 }
 
 function collectAndDownload() {
-  document.getElementById('planDataInput').value = JSON.stringify(collectPlan());
+  const plan = collectPlan();
+  if (!plan) return;
+  document.getElementById('planDataInput').value = JSON.stringify(plan);
   document.getElementById('downloadForm').submit();
 }
 
 function collectAndSave() {
   const plan = collectPlan();
+  if (!plan) return;
   document.getElementById('saveDataInput').value = JSON.stringify(plan);
   document.getElementById('saveForm').submit();
 }
@@ -317,5 +635,38 @@ document.getElementById('saveBtn2').addEventListener('click', collectAndSave);
 .btn-xs { font-size: .75rem; line-height: 1.4; }
 .card-header input[type=text].bg-transparent { background: transparent !important; box-shadow: none; }
 .break-table th { font-size: .8rem; color: var(--text-muted); }
+.assignment-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-card);
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+.assignment-card-title {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding-bottom: .7rem;
+  margin-bottom: .75rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--accent);
+}
+.assignment-card-title i { flex: 0 0 auto; }
+.assignment-section-name { font-weight: 700; }
+.assignment-people { display: grid; gap: .45rem; }
+.assignment-person {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .25rem .35rem .25rem .6rem;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+}
+.assignment-person .form-control { border: 0; background: transparent; box-shadow: none; }
+.assignment-person .btn { padding: .2rem .45rem; }
+.assignment-table th, .assignment-table td { min-width: 170px; vertical-align: middle; }
+.assignment-cell { display: flex; align-items: center; gap: .35rem; }
+.assignment-cell .form-control { min-width: 0; }
+.assignment-cell-delete { flex: 0 0 auto; padding: .15rem .4rem; }
 </style>
 {% endblock %}

@@ -1,6 +1,6 @@
 from flask import (
     Flask, render_template, request, redirect, url_for, 
-    session, flash, jsonify, send_file, send_from_directory,
+    session, flash, jsonify, send_file, send_from_directory, abort,
     make_response, render_template_string
 )
 from flask_session import Session
@@ -984,6 +984,10 @@ PERMISSIONS = {
     'Shift Planner': {
         'view_shift_planner': 'View & use the shift planner',
         'edit_shift_planner': 'Edit shift plans & download PDFs',
+        'manage_bartender_sections': 'Configure bartender stations & preferences',
+        'manage_server_sections':    'Configure server sections & preferences',
+        'manage_cook_sections':      'Configure cook stations & preferences',
+        'manage_runner_sections':    'Configure runner sections & preferences',
     },
     'Day Planner': {
         'view_day_planner':   'View day plans & check off tasks',
@@ -4962,9 +4966,173 @@ def admin_settings():
         type_counts[t.id] = User.query.filter_by(role='member', membership_type=t.name).count()
     settings = {k: get_setting(k, v) for k, v in SETTING_DEFAULTS.items()}
     staff_roles = StaffRole.query.order_by(StaffRole.display_name).all()
+    try:
+        server_sections = json.loads(get_setting('server_sections', '[]'))
+        if not isinstance(server_sections, list):
+            server_sections = []
+    except (TypeError, ValueError):
+        server_sections = []
+    try:
+        cook_sections = json.loads(get_setting('cook_sections', '[]'))
+        if not isinstance(cook_sections, list):
+            cook_sections = []
+    except (TypeError, ValueError):
+        cook_sections = []
+    try:
+        bartender_sections = json.loads(get_setting('bartender_sections', '[]'))
+        if not isinstance(bartender_sections, list):
+            bartender_sections = []
+    except (TypeError, ValueError):
+        bartender_sections = []
+    try:
+        runner_sections = json.loads(get_setting('runner_sections', '[]'))
+        if not isinstance(runner_sections, list):
+            runner_sections = []
+    except (TypeError, ValueError):
+        runner_sections = []
     return render_template('admin_settings.html',
         types=types, type_counts=type_counts, settings=settings,
-        staff_roles=staff_roles, permissions=PERMISSIONS)
+        staff_roles=staff_roles, permissions=PERMISSIONS,
+        server_sections=server_sections, cook_sections=cook_sections,
+        bartender_sections=bartender_sections,
+        runner_sections=runner_sections,
+        can_edit_settings=authorized('edit_settings'),
+        can_manage_server_sections=authorized('edit_settings') or authorized('manage_server_sections'),
+        can_manage_cook_sections=authorized('edit_settings') or authorized('manage_cook_sections'),
+        can_manage_bartender_sections=authorized('edit_settings') or authorized('manage_bartender_sections'),
+        can_manage_runner_sections=authorized('edit_settings') or authorized('manage_runner_sections'))
+
+
+@app.route('/admin/settings/server-sections', methods=['POST'])
+def save_server_sections():
+    if not (authorized('edit_settings') or authorized('manage_server_sections')):
+        return redirect(url_for('home'))
+
+    sections = []
+    assigned_names = set()
+    names = request.form.getlist('section_name')
+    server_lists = request.form.getlist('section_servers')
+    for index, raw_name in enumerate(names):
+        name = raw_name.strip()
+        if not name:
+            continue
+        raw_servers = server_lists[index] if index < len(server_lists) else ''
+        servers = []
+        for raw_server in re.split(r'[,\n]+', raw_servers):
+            server = raw_server.strip()
+            key = server.casefold()
+            if server and key not in assigned_names:
+                servers.append(server)
+                assigned_names.add(key)
+        sections.append({'name': name, 'servers': servers})
+
+    old_value = get_setting('server_sections', '[]')
+    new_value = json.dumps(sections)
+    set_setting('server_sections', new_value)
+    db.session.commit()
+    if old_value != new_value:
+        log_audit('settings', 'Server sections updated', f'{len(sections)} section(s) configured')
+    flash('Server sections saved. New roster uploads will use these assignments.', 'success')
+    return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/cook-sections', methods=['POST'])
+def save_cook_sections():
+    if not (authorized('edit_settings') or authorized('manage_cook_sections')):
+        return redirect(url_for('home'))
+
+    sections = []
+    assigned_names = set()
+    names = request.form.getlist('cook_section_name')
+    cook_lists = request.form.getlist('section_cooks')
+    for index, raw_name in enumerate(names):
+        name = raw_name.strip()
+        if not name:
+            continue
+        raw_cooks = cook_lists[index] if index < len(cook_lists) else ''
+        cooks = []
+        for raw_cook in re.split(r'[,\n]+', raw_cooks):
+            cook = raw_cook.strip()
+            key = cook.casefold()
+            if cook and key not in assigned_names:
+                cooks.append(cook)
+                assigned_names.add(key)
+        sections.append({'name': name, 'cooks': cooks})
+
+    old_value = get_setting('cook_sections', '[]')
+    new_value = json.dumps(sections)
+    set_setting('cook_sections', new_value)
+    db.session.commit()
+    if old_value != new_value:
+        log_audit('settings', 'Cook stations updated', f'{len(sections)} station(s) configured')
+    flash('Cook stations saved. New roster uploads will use these assignments.', 'success')
+    return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/bartender-sections', methods=['POST'])
+def save_bartender_sections():
+    if not (authorized('edit_settings') or authorized('manage_bartender_sections')):
+        return redirect(url_for('home'))
+
+    sections = []
+    assigned_names = set()
+    names = request.form.getlist('bartender_section_name')
+    bartender_lists = request.form.getlist('section_bartenders')
+    for index, raw_name in enumerate(names):
+        name = raw_name.strip()
+        if not name:
+            continue
+        raw_bartenders = bartender_lists[index] if index < len(bartender_lists) else ''
+        bartenders = []
+        for raw_bartender in re.split(r'[,\n]+', raw_bartenders):
+            bartender = raw_bartender.strip()
+            key = bartender.casefold()
+            if bartender and key not in assigned_names:
+                bartenders.append(bartender)
+                assigned_names.add(key)
+        sections.append({'name': name, 'bartenders': bartenders})
+
+    old_value = get_setting('bartender_sections', '[]')
+    new_value = json.dumps(sections)
+    set_setting('bartender_sections', new_value)
+    db.session.commit()
+    if old_value != new_value:
+        log_audit('settings', 'Bartender stations updated', f'{len(sections)} station(s) configured')
+    flash('Bartender stations saved. New roster uploads will use these assignments.', 'success')
+    return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/runner-sections', methods=['POST'])
+def save_runner_sections():
+    if not (authorized('edit_settings') or authorized('manage_runner_sections')):
+        return redirect(url_for('home'))
+
+    sections = []
+    assigned_names = set()
+    names = request.form.getlist('runner_section_name')
+    runner_lists = request.form.getlist('section_runners')
+    for index, raw_name in enumerate(names):
+        name = raw_name.strip()
+        if not name:
+            continue
+        raw_runners = runner_lists[index] if index < len(runner_lists) else ''
+        runners = []
+        for raw_runner in re.split(r'[,\n]+', raw_runners):
+            runner = raw_runner.strip()
+            key = runner.casefold()
+            if runner and key not in assigned_names:
+                runners.append(runner)
+                assigned_names.add(key)
+        sections.append({'name': name, 'runners': runners})
+
+    old_value = get_setting('runner_sections', '[]')
+    new_value = json.dumps(sections)
+    set_setting('runner_sections', new_value)
+    db.session.commit()
+    if old_value != new_value:
+        log_audit('settings', 'Runner sections updated', f'{len(sections)} section(s) configured')
+    flash('Runner sections saved. New roster uploads will use these assignments.', 'success')
+    return redirect(url_for('admin_settings'))
 
 
 @app.route('/admin/settings/membership-type/add', methods=['POST'])
@@ -5285,6 +5453,53 @@ def _shift_end_hour(shift_str):
     return h
 
 
+def _shift_start_minutes(shift_str):
+    """Return a shift start as minutes after midnight; unknown times sort last."""
+    match = re.search(r'(\d{1,2}):(\d{2})\s*(AM|PM)\s*-', shift_str, re.IGNORECASE)
+    if not match:
+        return 24 * 60
+    hour, minute, period = int(match.group(1)), int(match.group(2)), match.group(3).upper()
+    if period == 'PM' and hour != 12:
+        hour += 12
+    elif period == 'AM' and hour == 12:
+        hour = 0
+    return hour * 60 + minute
+
+
+def _assign_roster_to_sections(roster, configured_sections, people_key):
+    """Apply fixed staff preferences, then distribute remaining staff by arrival time."""
+    assigned = set()
+    sections = []
+    for configured in configured_sections:
+        if not isinstance(configured, dict):
+            continue
+        section_name = str(configured.get('name') or '').strip()
+        if not section_name:
+            continue
+        configured_people = configured.get(people_key, [])
+        if not isinstance(configured_people, list):
+            configured_people = []
+        preferred = {str(name).strip().casefold() for name in configured_people if str(name).strip()}
+        section_people = []
+        for employee in roster:
+            employee_name = employee.get('name', '').strip()
+            employee_key = employee_name.casefold()
+            if employee_key in preferred and employee_key not in assigned:
+                section_people.append(employee_name)
+                assigned.add(employee_key)
+        sections.append({'name': section_name, people_key: section_people})
+
+    remaining = [employee for employee in roster if employee.get('name', '').strip().casefold() not in assigned]
+    remaining.sort(key=lambda employee: _shift_start_minutes(employee.get('shift', '')))
+    if sections:
+        for index, employee in enumerate(remaining):
+            sections[index % len(sections)][people_key].append(employee['name'])
+    elif remaining:
+        fallback_name = 'Unassigned'
+        sections.append({'name': fallback_name, people_key: [employee['name'] for employee in remaining]})
+    return sections
+
+
 def _generate_break_rotation(names, start_hour=19, start_min=0):
     """Round-robin 30-min break slots starting at start_hour:start_min (24h)."""
     rows = []
@@ -5361,6 +5576,23 @@ def _load_shift_history():
     return entries
 
 
+def _shift_plan_date(value):
+    """Parse common shift-plan date formats for day-planner matching."""
+    if not value:
+        return None
+    value = str(value).strip()
+    formats = (
+        '%Y-%m-%d', '%Y-%m-%d %H:%M:%S', '%m/%d/%Y', '%m/%d/%y',
+        '%B %d, %Y', '%b %d, %Y', '%A, %B %d, %Y', '%A, %b %d, %Y',
+    )
+    for date_format in formats:
+        try:
+            return datetime.strptime(value, date_format).date()
+        except ValueError:
+            continue
+    return None
+
+
 @app.route('/admin/shift-planner', methods=['GET'])
 def shift_planner():
     if not authorized('view_shift_planner'):
@@ -5389,14 +5621,34 @@ def shift_planner_upload():
         venue          = request.form.get('venue', '').strip()
         plan_date      = request.form.get('plan_date', '').strip()
 
-        # Auto-assign bartenders: early-shift → Main Bar, late-shift → Lower Bar
-        bartenders = employees.get('Bartender', [])
-        late  = [e['name'] for e in bartenders if _shift_end_hour(e['shift']) >= 22]
-        early = [e['name'] for e in bartenders if _shift_end_hour(e['shift']) < 22]
-        if not early or not late:
-            mid = len(bartenders) // 2
-            early = [e['name'] for e in bartenders[:mid]]
-            late  = [e['name'] for e in bartenders[mid:]]
+        bartenders = [
+            employee
+            for position, staff in employees.items()
+            if 'bartender' in position.strip().casefold()
+            for employee in staff
+        ]
+        try:
+            configured_bar_stations = json.loads(get_setting('bartender_sections', '[]'))
+            if not isinstance(configured_bar_stations, list):
+                configured_bar_stations = []
+        except (TypeError, ValueError):
+            configured_bar_stations = []
+
+        if configured_bar_stations:
+            bartender_sections = _assign_roster_to_sections(
+                bartenders, configured_bar_stations, 'bartenders')
+        else:
+            # Preserve the historic automatic split if no preferences exist.
+            late = [e['name'] for e in bartenders if _shift_end_hour(e['shift']) >= 22]
+            early = [e['name'] for e in bartenders if _shift_end_hour(e['shift']) < 22]
+            if not early or not late:
+                mid = len(bartenders) // 2
+                early = [e['name'] for e in bartenders[:mid]]
+                late = [e['name'] for e in bartenders[mid:]]
+            bartender_sections = [
+                {'name': 'Main Bar', 'bartenders': early},
+                {'name': 'Lower Bar', 'bartenders': late},
+            ] if bartenders else []
 
         # Auto-generate break rotations for roles with 2+ late-shift people
         break_sections = []
@@ -5406,21 +5658,65 @@ def shift_planner_upload():
                 break_sections.append({
                     'name': f'{label} Break Rotation',
                     'break_after': '7:00 PM',
+                    'staff': late_staff,
                     'rows': _generate_break_rotation(late_staff),
                 })
+
+        # Load configured service stations and apply fixed preferences before
+        # assigning the remaining staff by their roster start times.
+        try:
+            configured_sections = json.loads(get_setting('server_sections', '[]'))
+            if not isinstance(configured_sections, list):
+                configured_sections = []
+        except (TypeError, ValueError):
+            configured_sections = []
+        roster_servers = [
+            employee
+            for position, staff in employees.items()
+            if position.strip().casefold() in ('server', 'servers')
+            for employee in staff
+        ]
+        server_sections = _assign_roster_to_sections(roster_servers, configured_sections, 'servers')
+
+        try:
+            configured_cook_stations = json.loads(get_setting('cook_sections', '[]'))
+            if not isinstance(configured_cook_stations, list):
+                configured_cook_stations = []
+        except (TypeError, ValueError):
+            configured_cook_stations = []
+        roster_cooks = [
+            employee
+            for position, staff in employees.items()
+            if position.strip().casefold() in ('cook', 'cooks')
+            for employee in staff
+        ]
+        cook_sections = _assign_roster_to_sections(roster_cooks, configured_cook_stations, 'cooks')
+
+        try:
+            configured_runner_sections = json.loads(get_setting('runner_sections', '[]'))
+            if not isinstance(configured_runner_sections, list):
+                configured_runner_sections = []
+        except (TypeError, ValueError):
+            configured_runner_sections = []
+        roster_runners = [
+            employee
+            for position, staff in employees.items()
+            if 'runner' in position.strip().casefold()
+            for employee in staff
+        ]
+        runner_sections = _assign_roster_to_sections(
+            roster_runners, configured_runner_sections, 'runners')
 
         session['shift_plan'] = {
             'location_title': location_title,
             'event_name':     event_name,
             'venue':          venue,
             'date':           plan_date,
-            'bar': {
-                'main_label':  'Main Bar',
-                'lower_label': 'Lower Bar',
-                'main':  early,
-                'lower': late,
-            },
+            'bar': {'sections': bartender_sections},
             'break_sections': break_sections,
+            'server_sections': server_sections,
+            'cook_sections': cook_sections,
+            'runner_sections': runner_sections,
             'all_employees': {pos: [e['name'] for e in lst] for pos, lst in employees.items()},
         }
         session['shift_plan_file'] = None  # new upload — no existing history file
@@ -5442,6 +5738,59 @@ def shift_planner_edit():
     if not plan:
         flash('No plan loaded. Upload a roster first.', 'warning')
         return redirect(url_for('shift_planner'))
+
+    bar = plan.setdefault('bar', {})
+    if not bar.get('sections'):
+        legacy_sections = []
+        if bar.get('main_label') or bar.get('main'):
+            legacy_sections.append({'name': bar.get('main_label') or 'Main Bar',
+                                    'bartenders': bar.get('main', [])})
+        if bar.get('lower_label') or bar.get('lower'):
+            legacy_sections.append({'name': bar.get('lower_label') or 'Lower Bar',
+                                    'bartenders': bar.get('lower', [])})
+        bar['sections'] = legacy_sections
+
+    # Preserve regenerability for plans created before break staff were stored.
+    for section in plan.get('break_sections', []):
+        if not section.get('staff'):
+            inferred = []
+            for row in section.get('rows', []):
+                inferred.extend(re.split(r'\s*&\s*', row.get('on_break', '')))
+            for row in section.get('rows', []):
+                inferred.extend(row.get('on_floor', '').split(','))
+            section['staff'] = list(dict.fromkeys(name.strip() for name in inferred if name.strip()))
+
+    # Older processed plans may predate editable station groups. Seed visible
+    # editable groups from the roster already saved with those plans.
+    all_employees = plan.get('all_employees', {})
+    if not plan.get('server_sections'):
+        servers = [
+            name
+            for position, names in all_employees.items()
+            if position.strip().casefold() in ('server', 'servers')
+            for name in names
+        ]
+        if servers:
+            plan['server_sections'] = [{'name': 'Unassigned', 'servers': servers}]
+    if not plan.get('cook_sections'):
+        cooks = [
+            name
+            for position, names in all_employees.items()
+            if position.strip().casefold() in ('cook', 'cooks')
+            for name in names
+        ]
+        if cooks:
+            plan['cook_sections'] = [{'name': 'Unassigned', 'cooks': cooks}]
+    if not plan.get('runner_sections'):
+        runners = [
+            name
+            for position, names in all_employees.items()
+            if 'runner' in position.strip().casefold()
+            for name in names
+        ]
+        if runners:
+            plan['runner_sections'] = [{'name': 'Unassigned', 'runners': runners}]
+    session['shift_plan'] = plan
 
     return render_template('admin_shift_planner_edit.html', plan=plan)
 
@@ -7778,8 +8127,55 @@ def planner_day(plan_id):
     ).order_by(User.first_name, User.last_name).all()
     templates = ChecklistTemplate.query.filter_by(is_active=True)\
                                         .order_by(ChecklistTemplate.name).all()
+    matching_shift_plans = []
+    can_view_shift_plans = session.get('role') == 'admin' or authorized('view_shift_planner')
+    if can_view_shift_plans:
+        matching_shift_plans = [
+            entry for entry in _load_shift_history()
+            if _shift_plan_date(entry.get('date')) == plan.plan_date
+        ]
     return render_template('planner_day.html', plan=plan, lib_tasks=lib_tasks,
-                           can_manage=can_manage, staff_users=staff_users, templates=templates)
+                           can_manage=can_manage, staff_users=staff_users, templates=templates,
+                           matching_shift_plans=matching_shift_plans,
+                           can_view_shift_plans=can_view_shift_plans)
+
+
+@app.route('/planner/<int:plan_id>/shift-plan-pdf')
+def planner_shift_plan_pdf(plan_id):
+    if not (session.get('role') == 'admin' or authorized('view_day_planner')):
+        flash('Access denied.', 'danger')
+        return redirect(url_for('home'))
+    if not (session.get('role') == 'admin' or authorized('view_shift_planner')):
+        flash('Shift planner access is required to download its PDF.', 'danger')
+        return redirect(url_for('planner_day', plan_id=plan_id))
+
+    day_plan = DayPlan.query.get_or_404(plan_id)
+    filename = os.path.basename(request.args.get('filename', ''))
+    if not filename or filename != request.args.get('filename', '') or not filename.endswith('.json'):
+        abort(404)
+    path = os.path.join(SHIFT_HISTORY_DIR, filename)
+    if not os.path.isfile(path):
+        abort(404)
+    try:
+        with open(path, encoding='utf-8') as history_file:
+            saved = json.load(history_file)
+        shift_plan = saved.get('plan', {})
+        if _shift_plan_date(shift_plan.get('date')) != day_plan.plan_date:
+            return '', 404
+        html = render_template('shift_plan_print.html', plan=shift_plan)
+        from xhtml2pdf import pisa
+        buffer = BytesIO()
+        pisa.CreatePDF(html.encode('utf-8'), dest=buffer, encoding='utf-8')
+        buffer.seek(0)
+        slug = re.sub(r'[^\w]', '_', shift_plan.get('date', 'shift'))
+        return send_file(buffer, mimetype='application/pdf', as_attachment=True,
+                         download_name=f'TDR Shift Plan {slug}.pdf')
+    except FileNotFoundError:
+        abort(404)
+    except Exception as exc:
+        logger.error(f'Day planner shift PDF error: {exc}')
+        flash('Could not generate the shift-plan PDF.', 'danger')
+        return redirect(url_for('planner_day', plan_id=plan_id))
 
 
 @app.route('/planner/<int:plan_id>/update', methods=['POST'])
