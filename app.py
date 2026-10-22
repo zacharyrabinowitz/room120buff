@@ -5021,6 +5021,7 @@ def save_server_sections():
     assigned_names = set()
     names = request.form.getlist('section_name')
     server_lists = request.form.getlist('section_servers')
+    capacities = request.form.getlist('section_capacity')
     for index, raw_name in enumerate(names):
         name = raw_name.strip()
         if not name:
@@ -5033,7 +5034,8 @@ def save_server_sections():
             if server and key not in assigned_names:
                 servers.append(server)
                 assigned_names.add(key)
-        sections.append({'name': name, 'servers': servers})
+        sections.append({'name': name, 'servers': servers,
+                 'max_people': 1 if index < len(capacities) and capacities[index] == '1' else None})
 
     old_value = get_setting('server_sections', '[]')
     new_value = json.dumps(sections)
@@ -5054,6 +5056,7 @@ def save_cook_sections():
     assigned_names = set()
     names = request.form.getlist('cook_section_name')
     cook_lists = request.form.getlist('section_cooks')
+    capacities = request.form.getlist('section_capacity')
     for index, raw_name in enumerate(names):
         name = raw_name.strip()
         if not name:
@@ -5066,7 +5069,8 @@ def save_cook_sections():
             if cook and key not in assigned_names:
                 cooks.append(cook)
                 assigned_names.add(key)
-        sections.append({'name': name, 'cooks': cooks})
+        sections.append({'name': name, 'cooks': cooks,
+                 'max_people': 1 if index < len(capacities) and capacities[index] == '1' else None})
 
     old_value = get_setting('cook_sections', '[]')
     new_value = json.dumps(sections)
@@ -5087,6 +5091,7 @@ def save_bartender_sections():
     assigned_names = set()
     names = request.form.getlist('bartender_section_name')
     bartender_lists = request.form.getlist('section_bartenders')
+    capacities = request.form.getlist('section_capacity')
     for index, raw_name in enumerate(names):
         name = raw_name.strip()
         if not name:
@@ -5099,7 +5104,8 @@ def save_bartender_sections():
             if bartender and key not in assigned_names:
                 bartenders.append(bartender)
                 assigned_names.add(key)
-        sections.append({'name': name, 'bartenders': bartenders})
+        sections.append({'name': name, 'bartenders': bartenders,
+                 'max_people': 1 if index < len(capacities) and capacities[index] == '1' else None})
 
     old_value = get_setting('bartender_sections', '[]')
     new_value = json.dumps(sections)
@@ -5120,6 +5126,7 @@ def save_room120_bartender_sections():
     assigned_names = set()
     names = request.form.getlist('room120_bartender_section_name')
     bartender_lists = request.form.getlist('section_room120_bartenders')
+    capacities = request.form.getlist('section_capacity')
     for index, raw_name in enumerate(names):
         name = raw_name.strip()
         if not name:
@@ -5132,7 +5139,8 @@ def save_room120_bartender_sections():
             if bartender and key not in assigned_names:
                 bartenders.append(bartender)
                 assigned_names.add(key)
-        sections.append({'name': name, 'room120_bartenders': bartenders})
+        sections.append({'name': name, 'room120_bartenders': bartenders,
+                 'max_people': 1 if index < len(capacities) and capacities[index] == '1' else None})
 
     old_value = get_setting('room120_bartender_sections', '[]')
     new_value = json.dumps(sections)
@@ -5153,6 +5161,7 @@ def save_runner_sections():
     assigned_names = set()
     names = request.form.getlist('runner_section_name')
     runner_lists = request.form.getlist('section_runners')
+    capacities = request.form.getlist('section_capacity')
     for index, raw_name in enumerate(names):
         name = raw_name.strip()
         if not name:
@@ -5165,7 +5174,8 @@ def save_runner_sections():
             if runner and key not in assigned_names:
                 runners.append(runner)
                 assigned_names.add(key)
-        sections.append({'name': name, 'runners': runners})
+        sections.append({'name': name, 'runners': runners,
+                 'max_people': 1 if index < len(capacities) and capacities[index] == '1' else None})
 
     old_value = get_setting('runner_sections', '[]')
     new_value = json.dumps(sections)
@@ -5509,7 +5519,7 @@ def _shift_start_minutes(shift_str):
 
 
 def _assign_roster_to_sections(roster, configured_sections, people_key):
-    """Apply fixed staff preferences, then distribute remaining staff by arrival time."""
+    """Honor fixed preferences, capacities, and arrival-ordered fallback assignment."""
     assigned = set()
     sections = []
     for configured in configured_sections:
@@ -5522,23 +5532,64 @@ def _assign_roster_to_sections(roster, configured_sections, people_key):
         if not isinstance(configured_people, list):
             configured_people = []
         preferred = {str(name).strip().casefold() for name in configured_people if str(name).strip()}
-        section_people = []
-        for employee in roster:
-            employee_name = employee.get('name', '').strip()
-            employee_key = employee_name.casefold()
-            if employee_key in preferred and employee_key not in assigned:
-                section_people.append(employee_name)
-                assigned.add(employee_key)
-        sections.append({'name': section_name, people_key: section_people})
+        max_people = 1 if configured.get('max_people') == 1 else None
+        sections.append({
+            'name': section_name,
+            people_key: [],
+            'max_people': max_people,
+            '_preferred': preferred,
+        })
+
+    def has_room(section):
+        return section['max_people'] is None or len(section[people_key]) < section['max_people']
+
+    def add_to(section, employee):
+        employee_name = employee.get('name', '').strip()
+        section[people_key].append(employee_name)
+        assigned.add(employee_name.casefold())
+
+    # Put people into their preferred station first, respecting its capacity.
+    for employee in roster:
+        key = employee.get('name', '').strip().casefold()
+        preferred_section = next(
+            (section for section in sections if key in section['_preferred'] and has_room(section)),
+            None,
+        )
+        if preferred_section:
+            add_to(preferred_section, employee)
 
     remaining = [employee for employee in roster if employee.get('name', '').strip().casefold() not in assigned]
     remaining.sort(key=lambda employee: _shift_start_minutes(employee.get('shift', '')))
     if sections:
-        for index, employee in enumerate(remaining):
-            sections[index % len(sections)][people_key].append(employee['name'])
+        next_index = 0
+        for employee in remaining:
+            key = employee.get('name', '').strip().casefold()
+            preferred_section = next(
+                (section for section in sections if key in section['_preferred'] and has_room(section)),
+                None,
+            )
+            if preferred_section:
+                add_to(preferred_section, employee)
+                continue
+
+            destination = None
+            for offset in range(len(sections)):
+                index = (next_index + offset) % len(sections)
+                if has_room(sections[index]):
+                    destination = sections[index]
+                    next_index = (index + 1) % len(sections)
+                    break
+            if destination is None:
+                destination = next((s for s in sections if s['name'] == 'Unassigned'), None)
+                if destination is None:
+                    destination = {'name': 'Unassigned', people_key: [], 'max_people': None, '_preferred': set()}
+                    sections.append(destination)
+            add_to(destination, employee)
     elif remaining:
         fallback_name = 'Unassigned'
-        sections.append({'name': fallback_name, people_key: [employee['name'] for employee in remaining]})
+        sections.append({'name': fallback_name, people_key: [employee['name'] for employee in remaining], 'max_people': None})
+    for section in sections:
+        section.pop('_preferred', None)
     return sections
 
 
