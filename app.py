@@ -5021,7 +5021,6 @@ def save_server_sections():
     assigned_names = set()
     names = request.form.getlist('section_name')
     server_lists = request.form.getlist('section_servers')
-    capacities = request.form.getlist('section_capacity')
     for index, raw_name in enumerate(names):
         name = raw_name.strip()
         if not name:
@@ -5035,7 +5034,7 @@ def save_server_sections():
                 servers.append(server)
                 assigned_names.add(key)
         sections.append({'name': name, 'servers': servers,
-                 'max_people': 1 if index < len(capacities) and capacities[index] == '1' else None})
+                         'max_people': 1 if request.form.get(f'section_capacity_{index}') == '1' else None})
 
     old_value = get_setting('server_sections', '[]')
     new_value = json.dumps(sections)
@@ -5056,7 +5055,6 @@ def save_cook_sections():
     assigned_names = set()
     names = request.form.getlist('cook_section_name')
     cook_lists = request.form.getlist('section_cooks')
-    capacities = request.form.getlist('section_capacity')
     for index, raw_name in enumerate(names):
         name = raw_name.strip()
         if not name:
@@ -5070,7 +5068,7 @@ def save_cook_sections():
                 cooks.append(cook)
                 assigned_names.add(key)
         sections.append({'name': name, 'cooks': cooks,
-                 'max_people': 1 if index < len(capacities) and capacities[index] == '1' else None})
+                         'max_people': 1 if request.form.get(f'section_capacity_{index}') == '1' else None})
 
     old_value = get_setting('cook_sections', '[]')
     new_value = json.dumps(sections)
@@ -5091,7 +5089,6 @@ def save_bartender_sections():
     assigned_names = set()
     names = request.form.getlist('bartender_section_name')
     bartender_lists = request.form.getlist('section_bartenders')
-    capacities = request.form.getlist('section_capacity')
     for index, raw_name in enumerate(names):
         name = raw_name.strip()
         if not name:
@@ -5105,7 +5102,7 @@ def save_bartender_sections():
                 bartenders.append(bartender)
                 assigned_names.add(key)
         sections.append({'name': name, 'bartenders': bartenders,
-                 'max_people': 1 if index < len(capacities) and capacities[index] == '1' else None})
+                         'max_people': 1 if request.form.get(f'section_capacity_{index}') == '1' else None})
 
     old_value = get_setting('bartender_sections', '[]')
     new_value = json.dumps(sections)
@@ -5126,7 +5123,6 @@ def save_room120_bartender_sections():
     assigned_names = set()
     names = request.form.getlist('room120_bartender_section_name')
     bartender_lists = request.form.getlist('section_room120_bartenders')
-    capacities = request.form.getlist('section_capacity')
     for index, raw_name in enumerate(names):
         name = raw_name.strip()
         if not name:
@@ -5140,7 +5136,7 @@ def save_room120_bartender_sections():
                 bartenders.append(bartender)
                 assigned_names.add(key)
         sections.append({'name': name, 'room120_bartenders': bartenders,
-                 'max_people': 1 if index < len(capacities) and capacities[index] == '1' else None})
+                         'max_people': 1 if request.form.get(f'section_capacity_{index}') == '1' else None})
 
     old_value = get_setting('room120_bartender_sections', '[]')
     new_value = json.dumps(sections)
@@ -5161,7 +5157,6 @@ def save_runner_sections():
     assigned_names = set()
     names = request.form.getlist('runner_section_name')
     runner_lists = request.form.getlist('section_runners')
-    capacities = request.form.getlist('section_capacity')
     for index, raw_name in enumerate(names):
         name = raw_name.strip()
         if not name:
@@ -5175,7 +5170,7 @@ def save_runner_sections():
                 runners.append(runner)
                 assigned_names.add(key)
         sections.append({'name': name, 'runners': runners,
-                 'max_people': 1 if index < len(capacities) and capacities[index] == '1' else None})
+                         'max_people': 1 if request.form.get(f'section_capacity_{index}') == '1' else None})
 
     old_value = get_setting('runner_sections', '[]')
     new_value = json.dumps(sections)
@@ -5518,8 +5513,25 @@ def _shift_start_minutes(shift_str):
     return hour * 60 + minute
 
 
+def _unique_roster_people(roster):
+    """Return one roster entry per case-insensitive name, keeping earliest shift."""
+    unique_roster = {}
+    for employee in roster:
+        employee_name = str(employee.get('name') or '').strip()
+        if not employee_name:
+            continue
+        key = employee_name.casefold()
+        current = unique_roster.get(key)
+        if current is None or _shift_start_minutes(employee.get('shift', '')) < _shift_start_minutes(current.get('shift', '')):
+            unique_roster[key] = {**employee, 'name': employee_name}
+    return list(unique_roster.values())
+
+
 def _assign_roster_to_sections(roster, configured_sections, people_key):
     """Honor fixed preferences, capacities, and arrival-ordered fallback assignment."""
+    # Roster exports sometimes repeat an employee in the same position.
+    roster = _unique_roster_people(roster)
+
     assigned = set()
     sections = []
     for configured in configured_sections:
@@ -5591,6 +5603,21 @@ def _assign_roster_to_sections(roster, configured_sections, people_key):
     for section in sections:
         section.pop('_preferred', None)
     return sections
+
+
+def _dedupe_assignment_sections(sections, people_key):
+    """Remove repeated staff names across saved sections, preserving first placement."""
+    seen = set()
+    for section in sections or []:
+        people = []
+        for raw_name in section.get(people_key, []):
+            name = str(raw_name).strip()
+            key = name.casefold()
+            if name and key not in seen:
+                people.append(name)
+                seen.add(key)
+        section[people_key] = people
+    return sections or []
 
 
 def _generate_break_rotation(names, start_hour=19, start_min=0):
@@ -5714,13 +5741,23 @@ def shift_planner_upload():
         venue          = request.form.get('venue', '').strip()
         plan_date      = request.form.get('plan_date', '').strip()
 
-        bartenders = [
+        room120_bartenders = _unique_roster_people([
+            employee
+            for position, staff in employees.items()
+            if 'room 120 bartender' in position.strip().casefold()
+            for employee in staff
+        ])
+        room120_bartender_names = {employee['name'].casefold() for employee in room120_bartenders}
+        # If a roster export labels the same person under both bartender roles,
+        # give Room 120 Bartender precedence and keep them in only that group.
+        bartenders = _unique_roster_people([
             employee
             for position, staff in employees.items()
             if 'bartender' in position.strip().casefold()
             and 'room 120 bartender' not in position.strip().casefold()
             for employee in staff
-        ]
+            if employee['name'].strip().casefold() not in room120_bartender_names
+        ])
         try:
             configured_bar_stations = json.loads(get_setting('bartender_sections', '[]'))
             if not isinstance(configured_bar_stations, list):
@@ -5744,12 +5781,6 @@ def shift_planner_upload():
                 {'name': 'Lower Bar', 'bartenders': late},
             ] if bartenders else []
 
-        room120_bartenders = [
-            employee
-            for position, staff in employees.items()
-            if 'room 120 bartender' in position.strip().casefold()
-            for employee in staff
-        ]
         try:
             configured_room120_stations = json.loads(get_setting('room120_bartender_sections', '[]'))
             if not isinstance(configured_room120_stations, list):
@@ -5885,6 +5916,8 @@ def shift_planner_edit():
         if 'room 120 bartender' in position.strip().casefold()
         for name in names
     ]
+    for section in plan.get('room120_bartender_sections', []):
+        room120_bartender_names.extend(section.get('room120_bartenders', []))
     room120_name_keys = {name.strip().casefold() for name in room120_bartender_names}
     # Older plans included Room 120 Bartenders in the combined bar groups.
     # Move those names out so they appear only in their dedicated section.
@@ -5898,6 +5931,10 @@ def shift_planner_edit():
             'name': 'Room 120 Bartenders',
             'room120_bartenders': room120_bartender_names,
         }]
+    plan['room120_bartender_sections'] = _dedupe_assignment_sections(
+        plan.get('room120_bartender_sections', []), 'room120_bartenders')
+    plan['bar']['sections'] = _dedupe_assignment_sections(
+        plan['bar'].get('sections', []), 'bartenders')
     if not plan.get('server_sections'):
         servers = [
             name

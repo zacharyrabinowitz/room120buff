@@ -187,7 +187,7 @@
         <div id="bartenderStationRows">
           {% for section in bartender_sections %}
           <div class="row g-2 align-items-start mb-3 bartender-station-row">
-            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="bartender_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Main Bar"><label class="form-label small mt-2">Capacity</label><select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1" {% if section.max_people == 1 %}selected{% endif %}>One person only</option></select></div>
+            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="bartender_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Main Bar"><div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_{{ loop.index0 }}" value="1" {% if section.max_people == 1 %}checked{% endif %}><label class="form-check-label small">Only one person at this station</label></div></div>
             <div class="col-md-7"><label class="form-label small">Preferred bartenders</label><textarea name="section_bartenders" class="form-control" rows="2" placeholder="John Doe, Jane Smith">{{ section.bartenders | join(', ') }}</textarea></div>
             <div class="col-md-1 pt-md-4">
               <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveBartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
@@ -197,7 +197,7 @@
           </div>
           {% else %}
           <div class="row g-2 align-items-start mb-3 bartender-station-row">
-            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="bartender_section_name" class="form-control" placeholder="e.g. Main Bar"><label class="form-label small mt-2">Capacity</label><select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1">One person only</option></select></div>
+            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="bartender_section_name" class="form-control" placeholder="e.g. Main Bar"><div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_0" value="1"><label class="form-check-label small">Only one person at this station</label></div></div>
             <div class="col-md-7"><label class="form-label small">Preferred bartenders</label><textarea name="section_bartenders" class="form-control" rows="2" placeholder="John Doe, Jane Smith"></textarea></div>
             <div class="col-md-1 pt-md-4">
               <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveBartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
@@ -226,7 +226,7 @@
         <div id="room120BartenderStationRows">
           {% for section in room120_bartender_sections %}
           <div class="row g-2 align-items-start mb-3 room120-bartender-station-row">
-            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="room120_bartender_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Room 120 Bar"><label class="form-label small mt-2">Capacity</label><select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1" {% if section.max_people == 1 %}selected{% endif %}>One person only</option></select></div>
+            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="room120_bartender_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Room 120 Bar"><div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_{{ loop.index0 }}" value="1" {% if section.max_people == 1 %}checked{% endif %}><label class="form-check-label small">Only one person at this station</label></div></div>
             <div class="col-md-7"><label class="form-label small">Preferred Room 120 bartenders</label><textarea name="section_room120_bartenders" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee">{{ section.room120_bartenders | join(', ') }}</textarea></div>
             <div class="col-md-1 pt-md-4">
               <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRoom120BartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
@@ -236,7 +236,7 @@
           </div>
           {% else %}
           <div class="row g-2 align-items-start mb-3 room120-bartender-station-row">
-            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="room120_bartender_section_name" class="form-control" placeholder="e.g. Room 120 Bar"><label class="form-label small mt-2">Capacity</label><select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1">One person only</option></select></div>
+            <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="room120_bartender_section_name" class="form-control" placeholder="e.g. Room 120 Bar"><div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_0" value="1"><label class="form-check-label small">Only one person at this station</label></div></div>
             <div class="col-md-7"><label class="form-label small">Preferred Room 120 bartenders</label><textarea name="section_room120_bartenders" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea></div>
             <div class="col-md-1 pt-md-4">
               <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRoom120BartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
@@ -275,8 +275,7 @@
             <div class="col-md-4">
               <label class="form-label small">Section name</label>
               <input type="text" name="section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Main Dining Room">
-              <label class="form-label small mt-2">Capacity</label>
-              <select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1" {% if section.max_people == 1 %}selected{% endif %}>One person only</option></select>
+              <div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_{{ loop.index0 }}" value="1" {% if section.max_people == 1 %}checked{% endif %}><label class="form-check-label small">Only one person in this section</label></div>
             </div>
             <div class="col-md-7">
               <label class="form-label small">Servers</label>
@@ -299,8 +298,7 @@
             <div class="col-md-4">
               <label class="form-label small">Section name</label>
               <input type="text" name="section_name" class="form-control" placeholder="e.g. Main Dining Room">
-              <label class="form-label small mt-2">Capacity</label>
-              <select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1">One person only</option></select>
+              <div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_0" value="1"><label class="form-check-label small">Only one person in this section</label></div>
             </div>
             <div class="col-md-7">
               <label class="form-label small">Servers</label>
@@ -347,7 +345,7 @@
         <div id="runnerSectionRows">
           {% for section in runner_sections %}
           <div class="row g-2 align-items-start mb-3 runner-section-row">
-            <div class="col-md-4"><label class="form-label small">Section name</label><input type="text" name="runner_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Main Floor"><label class="form-label small mt-2">Capacity</label><select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1" {% if section.max_people == 1 %}selected{% endif %}>One person only</option></select></div>
+            <div class="col-md-4"><label class="form-label small">Section name</label><input type="text" name="runner_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Main Floor"><div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_{{ loop.index0 }}" value="1" {% if section.max_people == 1 %}checked{% endif %}><label class="form-check-label small">Only one person in this section</label></div></div>
             <div class="col-md-7"><label class="form-label small">Preferred runners</label><textarea name="section_runners" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee">{{ section.runners | join(', ') }}</textarea></div>
             <div class="col-md-1 pt-md-4">
               <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRunnerSection(this, -1)" title="Move earlier (busier)" aria-label="Move section earlier"><i class="fas fa-arrow-up"></i></button>
@@ -357,7 +355,7 @@
           </div>
           {% else %}
           <div class="row g-2 align-items-start mb-3 runner-section-row">
-            <div class="col-md-4"><label class="form-label small">Section name</label><input type="text" name="runner_section_name" class="form-control" placeholder="e.g. Main Floor"><label class="form-label small mt-2">Capacity</label><select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1">One person only</option></select></div>
+            <div class="col-md-4"><label class="form-label small">Section name</label><input type="text" name="runner_section_name" class="form-control" placeholder="e.g. Main Floor"><div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_0" value="1"><label class="form-check-label small">Only one person in this section</label></div></div>
             <div class="col-md-7"><label class="form-label small">Preferred runners</label><textarea name="section_runners" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea></div>
             <div class="col-md-1 pt-md-4">
               <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRunnerSection(this, -1)" title="Move earlier (busier)" aria-label="Move section earlier"><i class="fas fa-arrow-up"></i></button>
@@ -395,8 +393,7 @@
             <div class="col-md-4">
               <label class="form-label small">Station name</label>
               <input type="text" name="cook_section_name" class="form-control" value="{{ section.name }}" placeholder="e.g. Grill">
-              <label class="form-label small mt-2">Capacity</label>
-              <select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1" {% if section.max_people == 1 %}selected{% endif %}>One person only</option></select>
+              <div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_{{ loop.index0 }}" value="1" {% if section.max_people == 1 %}checked{% endif %}><label class="form-check-label small">Only one person at this station</label></div>
             </div>
             <div class="col-md-7">
               <label class="form-label small">Preferred cooks</label>
@@ -413,8 +410,7 @@
             <div class="col-md-4">
               <label class="form-label small">Station name</label>
               <input type="text" name="cook_section_name" class="form-control" placeholder="e.g. Grill">
-              <label class="form-label small mt-2">Capacity</label>
-              <select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1">One person only</option></select>
+              <div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_0" value="1"><label class="form-check-label small">Only one person at this station</label></div>
             </div>
             <div class="col-md-7">
               <label class="form-label small">Preferred cooks</label>
@@ -831,6 +827,14 @@
 </div>
 
 <script>
+document.querySelectorAll('form[action*="sections"]').forEach(form => {
+  form.addEventListener('submit', function() {
+    this.querySelectorAll('.capacity-one-only').forEach((checkbox, index) => {
+      checkbox.name = `section_capacity_${index}`;
+    });
+  });
+});
+
 document.getElementById('addServerSectionBtn')?.addEventListener('click', function() {
   const row = document.createElement('div');
   row.className = 'row g-2 align-items-start mb-3 server-section-row';
@@ -838,8 +842,7 @@ document.getElementById('addServerSectionBtn')?.addEventListener('click', functi
     <div class="col-md-4">
       <label class="form-label small">Section name</label>
       <input type="text" name="section_name" class="form-control" placeholder="e.g. Main Dining Room">
-      <label class="form-label small mt-2">Capacity</label>
-      <select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1">One person only</option></select>
+      <div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_0" value="1"><label class="form-check-label small">Only one person in this section</label></div>
     </div>
     <div class="col-md-7">
       <label class="form-label small">Servers</label>
@@ -873,7 +876,7 @@ document.getElementById('addBartenderStationBtn')?.addEventListener('click', fun
   const row = document.createElement('div');
   row.className = 'row g-2 align-items-start mb-3 bartender-station-row';
   row.innerHTML = `
-    <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="bartender_section_name" class="form-control" placeholder="e.g. Main Bar"><label class="form-label small mt-2">Capacity</label><select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1">One person only</option></select></div>
+    <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="bartender_section_name" class="form-control" placeholder="e.g. Main Bar"><div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_0" value="1"><label class="form-check-label small">Only one person at this station</label></div></div>
     <div class="col-md-7"><label class="form-label small">Preferred bartenders</label><textarea name="section_bartenders" class="form-control" rows="2" placeholder="John Doe, Jane Smith"></textarea></div>
     <div class="col-md-1 pt-md-4">
       <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveBartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
@@ -897,7 +900,7 @@ document.getElementById('addRoom120BartenderStationBtn')?.addEventListener('clic
   const row = document.createElement('div');
   row.className = 'row g-2 align-items-start mb-3 room120-bartender-station-row';
   row.innerHTML = `
-    <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="room120_bartender_section_name" class="form-control" placeholder="e.g. Room 120 Bar"><label class="form-label small mt-2">Capacity</label><select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1">One person only</option></select></div>
+    <div class="col-md-4"><label class="form-label small">Station name</label><input type="text" name="room120_bartender_section_name" class="form-control" placeholder="e.g. Room 120 Bar"><div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_0" value="1"><label class="form-check-label small">Only one person at this station</label></div></div>
     <div class="col-md-7"><label class="form-label small">Preferred Room 120 bartenders</label><textarea name="section_room120_bartenders" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea></div>
     <div class="col-md-1 pt-md-4">
       <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRoom120BartenderStation(this, -1)" title="Move earlier (busier)" aria-label="Move station earlier"><i class="fas fa-arrow-up"></i></button>
@@ -921,7 +924,7 @@ document.getElementById('addRunnerSectionBtn')?.addEventListener('click', functi
   const row = document.createElement('div');
   row.className = 'row g-2 align-items-start mb-3 runner-section-row';
   row.innerHTML = `
-    <div class="col-md-4"><label class="form-label small">Section name</label><input type="text" name="runner_section_name" class="form-control" placeholder="e.g. Main Floor"><label class="form-label small mt-2">Capacity</label><select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1">One person only</option></select></div>
+    <div class="col-md-4"><label class="form-label small">Section name</label><input type="text" name="runner_section_name" class="form-control" placeholder="e.g. Main Floor"><div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_0" value="1"><label class="form-check-label small">Only one person in this section</label></div></div>
     <div class="col-md-7"><label class="form-label small">Preferred runners</label><textarea name="section_runners" class="form-control" rows="2" placeholder="Alex Smith, Jamie Lee"></textarea></div>
     <div class="col-md-1 pt-md-4">
       <button type="button" class="btn btn-outline-secondary btn-sm mb-1" onclick="moveRunnerSection(this, -1)" title="Move earlier (busier)" aria-label="Move section earlier"><i class="fas fa-arrow-up"></i></button>
@@ -948,8 +951,7 @@ document.getElementById('addCookStationBtn')?.addEventListener('click', function
     <div class="col-md-4">
       <label class="form-label small">Station name</label>
       <input type="text" name="cook_section_name" class="form-control" placeholder="e.g. Grill">
-      <label class="form-label small mt-2">Capacity</label>
-      <select name="section_capacity" class="form-select form-select-sm"><option value="">No limit</option><option value="1">One person only</option></select>
+      <div class="form-check mt-2"><input class="form-check-input capacity-one-only" type="checkbox" name="section_capacity_0" value="1"><label class="form-check-label small">Only one person at this station</label></div>
     </div>
     <div class="col-md-7">
       <label class="form-label small">Preferred cooks</label>
